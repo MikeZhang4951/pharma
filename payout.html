@@ -73,7 +73,20 @@
   .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
   .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
   #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
-  @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
+  /* National Pay Summary */
+  .nps { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(8px,1vw,12px); max-width:1500px; margin:0 auto clamp(8px,1vw,14px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  .nps h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
+  .nps-cols { display:flex; gap:1px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
+  .nps-col { flex:1; background:#fff; min-width:0; text-align:center; }
+  .nps-col.header { background:#f8f9fb; font-weight:700; color:#1e293b; }
+  .nps-col .nps-attainment { font-size:clamp(0.65rem,0.85vw,0.75rem); font-weight:700; padding:clamp(4px,0.5vw,6px) 4px; background:#f1f5f9; border-bottom:1px solid #e5e7eb; color:#6366f1; cursor:pointer; }
+  .nps-col .nps-attainment input { width:clamp(36px,5vw,48px); background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.6rem,0.75vw,0.7rem); text-align:center; font-weight:700; }
+  .nps-col .nps-attainment input:focus { outline:none; border-color:#6366f1; }
+  .nps-label { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; padding:clamp(3px,0.4vw,5px) 4px; border-bottom:1px solid #f1f5f9; font-weight:600; white-space:nowrap; }
+  .nps-val { font-size:clamp(0.6rem,0.75vw,0.7rem); padding:clamp(3px,0.4vw,5px) 4px; border-bottom:1px solid #f1f5f9; font-weight:700; white-space:nowrap; }
+  .nps-val.good { color:#059669; } .nps-val.warn { color:#d97706; } .nps-val.bad { color:#dc2626; }
+  .nps-col:last-child .nps-attainment { background:#eef2ff; }
+  @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } .nps-cols { overflow-x:auto; } .nps-col { min-width:70px; } }
 </style>
 </head>
 <body>
@@ -100,6 +113,12 @@
     <option value="Q325">Q325</option>
     <option value="Q425">Q425</option>
   </select>
+</div>
+
+<!-- National Pay Summary -->
+<div class="nps" id="npsSection">
+  <h3>National Pay Summary — <span id="npsQuarter"></span></h3>
+  <div class="nps-cols" id="npsGrid"></div>
 </div>
 
 <div class="main">
@@ -669,6 +688,111 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
+// ── National Pay Summary ──
+const npsAttainments = [80, 90, 95, 100, 105, 110, 120];
+
+function renderNPS() {
+  const quarter = document.getElementById('quarterSelect').value;
+  document.getElementById('npsQuarter').textContent = quarter;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) { document.getElementById('npsSection').style.display = 'none'; return; }
+  document.getElementById('npsSection').style.display = '';
+
+  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
+  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const BASE_Q = getEffectiveBasePay();
+  const headcount = qData.length;
+  const budget = BASE_Q * headcount;
+
+  function payoutPct(attainment) {
+    if (componentMode === 'nrx') return nrxPct(attainment);
+    if (componentMode === 'combined') {
+      return trxPct(attainment) * trxW + nrxPct(attainment) * nrxW;
+    }
+    return trxPct(attainment);
+  }
+
+  function computeAt(attainment) {
+    const pp = payoutPct(attainment);
+    const perPerson = BASE_Q * (pp / 100);
+    const totalPay = perPerson * headcount;
+    return {
+      label: attainment + '%',
+      attainment: attainment,
+      payoutPct: pp,
+      totalPay: totalPay,
+      avgPay: perPerson,
+      budgetUtil: (totalPay / budget * 100),
+      minPay: perPerson,
+      maxPay: perPerson,
+      engaged: pp > 0 ? headcount : 0,
+      engagedPct: pp > 0 ? 100 : 0,
+      meaningfulPct: pp > 75 ? 100 : 0
+    };
+  }
+
+  // Compute current (actual data)
+  const rows = qData.map(d => {
+    const trxAttain = d.trxGoal ? (d.trxActual/d.trxGoal*100) : 0;
+    const nrxAttain = d.nrxGoal ? (d.nrxActual/d.nrxGoal*100) : 0;
+    const trxPayPct = trxPct(trxAttain);
+    const nrxPayPct = nrxPct(nrxAttain);
+    let pp, attainment;
+    if (componentMode === 'nrx') { pp = nrxPayPct; attainment = nrxAttain; }
+    else if (componentMode === 'combined') { pp = trxPayPct*trxW + nrxPayPct*nrxW; attainment = (trxAttain + nrxAttain) / 2; }
+    else { pp = trxPayPct; attainment = trxAttain; }
+    return { pp, attainment, payout: BASE_Q * (pp/100) };
+  });
+  const currentPayouts = rows.map(r => r.payout);
+  const currentTotal = currentPayouts.reduce((s,v)=>s+v,0);
+  const currentAvgAttain = rows.reduce((s,r)=>s+r.attainment,0)/headcount;
+  const currentPctValues = rows.map(r => r.pp);
+  const current = {
+    label: (currentAvgAttain).toFixed(0) + '%',
+    attainment: currentAvgAttain,
+    payoutPct: currentTotal / budget * 100,
+    totalPay: currentTotal,
+    avgPay: currentTotal / headcount,
+    budgetUtil: (currentTotal / budget * 100),
+    minPay: Math.min(...currentPayouts),
+    maxPay: Math.max(...currentPayouts),
+    engaged: currentPctValues.filter(p=>p>0).length,
+    engagedPct: (currentPctValues.filter(p=>p>0).length/headcount)*100,
+    meaningfulPct: (currentPctValues.filter(p=>p>75).length/headcount)*100
+  };
+
+  const cols = [...npsAttainments.map(computeAt), current];
+
+  // Build grid HTML
+  const rows_defs = [
+    { label: 'Total Payout', fmt: v => '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}) },
+    { label: 'Budget Util%', fmt: v => v.toFixed(1)+'%', cls: v => v>100?'warn':(v>95?'good':'') },
+    { label: 'Avg Payout', fmt: v => '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}) },
+    { label: 'Min Payout', fmt: v => '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}) },
+    { label: 'Max Payout', fmt: v => '$'+v.toLocaleString(undefined,{maximumFractionDigits:0}) },
+    { label: 'Engaged (>0%)', fmt: v => v.toFixed(0) },
+    { label: 'Meaningful (>75%)', fmt: v => v.toFixed(1)+'%' },
+  ];
+
+  let html = '<div class="nps-col header"><div class="nps-attainment">Metric</div>';
+  rows_defs.forEach(r => html += `<div class="nps-label">${r.label}</div>`);
+  html += '</div>';
+
+  cols.forEach(col => {
+    html += '<div class="nps-col">';
+    html += `<div class="nps-attainment">${col.label}</div>`;
+    const vals = [col.totalPay, col.budgetUtil, col.avgPay, col.minPay, col.maxPay, col.engagedPct, col.meaningfulPct];
+    vals.forEach((v, i) => {
+      const def = rows_defs[i];
+      const cls = def.cls ? def.cls(v) : '';
+      html += `<div class="nps-val ${cls}">${def.fmt(v)}</div>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('npsGrid').innerHTML = html;
+}
+
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -793,6 +917,7 @@ function renderAll() {
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
+  renderNPS();
   drawHistogram();
 }
 
