@@ -9,6 +9,7 @@ A dependency-free, browser-based sales incentive modeling tool. The application 
 - Calculates quarterly territory attainment, payout percentages, payouts, budget variance, engagement, and other summary statistics.
 - Treats TRx and NRx goals/actuals as prescription volumes and displays them without currency formatting.
 - Models TRx, NRx, and combined national payout at configurable normalized attainment levels, with attainment levels as columns, selectable summary metrics as rows, and independent TRx/NRx selectors for combined scenarios.
+
 - Shows a configurable histogram of territory payout percentages.
 - Supports sorting territory results by payout percentage.
 - Imports tab-separated, CSV, or JSON territory data and provides a sample download.
@@ -51,8 +52,6 @@ After a successful deployment, the site is available at:
 <https://mikezhang4951.github.io/pharma/>
 
 Future pushes to `master` redeploy automatically. The workflow publishes `index.html`, the national summary CSS/JavaScript assets, and `territories.json`, and includes `.nojekyll` in the Pages artifact.
-
-The core application loads before the national-summary extension. If that optional JavaScript asset is unavailable or stale during a deployment, territory data and the main plan summary continue to render.
 
 ## Input formats
 
