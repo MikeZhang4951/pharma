@@ -318,10 +318,18 @@
   body.dark-theme #hoverInfo, body.dark-theme #histoTip { background:rgba(15,23,42,.96); border-color:var(--primary); color:#f1f5f9; }
   body.dark-theme canvas { border-color:#243049; background:#0f172a; }
   body.dark-theme .plan-tab { background:var(--surface-soft); border-color:var(--border); color:#cbd5e1; }
-  body.dark-theme .plan-tab.active { background:var(--primary-soft); border-color:var(--primary); color:#e0e7ff; }
-  body.dark-theme .plan-menu { background:var(--surface); border-color:var(--border); }
+  body.dark-theme .plan-tab.active { background:var(--primary-soft); border-color:var(--primary); color:#e0e7ff; box-shadow:0 0 0 3px rgba(165,180,252,.18); }
+  body.dark-theme .plan-menu { background:var(--surface); border-color:var(--border); box-shadow:0 12px 32px rgba(0,0,0,.55); }
   body.dark-theme .plan-menu button { color:#cbd5e1; }
   body.dark-theme .plan-menu button:hover { background:var(--surface-soft); }
+  /* Make sure inner panel containers, table wrappers, and form controls don't
+     leak their light backgrounds. */
+  body.dark-theme .table-wrap { background:var(--surface); }
+  body.dark-theme tbody tr:hover td { background:#1d2638; }
+  body.dark-theme .dot-controls button { background:var(--surface-soft); color:#cbd5e1; border-color:var(--border); }
+  body.dark-theme .dot-controls button:hover:not(:disabled) { background:#1f2a40; border-color:#475569; }
+  body.dark-theme .dot-inputs { border-color:var(--border); }
+  body.dark-theme .points-table th { background:var(--surface-soft); color:#94a3b8; border-bottom-color:var(--border); }
   body.dark-theme .nps-plan-block { border-top-color:#243049; }
   body.dark-theme .nps-plan-title { color:#f1f5f9; }
   body.dark-theme .delta-row td.zero { color:#64748b; }
