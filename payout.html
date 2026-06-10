@@ -238,6 +238,158 @@
     .histo-multiples.cols-2, .histo-multiples.cols-3,
     .histo-multiples.cols-4, .histo-multiples.cols-5 { grid-template-columns:1fr; }
   }
+
+  /* ───────────────────────── Toolbar additions: Print, Dark mode, Help ───────────────────────── */
+  .btn-icon { min-width:36px; text-align:center; }
+  .btn-print { background:var(--primary-soft); color:var(--primary); border-color:#c7d2fe; font-weight:800; }
+  .btn-print:hover { background:#e0e7ff; }
+
+  /* ───────────────────────── Keyboard shortcuts overlay ───────────────────────── */
+  .shortcuts-overlay { position:fixed; inset:0; background:rgba(15,23,42,.55); display:flex; align-items:center; justify-content:center; z-index:1000; padding:24px; }
+  .shortcuts-overlay[hidden] { display:none; }
+  .shortcuts-modal { background:var(--surface); color:var(--text); border-radius:14px; padding:22px 24px 20px; max-width:680px; width:100%; box-shadow:0 30px 60px rgba(15,23,42,.45); border:1px solid var(--border); }
+  .shortcuts-modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .shortcuts-modal h3 { font-size:1.05rem; }
+  .shortcuts-close { border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:1.8rem; line-height:1; padding:0 6px; border-radius:6px; }
+  .shortcuts-close:hover { background:var(--surface-soft); color:var(--text); }
+  .shortcuts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .kbd-group h4 { font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  .kbd-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:5px 0; font-size:.78rem; color:var(--text); }
+  .kbd-row span:last-child { color:var(--muted); font-weight:600; text-align:right; }
+  kbd { display:inline-block; min-width:22px; padding:2px 6px; border:1px solid var(--border); border-bottom-width:2px; border-radius:5px; background:var(--surface-soft); color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.72rem; font-weight:700; text-align:center; }
+  .shortcuts-hint { color:var(--muted); font-size:.7rem; margin-top:14px; padding-top:12px; border-top:1px dashed var(--border); }
+  @media (max-width:680px) { .shortcuts-grid { grid-template-columns:1fr; } }
+
+  /* ───────────────────────── Dark mode ───────────────────────── */
+  /* Color palette swap. Canvases keep their light backgrounds for chart legibility;
+     the chart drawing code reads getChartColors() so axis/text/grid adapt. */
+  body.dark-theme {
+    --bg:#0b1220;
+    --surface:#151c2c;
+    --surface-soft:#1d2638;
+    --border:#2a3550;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --primary:#a5b4fc;
+    --primary-dark:#818cf8;
+    --primary-soft:#1e1b4b;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --red:#f87171;
+    --shadow:0 10px 30px rgba(0,0,0,0.4);
+    color-scheme:dark;
+  }
+  body.dark-theme h1 { color:#f1f5f9; }
+  body.dark-theme .panel-header { border-bottom-color:#243049; }
+  body.dark-theme .panel-header h2 { color:#f1f5f9; }
+  body.dark-theme .setup-card { background:#111827; }
+  body.dark-theme .input-shell { border-color:#374151; background:#1e2638; }
+  body.dark-theme .input-shell input { color:#e5e7eb; }
+  body.dark-theme .field select,
+  body.dark-theme .points-table input,
+  body.dark-theme .nps-attainment-val,
+  body.dark-theme .table-header-row select,
+  body.dark-theme .histo-header input { background:#1e2638 !important; color:#e5e7eb !important; border-color:#374151 !important; }
+  body.dark-theme .view-tabs { background:#0f172a; }
+  body.dark-theme .view-tabs button { color:#94a3b8; }
+  body.dark-theme .view-tabs button.active { background:#1e2638; color:var(--primary); }
+  body.dark-theme .points-table th,
+  body.dark-theme th,
+  body.dark-theme .nps-panel .nps-table th,
+  body.dark-theme .compare-summary-table thead th { background:#1a2235; color:var(--primary); border-bottom-color:#2a3550; }
+  body.dark-theme .compare-summary-table thead th.metric-col { color:var(--muted); }
+  body.dark-theme .compare-summary-table tbody th { background:var(--surface); color:var(--muted); border-bottom-color:#243049; }
+  body.dark-theme .compare-summary-table tbody td { color:#e2e8f0; border-bottom-color:#243049; }
+  body.dark-theme .compare-summary-table thead th.baseline-col { background:#3b2c08; }
+  body.dark-theme .compare-summary-table tbody td.baseline-col { background:#2a2008; }
+  body.dark-theme td { color:#cbd5e1; border-bottom-color:#243049; }
+  body.dark-theme tr:hover td { background:#1a2235; }
+  body.dark-theme .points-table td { border-bottom-color:#243049; }
+  body.dark-theme .points-table tbody tr:hover td { background:#1a2235; }
+  body.dark-theme .stat-row { color:#cbd5e1; border-bottom-color:#243049; }
+  body.dark-theme .stat-row .val { color:#f1f5f9; }
+  body.dark-theme .summary-card { background:var(--surface-soft); border-color:var(--border); }
+  body.dark-theme .summary-card h4 { color:#f1f5f9; }
+  body.dark-theme .summary-card.baseline { background:#2a2008; border-color:#3b2c08; }
+  body.dark-theme .fixed-pay-note { background:#1e1b4b; border-color:#3730a3; color:#c7d2fe; }
+  body.dark-theme .field-hint { color:var(--muted); }
+  body.dark-theme .field-hint strong { color:#cbd5e1; }
+  body.dark-theme .attainment-bar { background:#243049; }
+  body.dark-theme #hoverInfo, body.dark-theme #histoTip { background:rgba(15,23,42,.96); border-color:var(--primary); color:#f1f5f9; }
+  body.dark-theme canvas { border-color:#243049; background:#0f172a; }
+  body.dark-theme .plan-tab { background:var(--surface-soft); border-color:var(--border); color:#cbd5e1; }
+  body.dark-theme .plan-tab.active { background:var(--primary-soft); border-color:var(--primary); color:#e0e7ff; }
+  body.dark-theme .plan-menu { background:var(--surface); border-color:var(--border); }
+  body.dark-theme .plan-menu button { color:#cbd5e1; }
+  body.dark-theme .plan-menu button:hover { background:var(--surface-soft); }
+  body.dark-theme .nps-plan-block { border-top-color:#243049; }
+  body.dark-theme .nps-plan-title { color:#f1f5f9; }
+  body.dark-theme .delta-row td.zero { color:#64748b; }
+  body.dark-theme .section-label { color:#cbd5e1; }
+  body.dark-theme .btn { color:#cbd5e1; }
+  body.dark-theme .btn:hover { background:var(--surface-soft); border-color:#475569; }
+  body.dark-theme .btn-compare { color:#e2e8f0; }
+  body.dark-theme .btn-compare:hover { border-color:#475569; }
+  body.dark-theme .btn-compare.active { background:var(--primary); border-color:var(--primary); color:#0b1220; }
+  body.dark-theme .btn-add-plan { border-color:#374151; color:#cbd5e1; }
+  body.dark-theme .btn-add-plan:hover:not(:disabled) { background:var(--primary-soft); color:var(--primary); border-color:var(--primary); }
+  body.dark-theme .btn-print { background:var(--primary-soft); color:#c7d2fe; border-color:#3730a3; }
+  body.dark-theme .btn-print:hover { background:#312e81; }
+  body.dark-theme .field label { color:#cbd5e1; }
+  body.dark-theme .input-shell .prefix, body.dark-theme .input-shell .suffix { color:#94a3b8; }
+  body.dark-theme .panel-header p { color:var(--muted); }
+  body.dark-theme .nps-panel .nps-table td:first-child { color:#94a3b8; }
+  body.dark-theme .points-table .idx { color:var(--primary); }
+  body.dark-theme .nps-panel .nps-table th .nps-attainment-val { background:#1e2638; color:#e5e7eb; border-color:#374151; }
+  body.dark-theme .shortcuts-overlay { background:rgba(0,0,0,.65); }
+  body.dark-theme kbd { background:#0f172a; border-color:#2a3550; color:#e5e7eb; }
+
+  /* ───────────────────────── Print / PDF view ───────────────────────── */
+  @media print {
+    /* Force printable colors regardless of dark mode */
+    body, body.dark-theme {
+      background:#fff !important; color:#000 !important;
+      --bg:#fff; --surface:#fff; --surface-soft:#f8fafc; --border:#cbd5e1;
+      --text:#0f172a; --muted:#475569; --primary:#4f46e5; --primary-soft:#eef2ff;
+    }
+    .app-shell { max-width:none !important; padding:0 !important; }
+    .app-header { margin-bottom:6mm !important; }
+    .app-header .sub { display:none !important; }
+    /* Hide interactive controls that don't make sense in print */
+    .data-actions,
+    .plans-actions,
+    .plan-tab .plan-menu-btn,
+    #addPlanBtn,
+    .dot-controls, .dot-inputs,
+    .setup-card,
+    .nps-add, .nps-remove,
+    .histo-header,
+    .table-header-row select,
+    .panel-header p,
+    .field-hint,
+    .fixed-pay-note,
+    .shortcuts-overlay { display:none !important; }
+    /* NPS attainment numbers as plain text */
+    .nps-attainment-val { border:0 !important; background:transparent !important; padding:0 !important; width:auto !important; appearance:none; -webkit-appearance:none; -moz-appearance:textfield; }
+    /* Soft shadows / tall borders look bad on paper */
+    .panel, .setup-card { box-shadow:none !important; border-color:#cbd5e1 !important; }
+    /* Single-column workspace so the chart doesn't squeeze the summary */
+    .workspace { grid-template-columns:1fr !important; gap:6mm !important; }
+    .lower-grid { gap:6mm !important; }
+    /* Avoid section page-breaks where possible */
+    .panel { break-inside:avoid; page-break-inside:avoid; margin-bottom:6mm; }
+    /* Tables: drop sticky/scroll containers that don't translate to paper */
+    .table-wrap { max-height:none !important; overflow:visible !important; }
+    th { position:static !important; }
+    /* Constrain canvas heights so a single quarter fits roughly on a page */
+    #curve { max-height:90mm !important; }
+    #histoCanvas { max-height:55mm !important; }
+    /* Keep tabs visible for context but compact */
+    .plan-tabs-wrap { gap:6px; }
+    .plan-tab { padding:4px 8px; font-size:.7rem; }
+    /* Keep colored plan dots visible (browsers usually strip backgrounds when printing) */
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
 </style>
 </head>
 <body>
@@ -255,6 +407,9 @@
       <button class="btn" onclick="downloadSample()">Download sample</button>
       <button class="btn" onclick="exportAllPlans()" title="Download all plans as JSON">Export plans</button>
       <button class="btn" onclick="document.getElementById('plansImportInput').click()" title="Replace plans from a JSON file">Import plans</button>
+      <button class="btn btn-print" onclick="printView()" title="Open a clean print / save-as-PDF view (Shortcut: P)">Print / PDF</button>
+      <button id="themeToggleBtn" class="btn btn-icon" onclick="toggleTheme()" title="Toggle dark mode (Shortcut: D)" aria-label="Toggle dark mode">Dark</button>
+      <button class="btn btn-icon" onclick="showShortcutsHelp()" title="Keyboard shortcuts (Shortcut: ?)" aria-label="Show keyboard shortcuts">?</button>
       <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
       <input type="file" id="appendInput" accept=".txt,.csv,.json" onchange="uploadData(event, true)" style="display:none">
       <input type="file" id="plansImportInput" accept=".json" onchange="importAllPlans(event)" style="display:none">
@@ -778,10 +933,36 @@ function updateUI() {
   updateQuarterOptions();
 }
 
+// Parse common quarter labels into a [year, quarter] sort key.
+// Supported: "Q125", "Q12025", "Q1 2025", "Q1-FY26", "Q1-2026", "2026Q1", "2025-Q1".
+// Anything else falls back to the end of the list (sorted by string).
+function quarterSortKey(raw) {
+  const s = String(raw || '').trim();
+  let m;
+  if ((m = /^Q(\d)(\d{2})$/i.exec(s)))            { return [2000 + parseInt(m[2],10), parseInt(m[1],10), s]; }
+  if ((m = /^Q(\d)(\d{4})$/i.exec(s)))            { return [parseInt(m[2],10),         parseInt(m[1],10), s]; }
+  if ((m = /^Q(\d)[\s\-_]*(?:FY)?(\d{2,4})$/i.exec(s))) {
+    let y = parseInt(m[2],10); if (y < 100) y += 2000;
+    return [y, parseInt(m[1],10), s];
+  }
+  if ((m = /^(\d{2,4})[\s\-_]*Q(\d)$/i.exec(s)))  {
+    let y = parseInt(m[1],10); if (y < 100) y += 2000;
+    return [y, parseInt(m[2],10), s];
+  }
+  return [Number.MAX_SAFE_INTEGER, 0, s];
+}
+
+function compareQuarters(a, b) {
+  const ka = quarterSortKey(a), kb = quarterSortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  if (ka[1] !== kb[1]) return ka[1] - kb[1];
+  return ka[2].localeCompare(kb[2]);
+}
+
 function updateQuarterOptions() {
   const sel = document.getElementById('quarterSelect');
   const cur = sel.value;
-  const quarters = [...new Set(quarterlyData.map(d=>d.quarter))].sort();
+  const quarters = [...new Set(quarterlyData.map(d=>d.quarter))].sort(compareQuarters);
   if (!quarters.length) return;
   sel.innerHTML = quarters.map(q=>`<option value="${q}">${q}</option>`).join('');
   if (quarters.includes(cur)) sel.value = cur;
@@ -852,50 +1033,90 @@ function displayBasePayForPlan(plan, mode) {
   return plan.basePay * w;
 }
 
+// ── Theme-aware chart palette ──
+// Returns colors used by the canvas drawing code so it stays legible in dark mode.
+function chartColors() {
+  const dark = document.body.classList.contains('dark-theme');
+  return dark ? {
+    canvasBg:     '#0f172a',
+    gridMajor:    'rgba(255,255,255,0.10)',
+    gridMinor:    'rgba(255,255,255,0.04)',
+    gridSoft:     'rgba(255,255,255,0.06)',
+    axis:         '#94a3b8',
+    textStrong:   '#e2e8f0',
+    textMuted:    '#cbd5e1',
+    textOverlay:  '#f1f5f9',
+    pointOutline: '#0f172a',
+    tooltipBg:    'rgba(15,23,42,0.94)',
+    tooltipBd:    'rgba(165,180,252,0.45)',
+    legendBg:     'rgba(20,30,48,0.92)',
+    legendBd:     'rgba(255,255,255,0.14)',
+    refLine:      'rgba(165,180,252,0.55)',
+    barEmptyFill: 'rgba(255,255,255,0.04)',
+  } : {
+    canvasBg:     '#ffffff',
+    gridMajor:    'rgba(0,0,0,0.10)',
+    gridMinor:    'rgba(0,0,0,0.04)',
+    gridSoft:     'rgba(0,0,0,0.06)',
+    axis:         '#64748b',
+    textStrong:   '#1e293b',
+    textMuted:    '#334155',
+    textOverlay:  '#172033',
+    pointOutline: '#ffffff',
+    tooltipBg:    'rgba(255,255,255,0.92)',
+    tooltipBd:    'rgba(15,23,42,0.12)',
+    legendBg:     'rgba(255,255,255,0.92)',
+    legendBd:     'rgba(15,23,42,0.12)',
+    refLine:      'rgba(99,102,241,0.4)',
+    barEmptyFill: 'rgba(0,0,0,0.02)',
+  };
+}
+
 // ── Draw Curve ──
 function drawCurve() {
+  const cc = chartColors();
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=cc.canvasBg; ctx.fillRect(0,0,W,H);
 
   // Grid
   for(let i=0;i<=MAX_X;i+=5) {
     const sx = PAD.l+(i/MAX_X)*PW;
-    ctx.strokeStyle = i%10===0 ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.04)';
+    ctx.strokeStyle = i%10===0 ? cc.gridMajor : cc.gridMinor;
     ctx.lineWidth = i%10===0 ? 1 : 0.5;
     ctx.beginPath(); ctx.moveTo(sx,PAD.t); ctx.lineTo(sx,PAD.t+PH); ctx.stroke();
   }
   for(let i=0;i<=MAX_Y;i+=10) {
     const sy = PAD.t+PH-(i/MAX_Y)*PH;
-    ctx.strokeStyle=i%50===0?'rgba(0,0,0,0.10)':'rgba(0,0,0,0.04)';
+    ctx.strokeStyle=i%50===0?cc.gridMajor:cc.gridMinor;
     ctx.lineWidth=i%50===0?1:0.5;
     ctx.beginPath(); ctx.moveTo(PAD.l,sy); ctx.lineTo(PAD.l+PW,sy); ctx.stroke();
   }
 
   // Axes
-  ctx.strokeStyle='#64748b'; ctx.lineWidth=2;
+  ctx.strokeStyle=cc.axis; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH); ctx.stroke();
 
   // X labels
   ctx.textAlign='center';
   for(let i=0;i<=MAX_X;i+=50) {
     const sx = PAD.l+(i/MAX_X)*PW;
-    ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui';
+    ctx.fillStyle=cc.textMuted; ctx.font='bold 12px system-ui';
     ctx.fillText(i+'%',sx,PAD.t+PH+22);
-    ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5;
+    ctx.strokeStyle=cc.axis; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(sx,PAD.t+PH); ctx.lineTo(sx,PAD.t+PH+8); ctx.stroke();
   }
   ctx.save(); ctx.translate(10,PAD.t+PH/2); ctx.rotate(-Math.PI/2);
-  ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+  ctx.fillStyle=cc.textMuted; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
   ctx.fillText('Payout %',0,0); ctx.restore();
   ctx.textAlign='right';
   for(let i=0;i<=MAX_Y;i+=50) {
     const sy = PAD.t+PH-(i/MAX_Y)*PH;
-    ctx.fillStyle='#334155'; ctx.font='bold 11px system-ui';
+    ctx.fillStyle=cc.textMuted; ctx.font='bold 11px system-ui';
     ctx.fillText(i+'%',PAD.l-8,sy+5);
   }
 
   // 100% reference
-  ctx.strokeStyle='rgba(99,102,241,0.4)'; ctx.setLineDash([6,6]); ctx.lineWidth=2;
+  ctx.strokeStyle=cc.refLine; ctx.setLineDash([6,6]); ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(PAD.l+(100/MAX_X)*PW,PAD.t); ctx.lineTo(PAD.l+(100/MAX_X)*PW,PAD.t+PH); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+PH-(100/MAX_Y)*PH); ctx.lineTo(PAD.l+PW,PAD.t+PH-(100/MAX_Y)*PH); ctx.stroke();
   ctx.setLineDash([]);
@@ -917,7 +1138,7 @@ function drawCurve() {
         const s = toScreen(p);
         ctx.fillStyle = plan.color;
         ctx.beginPath(); ctx.arc(s.x, s.y, isBaseline ? 4.5 : 3.5, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.strokeStyle = chartColors().pointOutline; ctx.lineWidth = 1.5; ctx.stroke();
       });
       if (showTRx) drawMini(plan.trxPoints);
       if (showNRx) drawMini(plan.nrxPoints);
@@ -935,6 +1156,7 @@ function drawCurve() {
 }
 
 function drawCompareLegend() {
+  const cc = chartColors();
   const padX = 12, padY = 10, lineH = 16;
   const items = plans.map(p => ({label: p.name + (p.id === baselinePlanId ? ' ★' : ''), color: p.color}));
   ctx.font = 'bold 11px system-ui';
@@ -942,14 +1164,14 @@ function drawCompareLegend() {
   const boxW = Math.max(...widths) + 30;
   const boxH = padY * 2 + items.length * lineH;
   const x = PAD.l + 8, y = PAD.t + 8;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.strokeStyle = 'rgba(15,23,42,0.12)'; ctx.lineWidth = 1;
+  ctx.fillStyle = cc.legendBg;
+  ctx.strokeStyle = cc.legendBd; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.rect(x, y, boxW, boxH); ctx.fill(); ctx.stroke();
   items.forEach((it, i) => {
     const ly = y + padY + i * lineH + 8;
     ctx.fillStyle = it.color;
     ctx.beginPath(); ctx.arc(x + padX, ly - 3, 4.5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#172033'; ctx.textAlign = 'left';
+    ctx.fillStyle = cc.textOverlay; ctx.textAlign = 'left';
     ctx.fillText(it.label, x + padX + 11, ly);
   });
 }
@@ -988,6 +1210,7 @@ function drawSlopes(pts, color) {
 }
 
 function drawDots(pts, color, label) {
+  const cc = chartColors();
   pts.forEach((p,i) => {
     const s = toScreen(p);
     const isDrag = draggingSet === (color==='#6366f1'?'trx':'nrx') && i === dragging;
@@ -999,8 +1222,8 @@ function drawDots(pts, color, label) {
     ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
     ctx.fillStyle=isDrag?'#d97706':color;
     ctx.beginPath(); ctx.arc(s.x,s.y,9,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle='#1e293b'; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
+    ctx.strokeStyle=cc.pointOutline; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle=cc.textOverlay; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
     ctx.fillText(label+': '+p.x+'%, '+Math.round(p.y)+'%',s.x,s.y-18);
   });
 }
@@ -1162,7 +1385,8 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
   canvasEl.style.height = height + 'px';
   ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx2.clearRect(0,0,width,height);
-  ctx2.fillStyle = '#fff'; ctx2.fillRect(0,0,width,height);
+  const cc = chartColors();
+  ctx2.fillStyle = cc.canvasBg; ctx2.fillRect(0,0,width,height);
 
   const PAD = opts.compact ? HPAD_MULTI : HPAD;
   const PW2 = width - PAD.l - PAD.r;
@@ -1173,16 +1397,16 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
   const numBuckets = range.numBuckets;
 
   // Grid
-  ctx2.strokeStyle = 'rgba(0,0,0,0.06)'; ctx2.lineWidth = 0.5;
+  ctx2.strokeStyle = cc.gridSoft; ctx2.lineWidth = 0.5;
   for (let i = 0; i <= maxCount; i += yTicks) {
     const sy = PAD.t + PH2 - (i / maxCount) * PH2;
     ctx2.beginPath(); ctx2.moveTo(PAD.l, sy); ctx2.lineTo(PAD.l + PW2, sy); ctx2.stroke();
   }
   // Axes
-  ctx2.strokeStyle = '#64748b'; ctx2.lineWidth = 1.5;
+  ctx2.strokeStyle = cc.axis; ctx2.lineWidth = 1.5;
   ctx2.beginPath(); ctx2.moveTo(PAD.l, PAD.t); ctx2.lineTo(PAD.l, PAD.t + PH2); ctx2.lineTo(PAD.l + PW2, PAD.t + PH2); ctx2.stroke();
   // Y labels
-  ctx2.fillStyle = '#334155'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'right';
+  ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'right';
   for (let i = 0; i <= maxCount; i += yTicks) {
     const sy = PAD.t + PH2 - (i / maxCount) * PH2;
     ctx2.fillText(i, PAD.l - 8, sy + 5);
@@ -1190,16 +1414,16 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
   // X labels
   const labelAngle = numBuckets > 8 ? -Math.PI/3 : -0.5;
   const labelFont = numBuckets > 12 ? '7px system-ui' : '8px system-ui';
-  ctx2.fillStyle = '#334155'; ctx2.font = labelFont; ctx2.textAlign = 'right';
+  ctx2.fillStyle = cc.textMuted; ctx2.font = labelFont; ctx2.textAlign = 'right';
   const bars = [];
   for (let i = 0; i < numBuckets; i++) {
     const b = buckets[i], barW = PW2 / numBuckets, sx = PAD.l + i * barW;
     const barH = (b.count / maxCount) * PH2, sy = PAD.t + PH2 - barH;
     const hue = opts.color ? null : (240 - ((b.lo - range.rangeMin) / (range.rangeMax - range.rangeMin || 1)) * 120);
     if (opts.color) {
-      ctx2.fillStyle = b.count > 0 ? hexToRgba(opts.color, 0.7) : 'rgba(0,0,0,0.02)';
+      ctx2.fillStyle = b.count > 0 ? hexToRgba(opts.color, 0.7) : cc.barEmptyFill;
     } else {
-      ctx2.fillStyle = b.count > 0 ? `hsla(${hue},70%,55%,0.75)` : 'rgba(0,0,0,0.02)';
+      ctx2.fillStyle = b.count > 0 ? `hsla(${hue},70%,55%,0.75)` : cc.barEmptyFill;
     }
     ctx2.fillRect(sx + 1, sy, barW - 2, barH);
     if (b.count > 0) {
@@ -1211,7 +1435,7 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
     ctx2.save();
     ctx2.translate(sx + barW/2, PAD.t + PH2 + (opts.compact ? 14 : 20));
     ctx2.rotate(labelAngle);
-    ctx2.fillStyle = '#334155'; ctx2.textAlign = 'right';
+    ctx2.fillStyle = cc.textMuted; ctx2.textAlign = 'right';
     const loLabel = numBuckets <= 10 ? Math.round(b.lo) : b.lo.toFixed(1);
     const hiLabel = numBuckets <= 10 ? Math.round(b.hi) : b.hi.toFixed(1);
     ctx2.fillText(loLabel + '-' + hiLabel + '%', 0, 0);
@@ -1219,17 +1443,17 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
   }
   // Axis titles (skip in compact mode to save space)
   if (!opts.compact) {
-    ctx2.fillStyle = '#475569'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
     ctx2.fillText('% Payout', PAD.l + PW2/2, PAD.t + PH2 + 36);
     ctx2.save();
     ctx2.translate(8, PAD.t + PH2/2);
     ctx2.rotate(-Math.PI/2);
-    ctx2.fillStyle = '#475569'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
     ctx2.fillText('# Territories', 0, 0);
     ctx2.restore();
   }
   // Count labels
-  ctx2.fillStyle = '#1e293b'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+  ctx2.fillStyle = cc.textStrong; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
   for (let i = 0; i < numBuckets; i++) {
     const b = buckets[i];
     if (b.count > 0) {
@@ -1306,7 +1530,7 @@ function attachHistoMouseHandler(c) {
       histoTip.style.left = (e.clientX - areaRect.left + 12) + 'px';
       histoTip.style.top  = (e.clientY - areaRect.top - 10) + 'px';
       const names = hit.territories.length > 12 ? hit.territories.slice(0,12).join(', ') + '...' : hit.territories.join(', ');
-      const planLabel = hit.planName ? `<b style="color:#475569">${escapeHtml(hit.planName)}</b><br>` : '';
+      const planLabel = hit.planName ? `<b style="color:#cbd5e1">${escapeHtml(hit.planName)}</b><br>` : '';
       histoTip.innerHTML = `${planLabel}<b>${Math.round(hit.lo)}-${Math.round(hit.hi)}%</b> (${hit.count})<br>${names}`;
     } else {
       histoTip.style.display = 'none';
@@ -1638,8 +1862,8 @@ function renderCompareMode(qData, quarter) {
   orderedPlanStats.forEach(ps => {
     const isBl = ps.plan.id === baseline.id;
     const star = isBl ? ' ★' : '';
-    theadHTML += `<th style="color:${ps.plan.color}">${escapeHtml(ps.plan.name)}${star}<br><span style="font-size:.6rem;font-weight:600;color:#94a3b8">%Pay / Pay</span></th>`;
-    if (!isBl) theadHTML += `<th style="color:#64748b">Δ vs ${escapeHtml(baseline.name)}</th>`;
+    theadHTML += `<th style="color:${ps.plan.color}">${escapeHtml(ps.plan.name)}${star}<br><span style="font-size:.6rem;font-weight:600;color:var(--muted)">%Pay / Pay</span></th>`;
+    if (!isBl) theadHTML += `<th style="color:var(--muted)">Δ vs ${escapeHtml(baseline.name)}</th>`;
   });
   theadHTML += `</tr>`;
   document.getElementById('thead').innerHTML = theadHTML;
@@ -1651,7 +1875,7 @@ function renderCompareMode(qData, quarter) {
       const r = cr.plansData[ps.plan.id];
       const blR = cr.plansData[baseline.id];
       const isBl = ps.plan.id === baseline.id;
-      html += `<td><div style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</div><div style="font-size:.66rem;color:#475569">$${r.displayPayout.toFixed(0)}</div></td>`;
+      html += `<td><div style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</div><div style="font-size:.66rem;color:var(--muted)">$${r.displayPayout.toFixed(0)}</div></td>`;
       if (!isBl) {
         const dPay = r.displayPayout - blR.displayPayout;
         const cls = dPay > 0.5 ? 'up' : dPay < -0.5 ? 'down' : 'zero';
@@ -1827,8 +2051,153 @@ function importAllPlans(event) {
   reader.readAsText(file);
 }
 
+// ── Theme (light / dark) ──
+const THEME_KEY = 'payout.theme';
+
+function applyTheme(theme, redraw) {
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', dark);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) {
+    btn.textContent = dark ? 'Light' : 'Dark';
+    btn.setAttribute('title', (dark ? 'Switch to light mode' : 'Switch to dark mode') + ' (Shortcut: D)');
+    btn.setAttribute('aria-pressed', String(dark));
+  }
+  // Re-render anything drawn on canvas so axis/text colors pick up the new theme.
+  // Skip on first paint (initTheme) because bootApp() will draw right after with the right class.
+  if (redraw) {
+    if (typeof drawCurve === 'function')     { try { drawCurve(); }     catch (e) {} }
+    if (typeof drawHistogram === 'function') { try { drawHistogram(); } catch (e) {} }
+  }
+}
+
+function toggleTheme() {
+  const next = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  applyTheme(next, true);
+}
+
+function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+  const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(theme, false);
+}
+
+// ── Print / PDF view ──
+function printView() {
+  // Tiny delay so any in-flight UI re-render finishes before the print preview opens.
+  setTimeout(() => { try { window.print(); } catch (e) { alert('Could not open the print dialog: ' + e.message); } }, 30);
+}
+
+// Force canvases to redraw in light colors during print, then restore on return.
+// (Print CSS resets variables, but canvas pixels were drawn with the previous theme.)
+window.addEventListener('beforeprint', () => {
+  if (document.body.classList.contains('dark-theme')) {
+    document.body.classList.add('print-was-dark');
+    document.body.classList.remove('dark-theme');
+  }
+  try { drawCurve(); } catch (e) {}
+  try { drawHistogram(); } catch (e) {}
+});
+window.addEventListener('afterprint', () => {
+  if (document.body.classList.contains('print-was-dark')) {
+    document.body.classList.remove('print-was-dark');
+    document.body.classList.add('dark-theme');
+    try { drawCurve(); } catch (e) {}
+    try { drawHistogram(); } catch (e) {}
+  }
+});
+
+// ── Keyboard shortcuts ──
+function showShortcutsHelp() {
+  const o = document.getElementById('shortcutsOverlay');
+  if (o) { o.hidden = false; const c = o.querySelector('.shortcuts-close'); if (c) c.focus(); }
+}
+function hideShortcutsHelp() {
+  const o = document.getElementById('shortcutsOverlay');
+  if (o) o.hidden = true;
+}
+
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return !!el.isContentEditable;
+}
+
+function handleShortcut(e) {
+  // Esc always closes the help overlay even from inputs
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('shortcutsOverlay');
+    if (overlay && !overlay.hidden) { hideShortcutsHelp(); e.preventDefault(); return; }
+  }
+  if (isTypingTarget(e.target)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return; // don't shadow browser shortcuts
+  const k = e.key;
+  const lower = k.length === 1 ? k.toLowerCase() : k;
+  // Plan switching: 1..9 (capped at how many plans exist)
+  if (/^[1-9]$/.test(k)) {
+    const idx = parseInt(k, 10) - 1;
+    if (Array.isArray(plans) && idx < plans.length) {
+      activePlanId = plans[idx].id;
+      try { savePlans(); } catch (err) {}
+      try { updateUI(); } catch (err) {}
+      e.preventDefault();
+    }
+    return;
+  }
+  switch (lower) {
+    case 't': try { setComponent('trx'); } catch (err) {} e.preventDefault(); break;
+    case 'n': try { setComponent('nrx'); } catch (err) {} e.preventDefault(); break;
+    case 'c': try { setComponent('combined'); } catch (err) {} e.preventDefault(); break;
+    case 'e': try { toggleCompare(); } catch (err) {} e.preventDefault(); break;
+    case 'd': toggleTheme(); e.preventDefault(); break;
+    case 'p': printView(); e.preventDefault(); break;
+    case '?': showShortcutsHelp(); e.preventDefault(); break;
+  }
+}
+document.addEventListener('keydown', handleShortcut);
+// Close help when the overlay backdrop is clicked.
+document.addEventListener('click', (e) => {
+  const overlay = document.getElementById('shortcutsOverlay');
+  if (overlay && !overlay.hidden && e.target === overlay) hideShortcutsHelp();
+});
+
 // ── Initial sync setup (runs before fetch resolves) ──
+initTheme();
 bootApp();
 </script>
+
+<!-- Keyboard shortcuts overlay (hidden by default) -->
+<div id="shortcutsOverlay" class="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle" hidden>
+  <div class="shortcuts-modal" role="document">
+    <div class="shortcuts-modal-head">
+      <h3 id="shortcutsTitle">Keyboard shortcuts</h3>
+      <button class="shortcuts-close" onclick="hideShortcutsHelp()" aria-label="Close">&times;</button>
+    </div>
+    <div class="shortcuts-grid">
+      <div class="kbd-group">
+        <h4>Plans</h4>
+        <div class="kbd-row"><span><kbd>1</kbd>&nbsp;<kbd>2</kbd>&nbsp;<kbd>3</kbd>&nbsp;<kbd>4</kbd>&nbsp;<kbd>5</kbd></span><span>Switch to plan A&ndash;E</span></div>
+        <div class="kbd-row"><span><kbd>E</kbd></span><span>Toggle compare mode</span></div>
+      </div>
+      <div class="kbd-group">
+        <h4>View</h4>
+        <div class="kbd-row"><span><kbd>T</kbd></span><span>TRx component</span></div>
+        <div class="kbd-row"><span><kbd>N</kbd></span><span>NRx component</span></div>
+        <div class="kbd-row"><span><kbd>C</kbd></span><span>Combined component</span></div>
+        <div class="kbd-row"><span><kbd>D</kbd></span><span>Toggle dark mode</span></div>
+        <div class="kbd-row"><span><kbd>P</kbd></span><span>Print / PDF view</span></div>
+      </div>
+      <div class="kbd-group">
+        <h4>Help</h4>
+        <div class="kbd-row"><span><kbd>?</kbd></span><span>Show this help</span></div>
+        <div class="kbd-row"><span><kbd>Esc</kbd></span><span>Close help</span></div>
+      </div>
+    </div>
+    <p class="shortcuts-hint">Shortcuts are ignored while typing in any input field.</p>
+  </div>
+</div>
 </body>
 </html>
