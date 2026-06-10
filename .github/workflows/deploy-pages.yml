@@ -28,8 +28,18 @@ jobs:
       - name: Validate static site inputs
         run: |
           test -s index.html
+          test -s national-summary.css
+          test -s national-summary.js
           python -m json.tool territories.json > /dev/null
           grep -Fq "fetch('./territories.json')" index.html
+          grep -Fq "typeof renderNationalSummaries === 'function'" index.html
+          python - <<'PY'
+          from pathlib import Path
+          page = Path("index.html").read_text()
+          inline_end = page.rfind("</script>", 0, page.rfind('<script src="./national-summary.js"></script>'))
+          extension = page.rfind('<script src="./national-summary.js"></script>')
+          assert inline_end != -1 and inline_end < extension, "national summary must load after the core app"
+          PY
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -37,7 +47,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site
-          cp index.html territories.json _site/
+          cp index.html national-summary.css national-summary.js territories.json _site/
           touch _site/.nojekyll
 
       - name: Upload GitHub Pages artifact
