@@ -164,6 +164,10 @@
   body.compare-mode .dot-controls,
   body.compare-mode .dot-inputs { display:none !important; }
   body.compare-mode #curve { cursor:default; }
+  /* In compare mode the summary panel needs more room for multiple plan cards,
+     so stack chart on top and summary below at full width. */
+  body.compare-mode .workspace { grid-template-columns:1fr; }
+  body.compare-mode .summary-panel .summary-multi { overflow-x:auto; }
 
   /* Per-plan NPS blocks (compare mode) */
   .nps-plan-block { margin-top:14px; padding-top:14px; border-top:1px dashed #e5e7eb; }
@@ -172,10 +176,35 @@
   .nps-plan-title .nps-plan-color { width:11px; height:11px; border-radius:50%; }
   .nps-plan-title .nps-plan-baseline { color:#f59e0b; font-size:.85rem; }
 
+  /* Compare-mode summary: one table, labels on left, one column per plan */
+  .summary.compare-summary { padding:14px 18px 16px; }
+  .compare-summary-table-wrap { overflow-x:auto; }
+  .compare-summary-table { width:100%; border-collapse:collapse; font-size:.72rem; }
+  .compare-summary-table thead th { background:#f8fafc; color:#4f46e5; font-size:.66rem; font-weight:800; text-align:right; padding:9px 10px; border-bottom:2px solid #e6ebf2; white-space:nowrap; }
+  .compare-summary-table thead th.metric-col { text-align:left; color:#475569; }
+  .compare-summary-table tbody th { background:#fff; text-align:left; color:#475569; font-weight:700; padding:7px 10px; border-bottom:1px solid #f0f3f7; white-space:nowrap; font-size:.7rem; position:sticky; left:0; z-index:1; }
+  .compare-summary-table tbody td { text-align:right; color:#172033; font-weight:700; padding:7px 10px; border-bottom:1px solid #f0f3f7; white-space:nowrap; font-size:.72rem; }
+  .compare-summary-table tbody tr:last-child th, .compare-summary-table tbody tr:last-child td { border-bottom:0; }
+  .compare-summary-table thead th.baseline-col { background:#fef3c7; }
+  .compare-summary-table tbody td.baseline-col { background:#fffbeb; }
+  .compare-summary-table .delta-row th { font-weight:600; font-style:italic; color:#94a3b8; font-size:.65rem; padding-left:22px; padding-top:3px; padding-bottom:7px; }
+  .compare-summary-table .delta-row td { font-size:.66rem; color:#64748b; font-weight:700; padding-top:3px; padding-bottom:7px; }
+  .compare-summary-table .delta-row td.up { color:var(--red); }
+  .compare-summary-table .delta-row td.down { color:var(--green); }
+  .compare-summary-table .delta-row td.zero { color:#94a3b8; }
+  .compare-summary-table .plan-col-header { display:inline-flex; align-items:center; gap:6px; }
+  .compare-summary-table .plan-col-header .card-color-dot { width:9px; height:9px; border-radius:50%; }
+  .compare-summary-table .baseline-mark { color:#f59e0b; }
+  .compare-summary-table .val-warn { color:#d97706; }
+  .compare-summary-table .val-bad { color:var(--red); }
+  .compare-summary-table .val-good { color:var(--green); }
+
   .summary-multi { display:grid; gap:14px; padding:16px 18px; }
-  .summary-multi.cols-2 { grid-template-columns:1fr 1fr; }
-  .summary-multi.cols-3 { grid-template-columns:repeat(3,1fr); }
-  .summary-card { border:1px solid var(--border); border-radius:9px; padding:12px 13px; background:var(--surface-soft); }
+  .summary-multi.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .summary-multi.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .summary-multi.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .summary-multi.cols-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .summary-card { min-width:0; border:1px solid var(--border); border-radius:9px; padding:12px 13px; background:var(--surface-soft); }
   .summary-card.baseline { background:#fffbeb; border-color:#fde68a; }
   .summary-card h4 { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:800; margin-bottom:9px; color:#172033; }
   .summary-card .card-color-dot { display:inline-block; width:9px; height:9px; border-radius:50%; }
@@ -188,9 +217,11 @@
   .summary-card .delta-line .delta-val.down { color:var(--green); }
 
   .histo-multiples { display:grid; gap:14px; }
-  .histo-multiples.cols-2 { grid-template-columns:1fr 1fr; }
-  .histo-multiples.cols-3 { grid-template-columns:repeat(3,1fr); }
-  .histo-multiple { display:flex; flex-direction:column; gap:6px; }
+  .histo-multiples.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .histo-multiples.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .histo-multiples.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .histo-multiples.cols-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .histo-multiple { min-width:0; display:flex; flex-direction:column; gap:6px; }
   .histo-multiple-title { display:flex; align-items:center; gap:6px; font-size:.7rem; font-weight:800; color:#334155; }
   .histo-multiple-title .mini-dot { width:8px; height:8px; border-radius:50%; }
   .histo-multiple-title .baseline-mark { color:#f59e0b; }
@@ -202,8 +233,10 @@
   .delta-cell.zero { color:#94a3b8; }
 
   @media (max-width:900px) {
-    .summary-multi.cols-3, .summary-multi.cols-2 { grid-template-columns:1fr; }
-    .histo-multiples.cols-3, .histo-multiples.cols-2 { grid-template-columns:1fr; }
+    .summary-multi.cols-2, .summary-multi.cols-3,
+    .summary-multi.cols-4, .summary-multi.cols-5 { grid-template-columns:1fr; }
+    .histo-multiples.cols-2, .histo-multiples.cols-3,
+    .histo-multiples.cols-4, .histo-multiples.cols-5 { grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -343,8 +376,8 @@ const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
 const DEFAULT_BASE_PAY_Q = BASE_ANNUAL / 4;
 const STORAGE_KEY = 'pharma-payout-plans-v1';
-const MAX_PLANS = 3;
-const PLAN_COLORS = ['#6366f1', '#0ea5e9', '#f59e0b'];
+const MAX_PLANS = 5;
+const PLAN_COLORS = ['#6366f1', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899'];
 
 // ── Plans data model ──
 // Each plan: { id, name, color, trxPoints, nrxPoints, trxWeight, nrxWeight, basePay }
@@ -1449,7 +1482,7 @@ function renderSingleMode(qData, quarter) {
   const plan = getActivePlan();
   // Reset multi-plan classes if switching back from compare mode
   const summaryEl = document.getElementById('summary');
-  summaryEl.classList.remove('summary-multi', 'cols-2', 'cols-3');
+  summaryEl.classList.remove('summary-multi', 'cols-2', 'cols-3', 'cols-4', 'cols-5', 'compare-summary');
   // Keep DOM inputs in sync with active plan in case plan was loaded from storage
   if (Number(document.getElementById('basePay').value) !== plan.basePay) {
     document.getElementById('basePay').value = plan.basePay;
@@ -1527,34 +1560,60 @@ function renderCompareMode(qData, quarter) {
   const baseline = getBaselinePlan();
   const baselineStats = planStats.find(s => s.plan.id === baseline.id) || planStats[0];
 
-  // ── Multi-plan summary cards ──
+  // ── Multi-plan summary: single comparison table (labels once on left, one column per plan) ──
   const summaryEl = document.getElementById('summary');
-  summaryEl.classList.add('summary-multi', 'cols-' + plans.length);
-  summaryEl.innerHTML = planStats.map(s => {
-    const p = s.plan;
-    const isBaseline = p.id === baseline.id;
-    const deltaTotal = s.totalPayout - baselineStats.totalPayout;
-    const deltaUtil = s.utilization - baselineStats.utilization;
-    const deltaCls = (v) => v > 0 ? 'up' : v < 0 ? 'down' : '';
-    return `
-    <div class="summary-card ${isBaseline ? 'baseline' : ''}">
-      <h4><span class="card-color-dot" style="background:${p.color}"></span>${escapeHtml(p.name)}${isBaseline?' <span class="baseline-mark" title="Baseline">★</span>':''}</h4>
-      <div class="stat-row"><span>Base / person</span><span class="val">$${s.displayBasePay.toLocaleString()}</span></div>
-      <div class="stat-row"><span>Headcount</span><span class="val">${s.headcount}</span></div>
-      <div class="stat-row"><span>Total payout</span><span class="val ${s.totalOver>0?'warn':''}">$${Math.round(s.totalPayout).toLocaleString()}</span></div>
-      <div class="stat-row"><span>Over/Under</span><span class="val ${s.totalOver>0?'bad':'good'}">${s.totalOver>=0?'+':''}$${Math.round(s.totalOver).toLocaleString()}</span></div>
-      <div class="stat-row"><span>Utilization</span><span class="val">${s.utilization.toFixed(1)}%</span></div>
-      <div class="stat-row"><span>Avg / Max / Min</span><span class="val">$${s.avgPay.toFixed(0)} / $${s.maxPay.toFixed(0)} / $${s.minPay.toFixed(0)}</span></div>
-      <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${s.engaged}/${s.headcount}</span></div>
-      <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${s.meaningfulPct.toFixed(1)}%</span></div>
-      ${!isBaseline ? `
-      <div class="delta-line">
-        vs baseline (${escapeHtml(baseline.name)}):
-        <span class="delta-val ${deltaCls(deltaTotal)}">${deltaTotal>=0?'+':''}$${Math.round(deltaTotal).toLocaleString()}</span> total &nbsp;
-        <span class="delta-val ${deltaCls(deltaUtil)}">${deltaUtil>=0?'+':''}${deltaUtil.toFixed(1)}pp</span> util
-      </div>` : `<div class="delta-line">Baseline plan</div>`}
-    </div>`;
+  summaryEl.classList.add('compare-summary');
+  const orderedForSummary = [baselineStats, ...planStats.filter(s => s.plan.id !== baseline.id)];
+
+  const fmtMoney = (n) => '$' + Math.round(n).toLocaleString();
+  const fmtMoneySigned = (n) => (n>=0?'+':'') + '$' + Math.round(n).toLocaleString();
+  const deltaClass = (v, eps) => v > eps ? 'up' : v < -eps ? 'down' : 'zero';
+
+  const headerCells = orderedForSummary.map(s => {
+    const isBl = s.plan.id === baseline.id;
+    return `<th class="${isBl?'baseline-col':''}">
+      <span class="plan-col-header">
+        <span class="card-color-dot" style="background:${s.plan.color}"></span>
+        ${escapeHtml(s.plan.name)}${isBl?' <span class="baseline-mark" title="Baseline">★</span>':''}
+      </span>
+    </th>`;
   }).join('');
+
+  const valRow = (label, valueFn) => `<tr><th>${label}</th>${
+    orderedForSummary.map(s => `<td class="${s.plan.id===baseline.id?'baseline-col':''}">${valueFn(s)}</td>`).join('')
+  }</tr>`;
+
+  const deltaRow = (label, statKey, fmt, eps) => `<tr class="delta-row"><th>${label}</th>${
+    orderedForSummary.map(s => {
+      const isBl = s.plan.id === baseline.id;
+      const d = s[statKey] - baselineStats[statKey];
+      const cls = isBl ? '' : deltaClass(d, eps);
+      const blCls = isBl ? 'baseline-col' : '';
+      return `<td class="${blCls} ${cls}">${isBl?'—':fmt(d)}</td>`;
+    }).join('')
+  }</tr>`;
+
+  summaryEl.innerHTML = `
+    <div class="compare-summary-table-wrap">
+      <table class="compare-summary-table">
+        <thead>
+          <tr><th class="metric-col">Metric</th>${headerCells}</tr>
+        </thead>
+        <tbody>
+          ${valRow('Base / person', s => '$' + s.displayBasePay.toLocaleString())}
+          ${valRow('Headcount', s => s.headcount)}
+          ${valRow('Total payout', s => `<span class="${s.totalOver>0?'val-warn':''}">${fmtMoney(s.totalPayout)}</span>`)}
+          ${deltaRow('vs baseline', 'totalPayout', d => fmtMoneySigned(d), 0.5)}
+          ${valRow('Over / Under', s => `<span class="${s.totalOver>0?'val-bad':'val-good'}">${s.totalOver>=0?'+':''}${fmtMoney(s.totalOver)}</span>`)}
+          ${valRow('Utilization', s => s.utilization.toFixed(1) + '%')}
+          ${deltaRow('vs baseline', 'utilization', d => (d>=0?'+':'') + d.toFixed(1) + 'pp', 0.05)}
+          ${valRow('Avg / Max / Min', s => `$${s.avgPay.toFixed(0)} / $${s.maxPay.toFixed(0)} / $${s.minPay.toFixed(0)}`)}
+          ${valRow('Engagement (&gt;0%)', s => `${s.engaged}/${s.headcount}`)}
+          ${valRow('Meaningful (&gt;75%)', s => s.meaningfulPct.toFixed(1) + '%')}
+        </tbody>
+      </table>
+    </div>
+  `;
 
   // ── Multi-plan territory table ──
   // Columns: Territory | Att% | (per-plan) %Payout, Pay | Δ vs baseline (per non-baseline plan)
