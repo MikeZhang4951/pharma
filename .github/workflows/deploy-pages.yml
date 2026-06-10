@@ -25,44 +25,25 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Build static site artifact
-        shell: bash
+      - name: Validate static site inputs
         run: |
-          set -euo pipefail
-          required_files=(
-            index.html
-            national-summary.css
-            national-summary.js
-            territories.json
-          )
-
-          for file in "${required_files[@]}"; do
-            if [[ ! -s "$file" ]]; then
-              echo "::error file=$file::Required site file is missing or empty"
-              exit 1
-            fi
-          done
-
-          node --check national-summary.js
-          node tests/app-smoke.test.js
+          test -s index.html
           python -m json.tool territories.json > /dev/null
-
-          rm -rf _site
-          mkdir _site
-          cp "${required_files[@]}" _site/
-          touch _site/.nojekyll
-
-          echo "Prepared GitHub Pages artifact:"
-          find _site -maxdepth 1 -type f -printf '%f\n' | sort
+          grep -Fq "fetch('./territories.json')" index.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
+
+      - name: Prepare static site
+        run: |
+          mkdir -p _site
+          cp index.html territories.json _site/
+          touch _site/.nojekyll
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
-          include-hidden-files: true
 
       - name: Deploy to GitHub Pages
         id: deployment

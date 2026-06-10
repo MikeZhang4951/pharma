@@ -147,7 +147,6 @@
     .level-editor .field { flex:1; }
   }
 </style>
-<link rel="stylesheet" href="./national-summary.css">
 </head>
 <body>
 <div class="app-shell">
@@ -246,7 +245,22 @@
       </section>
     </div>
 
-    <div id="nationalSummaryRoot"></div>
+    <section class="panel national-section" aria-labelledby="nationalSummaryHeading">
+      <div class="panel-header"><div><h2 id="nationalSummaryHeading">Normalized national pay summaries</h2><p>Model national payout at configurable TRx and NRx attainment levels.</p></div></div>
+      <div class="normalization-controls">
+        <p class="normalization-copy"><strong>How normalization works:</strong> current national attainment is calculated as total actual volume ÷ total goal volume. Each territory’s attainment is multiplied by the target-to-current national ratio before its payout curve is applied.</p>
+        <div class="level-editor">
+          <div class="field"><label for="normalizationLevel">Add attainment level</label><div class="input-shell"><input type="number" id="normalizationLevel" value="120" min="0" max="300" step="1" onkeydown="if(event.key==='Enter') addNormalizationLevel()"><span class="suffix">%</span></div></div>
+          <button class="btn" type="button" onclick="addNormalizationLevel()">+ Add level</button>
+        </div>
+      </div>
+      <div class="level-chips" id="normalizationChips"></div>
+      <div class="national-grid">
+        <article class="national-card"><div class="national-card-header"><h3>TRx national pay summary</h3><p id="trxNationalContext"></p></div><div class="national-table-wrap" id="trxNationalSummary"></div></article>
+        <article class="national-card"><div class="national-card-header"><h3>NRx national pay summary</h3><p id="nrxNationalContext"></p></div><div class="national-table-wrap" id="nrxNationalSummary"></div></article>
+        <article class="national-card combined-card"><div class="national-card-header"><h3>Combined national pay summary</h3><p>Mix any TRx normalized level (rows) with any NRx normalized level (columns). Each cell shows total payout and full-plan budget utilization.</p></div><div class="national-table-wrap" id="combinedNationalSummary"></div></article>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -900,19 +914,8 @@ function renderAll() {
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
- 
-  
-  (qData, BASE_Q, trxW, nrxW);
+  renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   drawHistogram();
-  if (typeof renderNationalSummaries === 'function') {
-    try {
-      renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
-    } catch (error) {
-      console.error('National summary could not be rendered:', error);
-      const root = document.getElementById('nationalSummaryRoot');
-      if (root) root.innerHTML = '<section class="panel national-section"><div class="empty-levels">The national summary could not load. The territory table and payout distribution are still available.</div></section>';
-    }
-  }
 }
 
 // ── National normalization summaries ──
@@ -1045,6 +1048,5 @@ function uploadData(event) {
 
 drawCurve(); buildInputs();
 </script>
-<script src="./national-summary.js"></script>
 </body>
 </html>
