@@ -246,6 +246,7 @@
       </section>
     </div>
 
+    <div id="nationalSummaryRoot"></div>
     <section class="panel national-section" aria-labelledby="nationalSummaryHeading">
       <div class="panel-header"><div><h2 id="nationalSummaryHeading">Normalized national pay summaries</h2><p>Model national payout at configurable TRx and NRx attainment levels.</p></div></div>
       <div class="normalization-controls">
@@ -918,6 +919,9 @@ function renderAll() {
 
   renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   drawHistogram();
+  if (typeof renderNationalSummaries === 'function') {
+    renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
+  }
   renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
 }
 

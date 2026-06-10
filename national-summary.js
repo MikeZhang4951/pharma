@@ -219,3 +219,8 @@ function renderNationalSummaries(qData, basePay, trxWeight, nrxWeight) {
 }
 
 mountNationalSummary();
+
+// Re-render if the core data finished loading before this optional extension.
+if (typeof quarterlyData !== 'undefined' && quarterlyData.length && typeof renderAll === 'function') {
+  renderAll();
+}

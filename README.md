@@ -53,6 +53,9 @@ After a successful deployment, the site is available at:
 
 Future pushes to `master` redeploy automatically. The workflow publishes `index.html`, the national summary CSS/JavaScript assets, and `territories.json`, and includes `.nojekyll` in the Pages artifact.
 
+The core application loads before the national-summary extension. If that optional JavaScript asset is unavailable or stale during a deployment, territory data and the main plan summary continue to render.
+The deployment workflow validates only the required static files and their syntax; it does not reject a deployment based on brittle source-text or script-position checks.
+
 ## Input formats
 
 The text/CSV importer requires these fields:
