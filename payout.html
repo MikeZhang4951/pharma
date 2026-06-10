@@ -132,6 +132,12 @@
   .nps-panel .nps-table td:first-child { text-align:left; font-weight:700; color:var(--muted); }
   .nps-panel .nps-table tr:hover td { background:var(--surface-soft); }
   .nps-panel .nps-table .good { color:var(--green); } .nps-panel .nps-table .warn { color:var(--amber); } .nps-panel .nps-table .bad { color:var(--red); }
+  .nps-toolbar { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .nps-toolbar .ghost-btn { border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 12px; border-radius:8px; font-size:.72rem; font-weight:700; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .nps-toolbar .ghost-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+  .nps-toolbar .ghost-btn:focus-visible { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,.18); }
+  body.dark-theme .nps-toolbar .ghost-btn { background:#1c2542; border-color:#334466; color:#e2e8f0; }
+  body.dark-theme .nps-toolbar .ghost-btn:hover { border-color:var(--primary); background:rgba(79,70,229,.18); }
 
   /* Plans bar */
   .plans-bar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); flex-wrap:wrap; }
@@ -371,6 +377,7 @@
     .dot-controls, .dot-inputs,
     .setup-card,
     .nps-add, .nps-remove,
+    .nps-toolbar,
     .histo-header,
     .table-header-row select,
     .panel-header p,
@@ -522,7 +529,15 @@
   </main>
 
   <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
-    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios. In Combined mode, set TRx and NRx attainment separately per column.</p></div></div>
+    <div class="panel-header">
+      <div>
+        <h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2>
+        <p>What-if scenarios. Each column scales the actual per-territory attainments to the entered national average and runs them through the curve, so Min / Max / Avg reflect real spread.</p>
+      </div>
+      <div class="nps-toolbar" role="group" aria-label="National Pay Summary display options">
+        <button id="npsValueModeBtn" class="ghost-btn" type="button" onclick="toggleNpsValueMode()" title="Switch payout rows between dollars and curve %">$ values</button>
+      </div>
+    </div>
     <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
     <div id="npsMulti" style="padding:0 18px 18px"></div>
   </section>
@@ -1604,9 +1619,27 @@ function attachHistoMouseHandler(c) {
 }
 
 let npsAttainments = [{trx:80,nrx:80},{trx:90,nrx:90},{trx:95,nrx:95},{trx:100,nrx:100},{trx:105,nrx:105},{trx:110,nrx:110},{trx:120,nrx:120}];
+// 'dollar'  -> Avg/Min/Max payout rows show $ amounts
+// 'percent' -> Avg/Min/Max payout rows show curve % values
+let npsValueMode = 'dollar';
+const NPS_VALUE_MODE_KEY = 'pharma.npsValueMode.v1';
+try { const v = localStorage.getItem(NPS_VALUE_MODE_KEY); if (v === 'dollar' || v === 'percent') npsValueMode = v; } catch (e) {}
+
 function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});savePlans();renderNPS();}
 function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);savePlans();renderNPS();}}
 function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;savePlans();renderNPS();}
+function toggleNpsValueMode(){
+  npsValueMode = npsValueMode === 'dollar' ? 'percent' : 'dollar';
+  try { localStorage.setItem(NPS_VALUE_MODE_KEY, npsValueMode); } catch (e) {}
+  syncNpsValueModeBtn();
+  renderNPS();
+}
+function syncNpsValueModeBtn(){
+  const btn = document.getElementById('npsValueModeBtn');
+  if (!btn) return;
+  btn.textContent = npsValueMode === 'dollar' ? '$ values' : '% values';
+  btn.setAttribute('aria-pressed', npsValueMode === 'percent' ? 'true' : 'false');
+}
 
 function buildNPSTableInnerHTML(plan, qData) {
   const isComb = componentMode === 'combined';
@@ -1617,41 +1650,108 @@ function buildNPSTableInnerHTML(plan, qData) {
   const B = displayBasePayForPlan(plan, componentMode);
   const N = qData.length;
   const budget = B * N;
-  const payout = (a) => {
-    if (componentMode === 'nrx') return planNrxPct(plan, a.nrx);
-    if (isComb) return planTrxPct(plan, a.trx) * trxW + planNrxPct(plan, a.nrx) * nrxW;
-    return planTrxPct(plan, a.trx);
+  const inPct = npsValueMode === 'percent';
+
+  // Per-territory actual attainments. Scenario columns scale these to the
+  // entered national-average attainment (instead of pretending every territory
+  // hit the same number) so Min / Max / Avg surface real spread.
+  const real = qData.map(d => ({
+    ta: d.trxGoal ? d.trxActual / d.trxGoal * 100 : 0,
+    na: d.nrxGoal ? d.nrxActual / d.nrxGoal * 100 : 0
+  }));
+  const avgTrxActual = real.reduce((s,r)=>s+r.ta, 0) / Math.max(1, N);
+  const avgNrxActual = real.reduce((s,r)=>s+r.na, 0) / Math.max(1, N);
+
+  // Curve payout % for a (ta, na) pair, respecting current component mode.
+  const payPct = (ta, na) => {
+    if (componentMode === 'nrx') return planNrxPct(plan, na);
+    if (isComb) return planTrxPct(plan, ta) * trxW + planNrxPct(plan, na) * nrxW;
+    return planTrxPct(plan, ta);
   };
+
+  // Build each scenario column by indexing the actual distribution to the
+  // entered national attainment. If the actual avg for a component is 0 there
+  // is no distribution to scale, so we fall back to "everyone hit X" for that
+  // component (matches the old uniform behavior).
   const sc = npsAttainments.map(a => {
-    const p = payout(a), t = B * (p/100) * N;
-    return { t, budgetUtil: t/budget*100, avg: B*(p/100), min: B*(p/100), max: B*(p/100), eng: p>0?N:0, mean: p>75?100:0 };
+    const sTrx = avgTrxActual > 0 ? (a.trx / avgTrxActual) : null;
+    const sNrx = avgNrxActual > 0 ? (a.nrx / avgNrxActual) : null;
+    const perTerr = real.map(r => {
+      const scTa = sTrx === null ? a.trx : r.ta * sTrx;
+      const scNa = sNrx === null ? a.nrx : r.na * sNrx;
+      const p = payPct(scTa, scNa);
+      return { p, pay: B * (p/100) };
+    });
+    const t   = perTerr.reduce((s,r)=>s+r.pay, 0);
+    const ps  = perTerr.map(r=>r.p);
+    const pys = perTerr.map(r=>r.pay);
+    return {
+      t,
+      budgetUtil: t/budget*100,
+      avg:    t/N,
+      min:    Math.min(...pys),
+      max:    Math.max(...pys),
+      avgPct: ps.reduce((s,p)=>s+p,0)/N,
+      minPct: Math.min(...ps),
+      maxPct: Math.max(...ps),
+      eng:    ps.filter(p=>p>0).length,
+      mean:   ps.filter(p=>p>75).length / N * 100
+    };
   });
-  const ac = qData.map(d => {
-    const ta = d.trxGoal ? d.trxActual/d.trxGoal*100 : 0;
-    const na = d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0;
-    const tp = planTrxPct(plan, ta), np = planNrxPct(plan, na);
+
+  // "Current" column = each territory at its real, unscaled attainment.
+  const ac = real.map(r => {
+    const tp = planTrxPct(plan, r.ta), np = planNrxPct(plan, r.na);
     let p, att;
-    if (componentMode === 'nrx') { p = np; att = na; }
-    else if (isComb) { p = tp*trxW + np*nrxW; att = (ta+na)/2; }
-    else { p = tp; att = ta; }
-    return { p, att, pay: B*(p/100), ta, na };
+    if (componentMode === 'nrx') { p = np; att = r.na; }
+    else if (isComb) { p = tp*trxW + np*nrxW; att = (r.ta+r.na)/2; }
+    else { p = tp; att = r.ta; }
+    return { p, att, pay: B*(p/100), ta: r.ta, na: r.na };
   });
   const ct = ac.reduce((s,r)=>s+r.pay, 0);
   const cps = ac.map(r=>r.p);
+  const cpys = ac.map(r=>r.pay);
   const avgAttain = ac.reduce((s,r)=>s+r.att, 0) / N;
-  const avgTrxAtt = ac.reduce((s,r)=>s+r.ta, 0) / N;
-  const avgNrxAtt = ac.reduce((s,r)=>s+r.na, 0) / N;
-  const cur = { t: ct, bu: ct/budget*100, avg: ct/N, min: Math.min(...ac.map(r=>r.pay)), max: Math.max(...ac.map(r=>r.pay)), eng: cps.filter(p=>p>0).length, mean: (cps.filter(p=>p>75).length/N*100) };
+  const cur = {
+    t: ct, bu: ct/budget*100,
+    avg:    ct/N,
+    min:    Math.min(...cpys),
+    max:    Math.max(...cpys),
+    avgPct: cps.reduce((s,p)=>s+p,0)/N,
+    minPct: Math.min(...cps),
+    maxPct: Math.max(...cps),
+    eng:    cps.filter(p=>p>0).length,
+    mean:   (cps.filter(p=>p>75).length/N*100)
+  };
+
+  // Formatters
+  const fmt$ = v => '$' + Math.round(v).toLocaleString();
+  const fmtPct = v => v.toFixed(1) + '%';
+  const payoutLabelSuffix = inPct ? ' %' : '';
+  const payoutFmt = inPct ? fmtPct : fmt$;
+  const pickAvg = inPct ? (s=>s.avgPct) : (s=>s.avg);
+  const pickMin = inPct ? (s=>s.minPct) : (s=>s.min);
+  const pickMax = inPct ? (s=>s.maxPct) : (s=>s.max);
+
   const rs = [
-    {l:'Total Payout', v:sc.map(s=>s.t), f:v=>'$'+Math.round(v).toLocaleString()},
-    {l:'Budget Util%', v:sc.map(s=>s.budgetUtil), f:v=>v.toFixed(1)+'%', c:v=>v>100?'warn':(v>95?'good':'')},
-    {l:'Avg Payout', v:sc.map(s=>s.avg), f:v=>'$'+Math.round(v).toLocaleString()},
-    {l:'Min Payout', v:sc.map(s=>s.min), f:v=>'$'+Math.round(v).toLocaleString()},
-    {l:'Max Payout', v:sc.map(s=>s.max), f:v=>'$'+Math.round(v).toLocaleString()},
-    {l:'Engaged (>0%)', v:sc.map(s=>s.eng), f:v=>v.toFixed(0)},
-    {l:'Meaningful (>75%)', v:sc.map(s=>s.mean), f:v=>v.toFixed(1)+'%'}
+    {l:'Total Payout',                v:sc.map(s=>s.t),          f:fmt$},
+    {l:'Budget Util%',                v:sc.map(s=>s.budgetUtil), f:fmtPct, c:v=>v>100?'warn':(v>95?'good':'')},
+    {l:'Avg Payout' + payoutLabelSuffix, v:sc.map(pickAvg),      f:payoutFmt},
+    {l:'Min Payout' + payoutLabelSuffix, v:sc.map(pickMin),      f:payoutFmt},
+    {l:'Max Payout' + payoutLabelSuffix, v:sc.map(pickMax),      f:payoutFmt},
+    {l:'Engaged (>0%)',               v:sc.map(s=>s.eng),        f:v=>v.toFixed(0)},
+    {l:'Meaningful (>75%)',           v:sc.map(s=>s.mean),       f:fmtPct}
   ];
-  const cv = [cur.t, cur.bu, cur.avg, cur.min, cur.max, cur.eng, cur.mean];
+  const cv = [
+    cur.t,
+    cur.bu,
+    inPct ? cur.avgPct : cur.avg,
+    inPct ? cur.minPct : cur.min,
+    inPct ? cur.maxPct : cur.max,
+    cur.eng,
+    cur.mean
+  ];
+
   let h = '<thead><tr><th>Metric</th>';
   sc.forEach((s,i) => {
     const a = npsAttainments[i];
@@ -1660,12 +1760,14 @@ function buildNPSTableInnerHTML(plan, qData) {
     if (npsAttainments.length > 1) h += ` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;
     h += '</th>';
   });
-  h += isComb ? `<th>Current (T:${Math.round(avgTrxAtt)}% N:${Math.round(avgNrxAtt)}%)</th>` : `<th>Current (${Math.round(avgAttain)}%)</th>`;
+  h += isComb
+    ? `<th>Current (T:${Math.round(avgTrxActual)}% N:${Math.round(avgNrxActual)}%)</th>`
+    : `<th>Current (${Math.round(avgAttain)}%)</th>`;
   h += `<th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
-  rs.forEach(r => {
+  rs.forEach((r, idx) => {
     h += '<tr><td>'+r.l+'</td>';
     r.v.forEach(v => { const cl = r.c ? r.c(v) : ''; h += '<td class='+cl+'>'+r.f(v)+'</td>'; });
-    const cv2 = cv[rs.indexOf(r)], cl2 = r.c ? r.c(cv2) : '';
+    const cv2 = cv[idx], cl2 = r.c ? r.c(cv2) : '';
     h += '<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';
   });
   h += '</tbody>';
@@ -1673,6 +1775,7 @@ function buildNPSTableInnerHTML(plan, qData) {
 }
 
 function renderNPS() {
+  syncNpsValueModeBtn();
   const q = document.getElementById('quarterSelect').value;
   document.getElementById('npsQuarter').textContent = q;
   const qData = quarterlyData.filter(d => d.quarter === q);
