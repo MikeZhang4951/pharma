@@ -170,8 +170,8 @@
         <span>Territory Details</span>
         <select id="payoutSort" onchange="applySort()">
           <option value="">Default</option>
-          <option value="desc">Payout%: High → Low</option>
-          <option value="asc">Payout%: Low → High</option>
+          <option value="desc">Comb%: High → Low</option>
+          <option value="asc">Comb%: Low → High</option>
         </select>
       </div>
       <div class="table-wrap">
@@ -753,39 +753,25 @@ function renderAll() {
   const engaged = displayPcts.filter(p=>p>0).length;
   const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
 
-  // Table header
-  let theadHTML;
-  if (isCombined) {
-    theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>NRx Goal</th><th>NRx Act</th><th>TRx%</th><th>NRx%</th><th>%Payout</th><th>Payout</th></tr>`;
-  } else {
-    theadHTML = `<tr><th>Territory</th><th>${componentMode==='nrx'?'NRx':'TRx'} Goal</th><th>Actual</th><th>Attain%</th><th>%Payout</th><th>Payout</th></tr>`;
-  }
+  // Table header — always show full view
+  const theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>TRx Att%</th><th>TRx Pay%</th><th>NRx Goal</th><th>NRx Act</th><th>NRx Att%</th><th>NRx Pay%</th><th>Comb%</th><th>Payout</th></tr>`;
   document.getElementById('thead').innerHTML = theadHTML;
 
-  if (payoutSortState==='asc') rows.sort((a,b)=>a.displayPct-b.displayPct);
-  else if (payoutSortState==='desc') rows.sort((a,b)=>b.displayPct-a.displayPct);
+  // Sort by combined%
+  if (payoutSortState === 'asc') rows.sort((a,b) => a.combinedPct - b.combinedPct);
+  else if (payoutSortState === 'desc') rows.sort((a,b) => b.combinedPct - a.combinedPct);
 
   document.getElementById('tbody').innerHTML = rows.map(r => {
-    if (isCombined) {
-      return `<tr>
-        <td>${r.territory}</td>
-        <td>$${r.trxGoal.toLocaleString()}</td><td>$${r.trxActual.toLocaleString()}</td>
-        <td>$${r.nrxGoal.toLocaleString()}</td><td>$${r.nrxActual.toLocaleString()}</td>
-        <td style="color:#6366f1;font-weight:600">${r.trxPayPct.toFixed(1)}%</td>
-        <td style="color:#059669;font-weight:600">${r.nrxPayPct.toFixed(1)}%</td>
-        <td style="font-weight:700;color:${r.combinedPct>=100?'#059669':r.combinedPct>=70?'#d97706':'#dc2626'}">${r.combinedPct.toFixed(1)}%</td>
-        <td style="font-weight:700;color:${r.combinedPayout>=effBase?'#059669':'#dc2626'}">$${r.combinedPayout.toFixed(0)}</td>
-      </tr>`;
-    }
-    const goalVal = componentMode==='nrx' ? r.nrxGoal : r.trxGoal;
-    const actVal = componentMode==='nrx' ? r.nrxActual : r.trxActual;
-    const attVal = componentMode==='nrx' ? r.nrxAttain : r.trxAttain;
     return `<tr>
       <td>${r.territory}</td>
-      <td>$${goalVal.toLocaleString()}</td><td>$${actVal.toLocaleString()}</td>
-      <td>${attVal}%<div class="attainment-bar"><div class="attainment-fill ${r.attClass}" style="width:${Math.min(100,attVal*0.8)}%"></div></div></td>
-      <td style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</td>
-      <td style="font-weight:700;color:${r.displayPayout>=effBase?'#059669':'#dc2626'}">$${r.displayPayout.toFixed(0)}</td>
+      <td>$${r.trxGoal.toLocaleString()}</td><td>$${r.trxActual.toLocaleString()}</td>
+      <td>${r.trxAttain}%<div class="attainment-bar"><div class="attainment-fill ${r.trxAttain>=100?'att-good':r.trxAttain>=85?'att-ok':'att-bad'}" style="width:${Math.min(100,r.trxAttain*0.8)}%"></div></div></td>
+      <td style="font-weight:700;color:${r.trxPayPct>=100?'#059669':r.trxPayPct>=70?'#d97706':'#dc2626'}">${r.trxPayPct.toFixed(1)}%</td>
+      <td>$${r.nrxGoal.toLocaleString()}</td><td>$${r.nrxActual.toLocaleString()}</td>
+      <td>${r.nrxAttain}%<div class="attainment-bar"><div class="attainment-fill ${r.nrxAttain>=100?'att-good':r.nrxAttain>=85?'att-ok':'att-bad'}" style="width:${Math.min(100,r.nrxAttain*0.8)}%"></div></div></td>
+      <td style="font-weight:700;color:${r.nrxPayPct>=100?'#059669':r.nrxPayPct>=70?'#d97706':'#dc2626'}">${r.nrxPayPct.toFixed(1)}%</td>
+      <td style="font-weight:700;color:${r.combinedPct>=100?'#059669':r.combinedPct>=70?'#d97706':'#dc2626'}">${r.combinedPct.toFixed(1)}%</td>
+      <td style="font-weight:700;color:${r.combinedPayout>=effBase?'#059669':'#dc2626'}">$${r.combinedPayout.toFixed(0)}</td>
     </tr>`;
   }).join('');
 
