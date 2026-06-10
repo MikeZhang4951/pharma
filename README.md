@@ -54,7 +54,7 @@ Future pushes to `master` redeploy automatically. The workflow publishes `index.
 
 The core application loads before the national-summary extension. If that optional JavaScript asset is unavailable or stale during a deployment, territory data and the main plan summary continue to render.
 The deployment workflow validates only the required static files and their syntax; it does not reject a deployment based on brittle source-text or script-position checks.
-It also reports a browser-like smoke-test result for territory rows, the payout distribution, and the normalized national summary. That diagnostic does not block publication of an otherwise valid static site.
+It also runs a browser-like smoke test that verifies territory rows, the payout distribution, and the normalized national summary render together before deployment.
 
 ## Input formats
 
