@@ -159,6 +159,40 @@
     </div>
 
     <div class="card">
+      <div class="card-header">National Pay Summary
+        <div class="segmented" style="margin-left:auto;">
+          <button id="btnNatTRx" class="active" onclick="setNatMode('trx')">TRx</button>
+          <button id="btnNatNRx" onclick="setNatMode('nrx')">NRx</button>
+          <button id="btnNatComb" onclick="setNatMode('combined')">Combined</button>
+        </div>
+      </div>
+      <div id="natAttainRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+        <span style="font-size:0.62rem;color:#64748b;">Attainment:</span>
+        <div id="natPills" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
+        <input type="number" id="natCustom" placeholder="+%" min="0" max="300" style="width:44px;font-size:0.62rem;padding:3px 4px;border:1px solid #e2e8f0;border-radius:12px;text-align:center;" onkeydown="if(event.key==='Enter')addNatAttain()">
+      </div>
+      <div id="natCombRow" style="display:none;align-items:center;gap:10px;margin-bottom:8px;font-size:0.62rem;">
+        <span style="color:#64748b;">TRx att:</span><input type="number" id="natCombTRx" value="100" min="0" max="300" style="width:48px;padding:3px 4px;border:1px solid #e2e8f0;border-radius:5px;text-align:center;font-size:0.62rem;" onchange="drawNatSummary()">
+        <span style="color:#64748b;">NRx att:</span><input type="number" id="natCombNRx" value="100" min="0" max="300" style="width:48px;padding:3px 4px;border:1px solid #e2e8f0;border-radius:5px;text-align:center;font-size:0.62rem;" onchange="drawNatSummary()">
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;font-size:0.58rem;color:#94a3b8;" id="natMetrics">
+        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="totalPay"> Total Pay</label>
+        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="budgetUtil"> Budget Util%</label>
+        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="avgPay"> Avg Pay</label>
+        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="minPay"> Min</label>
+        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="maxPay"> Max</label>
+        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="engaged"> Engaged%</label>
+        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="pctRange"> Pay% Range</label>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;font-size:0.62rem;" id="natTable">
+          <thead id="natThead"></thead>
+          <tbody id="natTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card-header">Summary</div>
       <div class="stat-grid" id="summary"></div>
     </div>
@@ -689,6 +723,156 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
+// ── National Pay Summary ──
+let natMode = 'trx';
+let natAttainTRx = [90, 100, 110, -1]; // -1 = "current"
+let natAttainNRx = [90, 100, 110, -1];
+
+function setNatMode(mode) {
+  natMode = mode;
+  document.getElementById('btnNatTRx').className = mode==='trx'?'active':'';
+  document.getElementById('btnNatNRx').className = mode==='nrx'?'active':'';
+  document.getElementById('btnNatComb').className = mode==='combined'?'active':'';
+  document.getElementById('natAttainRow').style.display = mode==='combined'?'none':'';
+  document.getElementById('natCombRow').style.display = mode==='combined'?'':'none';
+  drawNatSummary();
+}
+
+function addNatAttain() {
+  const inp = document.getElementById('natCustom');
+  const v = parseInt(inp.value);
+  if (isNaN(v) || v < 0 || v > 300) return;
+  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
+  if (!arr.includes(v)) { arr.push(v); arr.sort((a,b)=>a-b); drawNatSummary(); }
+  inp.value = '';
+}
+
+function removeNatAttain(v) {
+  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
+  const idx = arr.indexOf(v);
+  if (idx >= 0) { arr.splice(idx,1); drawNatSummary(); }
+}
+
+function drawNatSummary() {
+  if (!quarterlyData.length) return;
+
+  // Build attainment pills
+  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
+  const pillsHTML = arr.map(a => {
+    const label = a === -1 ? 'Current' : a+'%';
+    return `<span class="pill" style="cursor:pointer;background:${a===-1?'#eef2ff':''}"><span class="d">${label}</span><span onclick="removeNatAttain(${a})" style="cursor:pointer;margin-left:2px;color:#94a3b8;font-size:0.55rem;">×</span></span>`;
+  }).join('');
+  document.getElementById('natPills').innerHTML = pillsHTML;
+  if (natMode==='combined') {
+    document.getElementById('natPills').parentElement.style.display = 'none';
+  }
+
+  // Get selected metrics
+  const checks = document.querySelectorAll('#natMetrics input[type=checkbox]');
+  const metrics = [];
+  checks.forEach(c => { if (c.checked) metrics.push(c.dataset.m); });
+
+  const quarter = document.getElementById('quarterSelect').value;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) return;
+
+  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
+  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const BASE_Q = getEffectiveBasePay();
+  const headcount = new Set(qData.map(d=>d.territory)).size;
+
+  if (natMode === 'combined') {
+    const trxA = parseInt(document.getElementById('natCombTRx').value)||100;
+    const nrxA = parseInt(document.getElementById('natCombNRx').value)||100;
+    const trxPay = trxPct(trxA), nrxPay = nrxPct(nrxA);
+    const combinedPct = trxPay*trxW + nrxPay*nrxW;
+    const perPerson = BASE_Q * trxW * (trxPay/100) + BASE_Q * nrxW * (nrxPay/100);
+    const totalPay = perPerson * headcount;
+    const budget = BASE_Q * headcount;
+    const engaged = combinedPct > 0 ? 100 : 0;
+
+    const thead = ['TRx Att', 'NRx Att', 'TRx Pay%', 'NRx Pay%', 'Comb%', ...metrics.map(m=>metricLabel(m))];
+    const tbody = [[
+      trxA+'%', nrxA+'%',
+      trxPay.toFixed(1)+'%', nrxPay.toFixed(1)+'%', combinedPct.toFixed(1)+'%',
+      ...metrics.map(m=>metricVal(m,{totalPay,budget,perPerson,minPay:perPerson,maxPay:perPerson,minPct:combinedPct,maxPct:combinedPct,engaged,headcount}))
+    ]];
+    renderNatTable(thead, tbody);
+    return;
+  }
+
+  // TRx/NRx mode
+  const isNRx = natMode === 'nrx';
+  const fnPct = isNRx ? nrxPct : trxPct;
+
+  const thead = ['Attain%', 'Pay%', ...metrics.map(m=>metricLabel(m))];
+  const tbody = arr.map(a => {
+    const att = a === -1 ? 'Current' : a;
+    let payPct, totalPay, perPerson;
+
+    if (a === -1) {
+      // Current: use each territory's actual attainment
+      const payouts = qData.map(d => {
+        const attain = isNRx ? (d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0) : (d.trxGoal ? d.trxActual/d.trxGoal*100 : 0);
+        const pp = fnPct(attain);
+        return BASE_Q * (isNRx?nrxW:trxW) * (pp/100);
+      });
+      totalPay = payouts.reduce((s,v)=>s+v,0);
+      perPerson = totalPay / headcount;
+      const pcts = qData.map(d => {
+        const attain = isNRx ? (d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0) : (d.trxGoal ? d.trxActual/d.trxGoal*100 : 0);
+        return fnPct(attain);
+      });
+      payPct = pcts.reduce((s,v)=>s+v,0) / pcts.length;
+    } else {
+      payPct = fnPct(a);
+      perPerson = BASE_Q * (isNRx?nrxW:trxW) * (payPct/100);
+      totalPay = perPerson * headcount;
+    }
+
+    const budget = BASE_Q * (isNRx?nrxW:trxW) * headcount;
+    const minPct = a===-1 ? Math.min(...qData.map(d=>{const at=isNRx?(d.nrxGoal?d.nrxActual/d.nrxGoal*100:0):(d.trxGoal?d.trxActual/d.trxGoal*100:0);return fnPct(at);})) : payPct;
+    const maxPct = a===-1 ? Math.max(...qData.map(d=>{const at=isNRx?(d.nrxGoal?d.nrxActual/d.nrxGoal*100:0):(d.trxGoal?d.trxActual/d.trxGoal*100:0);return fnPct(at);})) : payPct;
+    const minPay = a===-1 ? Math.min(...qData.map(d=>{const at=isNRx?(d.nrxGoal?d.nrxActual/d.nrxGoal*100:0):(d.trxGoal?d.trxActual/d.trxGoal*100:0);return BASE_Q*(isNRx?nrxW:trxW)*(fnPct(at)/100);})) : perPerson;
+    const maxPay = a===-1 ? Math.max(...qData.map(d=>{const at=isNRx?(d.nrxGoal?d.nrxActual/d.nrxGoal*100:0):(d.trxGoal?d.trxActual/d.trxGoal*100:0);return BASE_Q*(isNRx?nrxW:trxW)*(fnPct(at)/100);})) : perPerson;
+    const engagedPct = a===-1 ? (qData.filter(d=>{const at=isNRx?(d.nrxGoal?d.nrxActual/d.nrxGoal*100:0):(d.trxGoal?d.trxActual/d.trxGoal*100:0);return fnPct(at)>0;}).length/headcount*100) : (payPct>0?100:0);
+
+    return [
+      a===-1?'Current':a+'%',
+      a===-1?payPct.toFixed(1)+'%':payPct.toFixed(1)+'%',
+      ...metrics.map(m=>metricVal(m,{totalPay,budget,perPerson,minPay,maxPay,minPct,maxPct,engaged:engagedPct,headcount}))
+    ];
+  });
+
+  renderNatTable(thead, tbody);
+}
+
+function metricLabel(m) {
+  const map = {totalPay:'Total Pay',budgetUtil:'Util%',avgPay:'Avg Pay',minPay:'Min',maxPay:'Max',engaged:'Eng%',pctRange:'Pay% Range'};
+  return map[m]||m;
+}
+
+function metricVal(m, d) {
+  const compact = n => n >= 1000 ? (n/1000).toFixed(0)+'k' : String(n);
+  switch(m) {
+    case 'totalPay': return '$'+compact(Math.round(d.totalPay));
+    case 'budgetUtil': return (d.totalPay/d.budget*100).toFixed(1)+'%';
+    case 'avgPay': return '$'+Math.round(d.perPerson);
+    case 'minPay': return '$'+Math.round(d.minPay);
+    case 'maxPay': return '$'+Math.round(d.maxPay);
+    case 'engaged': return d.engaged.toFixed(0)+'%';
+    case 'pctRange': return d.minPct.toFixed(0)+'%–'+d.maxPct.toFixed(0)+'%';
+    default: return '';
+  }
+}
+
+function renderNatTable(thead, tbody) {
+  document.getElementById('natThead').innerHTML = '<tr>'+thead.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  document.getElementById('natTbody').innerHTML = tbody.map(row =>
+    '<tr>'+row.map((c,i)=>`<td style="${i<2?'font-weight:600':''}">${c}</td>`).join('')+'</tr>'
+  ).join('');
+}
+
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -800,6 +984,7 @@ function renderAll() {
   document.getElementById('summary').innerHTML = summaryHTML;
 
   drawHistogram();
+  drawNatSummary();
 }
 
 // ── Import/Export ──
