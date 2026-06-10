@@ -218,6 +218,7 @@
     <div class="data-actions" aria-label="Data actions">
       <button class="btn" onclick="document.getElementById('uploadInput').click()" title="REPLACE all current rows with the file's rows">Replace data</button>
       <button class="btn" onclick="document.getElementById('appendInput').click()" title="APPEND new rows; duplicates by territory+quarter overwrite existing">Append data</button>
+      <button class="btn" onclick="downloadData()" title="Download the currently loaded territory data as TSV">Download data</button>
       <button class="btn" onclick="downloadSample()">Download sample</button>
       <button class="btn" onclick="exportAllPlans()" title="Download all plans as JSON">Export plans</button>
       <button class="btn" onclick="document.getElementById('plansImportInput').click()" title="Replace plans from a JSON file">Import plans</button>
@@ -1609,6 +1610,19 @@ function downloadSample() {
   const blob = new Blob([sample], {type:'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'sample_territories.txt'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function downloadData() {
+  if (!quarterlyData.length) { alert('No territory data is currently loaded.'); return; }
+  const header = 'Territory\tQuarter\tTRx Goal\tTRx Actual\tNRx Goal\tNRx Actual';
+  const rows = quarterlyData.map(d => [d.territory, d.quarter, d.trxGoal, d.trxActual, d.nrxGoal, d.nrxActual].join('\t'));
+  const text = header + '\n' + rows.join('\n') + '\n';
+  const blob = new Blob([text], { type: 'text/tab-separated-values' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'territories-' + new Date().toISOString().slice(0,10) + '.tsv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function parseCSV(text) {
