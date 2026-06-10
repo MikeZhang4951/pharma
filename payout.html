@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Payout Curve</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#f8f9fb; color:#1a1a2e; font-family:system-ui,sans-serif; padding:clamp(8px,1.5vw,20px); min-height:100vh; }
+  h1 { font-size:clamp(1rem,1.8vw,1.3rem); text-align:center; margin-bottom:4px; color:#1e293b; }
+  .sub { font-size:clamp(0.6rem,0.9vw,0.75rem); color:#64748b; text-align:center; margin-bottom:clamp(8px,1vw,14px); }
+  .main { display:flex; gap:clamp(8px,1.2vw,14px); max-width:1500px; margin:0 auto; flex-wrap:wrap; }
+  .left { flex:1 1 55%; min-width:340px; max-width:100%; }
+  .right { flex:0 1 42%; min-width:300px; max-width:550px; }
+  canvas { border:1px solid #d1d5db; border-radius:6px; background:#fff; display:block; width:100%; cursor:crosshair; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+  #curve { aspect-ratio:700/400; height:auto; }
+  #histoCanvas { aspect-ratio:700/180; height:auto; }
+
+  /* Controls */
+  .controls-row { display:flex; justify-content:center; align-items:center; gap:clamp(6px,1vw,12px); margin-bottom:clamp(4px,0.6vw,8px); flex-wrap:wrap; }
+  .controls-row button, .controls-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
+  .controls-row button.active { background:#6366f1; color:#fff; border-color:#6366f1; }
+  .controls-row button:hover { background:#f1f5f9; }
+  .controls-row button.active:hover { background:#4f46e5; }
+  .controls-row select:focus { outline:none; border-color:#6366f1; }
+  .controls-row label { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
+  .controls-row input[type=number] { width:clamp(36px,4vw,42px); background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
+  .controls-row input:focus { outline:none; border-color:#6366f1; }
+
+  .data-actions { display:flex; justify-content:center; gap:clamp(6px,1vw,10px); }
+  .data-actions button { background:#fff; color:#4b5563; border:1px solid #d1d5db; border-radius:5px; padding:clamp(4px,0.5vw,5px) clamp(12px,1.5vw,16px); cursor:pointer; font-size:clamp(0.55rem,0.7vw,0.65rem); }
+  .data-actions button:hover { background:#f1f5f9; border-color:#94a3b8; }
+  #uploadInput { display:none; }
+
+  .dot-controls { display:flex; align-items:center; justify-content:center; gap:clamp(6px,1vw,10px); margin-top:clamp(4px,0.6vw,8px); }
+  .dot-controls button { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,4px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
+  .dot-controls button:hover { background:#f1f5f9; border-color:#94a3b8; }
+  .dot-controls button:disabled { opacity:0.4; cursor:not-allowed; }
+  .dot-controls span { color:#6366f1; font-weight:700; font-size:clamp(0.65rem,0.85vw,0.75rem); }
+
+  .dot-inputs { display:flex; flex-wrap:wrap; gap:clamp(3px,0.5vw,5px); margin-top:clamp(4px,0.6vw,8px); justify-content:center; }
+  .dot-input-group { background:#fff; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(5px,0.7vw,8px); display:flex; align-items:center; gap:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+  .dot-input-group .idx { color:#6366f1; font-weight:700; min-width:16px; text-align:center; }
+  .dot-input-group label { color:#64748b; font-weight:600; }
+  .dot-input-group input { width:clamp(36px,5vw,44px); background:#f8f9fb; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
+  .dot-input-group input:focus { outline:none; border-color:#6366f1; }
+
+  .curve-controls { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; text-align:center; margin-top:5px; }
+
+  /* Summary & Table */
+  .summary { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(10px,1.2vw,14px); margin-top:clamp(6px,0.8vw,10px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  .summary h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
+  .stat-row { display:flex; justify-content:space-between; padding:clamp(3px,0.4vw,4px) 0; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:1px solid #f1f5f9; }
+  .stat-row .val { font-weight:700; }
+  .stat-row .val.good { color:#059669; } .stat-row .val.warn { color:#d97706; } .stat-row .val.bad { color:#dc2626; }
+  .table-header-row { display:flex; align-items:center; justify-content:space-between; padding:clamp(6px,0.7vw,8px) clamp(8px,1vw,12px); background:#f8f9fb; border-bottom:1px solid #e5e7eb; font-size:clamp(0.55rem,0.7vw,0.65rem); color:#374151; font-weight:600; }
+  .table-header-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.4vw,4px) clamp(6px,0.8vw,8px); font-size:clamp(0.55rem,0.7vw,0.65rem); cursor:pointer; }
+  .table-wrap { max-height:clamp(300px,45vh,450px); overflow-y:auto; background:#fff; border:1px solid #e5e7eb; border-radius:0 0 8px 8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  table { width:100%; border-collapse:collapse; font-size:clamp(0.55rem,0.7vw,0.65rem); }
+  th { background:#f8f9fb; padding:clamp(5px,0.6vw,7px) clamp(6px,0.8vw,10px); text-align:left; position:sticky; top:0; color:#6366f1; font-weight:600; z-index:1; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:2px solid #e5e7eb; }
+  td { padding:clamp(3px,0.5vw,5px) clamp(6px,0.8vw,10px); border-bottom:1px solid #f1f5f9; color:#374151; }
+  tr:hover td { background:#f8f9fb; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  tr:nth-child(even):hover td { background:#f1f5f9; }
+  .attainment-bar { height:5px; border-radius:2px; background:#e5e7eb; margin-top:3px; }
+  .attainment-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+  .att-good { background:#059669; } .att-ok { background:#d97706; } .att-bad { background:#dc2626; }
+
+  /* Hover & Histogram */
+  #hoverInfo { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.6rem,0.75vw,0.7rem); padding:clamp(4px,0.6vw,6px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; white-space:nowrap; z-index:10; }
+  .canvas-wrap { position:relative; }
+  .histo-section { margin-top:clamp(8px,1vw,12px); }
+  .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
+  .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
+  #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
+  @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
+</style>
+</head>
+<body>
+<h1>Payout Curve Designer</h1>
+<div class="sub">Drag dots to reshape · X = Attainment%, Y = Payout%</div>
+
+<div class="data-actions">
+  <button onclick="document.getElementById('uploadInput').click()">⬆ Upload .txt</button>
+  <button onclick="downloadSample()">⬇ Sample .txt</button>
+  <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
+</div>
+
+<div class="controls-row">
+  <button id="btnTRx" class="active" onclick="setComponent('trx')">TRx</button>
+  <button id="btnNRx" onclick="setComponent('nrx')">NRx</button>
+  <button id="btnCombined" onclick="setComponent('combined')">Combined</button>
+  <label>TRx weight:</label><input type="number" id="trxWeight" value="50" min="0" max="100" onchange="updateBasePayInput();renderAll()">%
+  <label>NRx weight:</label><input type="number" id="nrxWeight" value="50" min="0" max="100" onchange="updateBasePayInput();renderAll()">%
+  <label style="margin-left:6px">Base pay:</label><input type="number" id="basePay" value="3375" min="0" step="100" onchange="syncMasterBase();renderAll()">
+  <label style="margin-left:6px">Quarter:</label>
+  <select id="quarterSelect" onchange="renderAll()">
+    <option value="Q125">Q125</option>
+    <option value="Q225">Q225</option>
+    <option value="Q325">Q325</option>
+    <option value="Q425">Q425</option>
+  </select>
+</div>
+
+<div class="main">
+  <div class="left">
+    <div class="canvas-wrap">
+      <canvas id="curve" width="700" height="400"></canvas>
+      <div id="hoverInfo"></div>
+    </div>
+    <div class="dot-controls">
+      <button onclick="removeDot()" id="btnRemove">− Remove Dot</button>
+      <span id="dotCount">5 dots</span>
+      <button onclick="addDot()" id="btnAdd">+ Add Dot</button>
+    </div>
+    <div class="dot-inputs" id="dotInputs"></div>
+    <div class="histo-section">
+      <div class="histo-header">
+        <span>Distribution</span>
+        <span>Bucket:</span><input type="number" id="bucketSize" value="10" min="1" max="50" step="1" onchange="drawHistogram()">%
+        <span>Min:</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+        <span>Max:</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+        <span style="color:#94a3b8">Y = # territories</span>
+      </div>
+      <div style="position:relative">
+        <canvas id="histoCanvas" width="700" height="180"></canvas>
+        <div id="histoTip"></div>
+      </div>
+    </div>
+    <div class="summary" id="summary"></div>
+  </div>
+  <div class="right">
+    <div class="table-header-row">
+      <span>Territory Details</span>
+      <select id="payoutSort" onchange="applySort()">
+        <option value="">Default</option>
+        <option value="desc">Payout%: High → Low</option>
+        <option value="asc">Payout%: Low → High</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
+let payoutSortState = '';
+let componentMode = 'trx';
+
+const MAX_X = 300, MAX_Y = 300;
+const BASE_ANNUAL = 13500;
+let masterBasePayQ = 3375; // total quarterly base (all components)
+
+function updateBasePayInput() {
+  const input = document.getElementById('basePay');
+  if (componentMode === 'combined') {
+    input.value = masterBasePayQ;
+  } else if (componentMode === 'trx') {
+    const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
+    input.value = Math.round(masterBasePayQ * trxW);
+  } else if (componentMode === 'nrx') {
+    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
+    input.value = Math.round(masterBasePayQ * nrxW);
+  }
+}
+
+function getEffectiveBasePay() {
+  return parseInt(document.getElementById('basePay').value) || 3375;
+}
+
+function syncMasterBase() {
+  const val = parseInt(document.getElementById('basePay').value) || 3375;
+  if (componentMode === 'combined') {
+    masterBasePayQ = val;
+  } else if (componentMode === 'trx') {
+    const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
+    masterBasePayQ = Math.round(val / trxW);
+  } else if (componentMode === 'nrx') {
+    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
+    masterBasePayQ = Math.round(val / nrxW);
+  }
+}
+function seededRandom(seed) {
+  let s = seed;
+  return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+// Load & generate quarterly data from territories.json
+fetch('/territories.json').then(r=>r.json()).then(territories=>{
+  quarterlyData = [];
+  const quarters = ['Q125','Q225','Q325','Q425'];
+  territories.forEach((t,i) => {
+    const rng = seededRandom(t.goal * 100 + i + 500);
+    const qWeights = [0.22, 0.24, 0.27, 0.27];
+    quarters.forEach((q,qIdx) => {
+      const trxGoal = Math.round(t.goal * qWeights[qIdx]);
+      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
+      const nrxGoal = Math.round(t.goal * qWeights[qIdx] * (0.7 + rng() * 0.5));
+      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
+      quarterlyData.push({ territory:t.territory, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
+    });
+  });
+  renderAll();
+}).catch(() => {
+  // Generate fallback data
+  const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
+  const quarters = ['Q125','Q225','Q325','Q425'];
+  quarterlyData = [];
+  names.forEach((name,i) => {
+    const rng = seededRandom(i * 137 + 500);
+    const baseGoal = 800 + rng() * 800;
+    quarters.forEach((q,qIdx) => {
+      const qw = [0.22,0.24,0.27,0.27][qIdx];
+      const trxGoal = Math.round(baseGoal * qw);
+      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
+      const nrxGoal = Math.round(baseGoal * qw * (0.7 + rng() * 0.5));
+      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
+      quarterlyData.push({ territory:name, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
+    });
+  });
+  renderAll();
+});
+
+// ── Curve control points ──
+let points = [ // TRx
+  {x:0, y:0},
+  {x:80, y:65},
+  {x:100, y:100},
+  {x:200, y:240},
+  {x:300, y:300},
+];
+let nrxPoints = [ // NRx
+  {x:0, y:0},
+  {x:80, y:55},
+  {x:100, y:100},
+  {x:200, y:250},
+  {x:300, y:300},
+];
+
+// ── Canvas ──
+const canvas = document.getElementById('curve');
+const ctx = canvas.getContext('2d');
+const hoverInfo = document.getElementById('hoverInfo');
+const W=700, H=400;
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = W * dpr; canvas.height = H * dpr; ctx.scale(dpr, dpr);
+let dragging = -1;
+let draggingSet = null; // 'trx' | 'nrx'
+const PAD = {l:70, r:20, t:24, b:62};
+const PW = W-PAD.l-PAD.r, PH = H-PAD.t-PAD.b;
+
+function toScreen(p) { return {x:PAD.l+(p.x/MAX_X)*PW, y:PAD.t+PH-(p.y/MAX_Y)*PH}; }
+function toWorld(s) { return {x:((s.x-PAD.l)/PW)*MAX_X, y:(1-(s.y-PAD.t)/PH)*MAX_Y}; }
+
+function activePoints() {
+  if (componentMode === 'nrx') return nrxPoints;
+  return points;
+}
+
+function addDot() {
+  const pts = activePoints();
+  let maxGap = 0, bestIdx = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const gap = pts[i+1].x - pts[i].x;
+    if (gap > maxGap) { maxGap = gap; bestIdx = i; }
+  }
+  const newX = Math.round((pts[bestIdx].x + pts[bestIdx+1].x) / 2);
+  const newY = Math.round((pts[bestIdx].y + pts[bestIdx+1].y) / 2);
+  pts.splice(bestIdx + 1, 0, {x: newX, y: newY});
+  updateUI();
+}
+
+function removeDot() {
+  const pts = activePoints();
+  if (pts.length <= 2) return;
+  const mid = Math.floor((pts.length - 1) / 2);
+  pts.splice(mid, 1);
+  updateUI();
+}
+
+function updateDotFromInput(idx, field, value) {
+  const pts = activePoints();
+  const v = parseFloat(value);
+  if (isNaN(v)) return;
+  let clamped = Math.round(v);
+  if (field === 'x') {
+    clamped = Math.max(0, Math.min(MAX_X, clamped));
+    if (idx > 0 && clamped <= pts[idx-1].x) clamped = pts[idx-1].x + 1;
+    if (idx < pts.length-1 && clamped >= pts[idx+1].x) clamped = pts[idx+1].x - 1;
+    pts[idx].x = clamped;
+  } else {
+    clamped = Math.max(0, Math.min(MAX_Y, clamped));
+    pts[idx].y = clamped;
+  }
+  drawCurve(); renderAll(); buildInputs();
+}
+
+function buildInputs() {
+  const pts = activePoints();
+  document.getElementById('dotInputs').innerHTML = pts.map((p,i) => `
+    <div class="dot-input-group">
+      <span class="idx">#${i}</span>
+      <label>X:</label><input type="number" min="0" max="${MAX_X}" value="${p.x}" onchange="updateDotFromInput(${i},'x',this.value)" step="1">
+      <label>Y:</label><input type="number" min="0" max="${MAX_Y}" value="${p.y}" onchange="updateDotFromInput(${i},'y',this.value)" step="1">
+    </div>
+  `).join('');
+}
+
+function updateUI() {
+  const pts = activePoints();
+  document.getElementById('dotCount').textContent = pts.length + ' dots';
+  document.getElementById('btnRemove').disabled = pts.length <= 2;
+  buildInputs();
+  drawCurve(); renderAll();
+}
+
+function setComponent(mode) {
+  componentMode = mode;
+  document.getElementById('btnTRx').className = mode === 'trx' ? 'active' : '';
+  document.getElementById('btnNRx').className = mode === 'nrx' ? 'active' : '';
+  document.getElementById('btnCombined').className = mode === 'combined' ? 'active' : '';
+  updateBasePayInput();
+  updateUI();
+}
+
+function applySort() {
+  payoutSortState = document.getElementById('payoutSort').value;
+  renderAll();
+}
+
+// ── Interpolation ──
+function interpolatePts(pts, x) {
+  if(x <= pts[0].x) return pts[0].y;
+  if(x >= pts[pts.length-1].x) return pts[pts.length-1].y;
+  for(let i=0;i<pts.length-1;i++) {
+    if(x >= pts[i].x && x <= pts[i+1].x) {
+      const t = (x-pts[i].x)/(pts[i+1].x-pts[i].x);
+      return pts[i].y + t*(pts[i+1].y-pts[i].y);
+    }
+  }
+  return 0;
+}
+function trxPct(x) { return interpolatePts(points, x); }
+function nrxPct(x) { return interpolatePts(nrxPoints, x); }
+
+function getCombinedPayout(attainment) {
+  const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
+  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
+  return { trx:trxPct(attainment), nrx:nrxPct(attainment), combined: trxPct(attainment)*trxW + nrxPct(attainment)*nrxW };
+}
+
+// ── Draw Curve ──
+function drawCurve() {
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+
+  // Grid
+  for(let i=0;i<=MAX_X;i+=5) {
+    const sx = PAD.l+(i/MAX_X)*PW;
+    ctx.strokeStyle = i%10===0 ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.04)';
+    ctx.lineWidth = i%10===0 ? 1 : 0.5;
+    ctx.beginPath(); ctx.moveTo(sx,PAD.t); ctx.lineTo(sx,PAD.t+PH); ctx.stroke();
+  }
+  for(let i=0;i<=MAX_Y;i+=10) {
+    const sy = PAD.t+PH-(i/MAX_Y)*PH;
+    ctx.strokeStyle=i%50===0?'rgba(0,0,0,0.10)':'rgba(0,0,0,0.04)';
+    ctx.lineWidth=i%50===0?1:0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.l,sy); ctx.lineTo(PAD.l+PW,sy); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle='#64748b'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH); ctx.stroke();
+
+  // X labels
+  ctx.textAlign='center';
+  for(let i=0;i<=MAX_X;i+=50) {
+    const sx = PAD.l+(i/MAX_X)*PW;
+    ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui';
+    ctx.fillText(i+'%',sx,PAD.t+PH+22);
+    ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(sx,PAD.t+PH); ctx.lineTo(sx,PAD.t+PH+8); ctx.stroke();
+  }
+  ctx.save(); ctx.translate(10,PAD.t+PH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+  ctx.fillText('Payout %',0,0); ctx.restore();
+  ctx.textAlign='right';
+  for(let i=0;i<=MAX_Y;i+=50) {
+    const sy = PAD.t+PH-(i/MAX_Y)*PH;
+    ctx.fillStyle='#334155'; ctx.font='bold 11px system-ui';
+    ctx.fillText(i+'%',PAD.l-8,sy+5);
+  }
+
+  // 100% reference
+  ctx.strokeStyle='rgba(99,102,241,0.4)'; ctx.setLineDash([6,6]); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(PAD.l+(100/MAX_X)*PW,PAD.t); ctx.lineTo(PAD.l+(100/MAX_X)*PW,PAD.t+PH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+PH-(100/MAX_Y)*PH); ctx.lineTo(PAD.l+PW,PAD.t+PH-(100/MAX_Y)*PH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw curves
+  const showTRx = componentMode === 'trx' || componentMode === 'combined';
+  const showNRx = componentMode === 'nrx' || componentMode === 'combined';
+
+  if (showTRx) drawCurveLine(points, '#6366f1', componentMode==='combined'?0.85:1);
+  if (showNRx) drawCurveLine(nrxPoints, '#059669', componentMode==='combined'?0.85:1);
+
+  // Slopes
+  if (showTRx) drawSlopes(points, '#6366f1');
+  if (showNRx) drawSlopes(nrxPoints, '#059669');
+
+  // Dots (always interactive now)
+  if (showTRx) drawDots(points, '#6366f1', 'TRx');
+  if (showNRx) drawDots(nrxPoints, '#059669', 'NRx');
+}
+
+function drawCurveLine(pts, color, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = color; ctx.lineWidth = 3.5; ctx.beginPath();
+  for(let i=0;i<=MAX_X;i+=0.5) {
+    const p = interpolatePts(pts, i);
+    const s = toScreen({x:i, y:Math.min(MAX_Y,p)});
+    if(i===0) ctx.moveTo(s.x,s.y); else ctx.lineTo(s.x,s.y);
+  }
+  ctx.stroke();
+  ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.lineTo(PAD.l, PAD.t+PH); ctx.closePath();
+  const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
+  ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawSlopes(pts, color) {
+  ctx.font = 'italic 11px system-ui'; ctx.textAlign = 'center';
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p1 = pts[i], p2 = pts[i+1];
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const slope = dx === 0 ? 0 : dy / dx;
+    const ms = toScreen({x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2});
+    ms.y -= 10;
+    ctx.fillStyle = color;
+    ctx.fillText(slope.toFixed(1), ms.x, ms.y);
+  }
+}
+
+function drawDots(pts, color, label) {
+  pts.forEach((p,i) => {
+    const s = toScreen(p);
+    const isDrag = draggingSet === (color==='#6366f1'?'trx':'nrx') && i === dragging;
+    const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
+    const grad = ctx.createRadialGradient(s.x,s.y,4,s.x,s.y,12);
+    grad.addColorStop(0, isDrag ? 'rgba(217,119,6,0.3)' : `rgba(${r},${g},${b},0.25)`);
+    grad.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=grad;
+    ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=isDrag?'#d97706':color;
+    ctx.beginPath(); ctx.arc(s.x,s.y,9,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle='#1e293b'; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
+    ctx.fillText(label+': '+p.x+'%, '+Math.round(p.y)+'%',s.x,s.y-18);
+  });
+}
+
+// ── Mouse / Touch ──
+function findDot(sx, sy) {
+  // Check TRx dots
+  if (componentMode === 'trx' || componentMode === 'combined') {
+    for(let i=0;i<points.length;i++) {
+      const s=toScreen(points[i]);
+      if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'trx', idx:i};
+    }
+  }
+  if (componentMode === 'nrx' || componentMode === 'combined') {
+    for(let i=0;i<nrxPoints.length;i++) {
+      const s=toScreen(nrxPoints[i]);
+      if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'nrx', idx:i};
+    }
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(W/rect.width), sy=(e.clientY-rect.top)*(H/rect.height);
+  const hit = findDot(sx, sy);
+  if (hit) { dragging = hit.idx; draggingSet = hit.set; drawCurve(); renderAll(); }
+});
+canvas.addEventListener('mousemove', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(W/rect.width), sy=(e.clientY-rect.top)*(H/rect.height);
+  const w=toWorld({x:sx,y:sy});
+
+  if (w.x >= 0 && w.x <= MAX_X && w.y >= 0 && w.y <= MAX_Y) {
+    hoverInfo.style.display = 'block';
+    hoverInfo.style.left = (e.clientX - rect.left + 18) + 'px';
+    hoverInfo.style.top = (e.clientY - rect.top - 40) + 'px';
+    const trx = trxPct(w.x), nrx = nrxPct(w.x);
+    const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
+    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+    if (componentMode === 'combined') {
+      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
+    } else if (componentMode === 'nrx') {
+      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${nrx.toFixed(1)}%</b>`;
+    } else {
+      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${trx.toFixed(1)}%</b>`;
+    }
+  } else {
+    hoverInfo.style.display = 'none';
+  }
+
+  if (dragging < 0 || !draggingSet) return;
+  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
+  if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
+  w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
+  pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
+  drawCurve(); renderAll();
+});
+canvas.addEventListener('mouseup',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
+canvas.addEventListener('mouseleave',()=>{dragging=-1;draggingSet=null;hoverInfo.style.display='none';drawCurve();});
+
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const t=e.touches[0];
+  const sx=(t.clientX-rect.left)*(W/rect.width), sy=(t.clientY-rect.top)*(H/rect.height);
+  const hit = findDot(sx, sy);
+  if (hit) { dragging = hit.idx; draggingSet = hit.set; drawCurve(); renderAll(); }
+});
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  if(dragging<0||!draggingSet)return;
+  const rect=canvas.getBoundingClientRect();
+  const t=e.touches[0];
+  const sx=(t.clientX-rect.left)*(W/rect.width), sy=(t.clientY-rect.top)*(H/rect.height);
+  const w=toWorld({x:sx,y:sy});
+  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
+  if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
+  w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
+  pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
+  drawCurve(); renderAll();
+});
+canvas.addEventListener('touchend',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
+
+// ── Histogram ──
+const histoCanvas = document.getElementById('histoCanvas');
+const hctx = histoCanvas.getContext('2d');
+const histoTip = document.getElementById('histoTip');
+const HW=700, HH=180;
+const hdpr = Math.min(window.devicePixelRatio||1,2);
+histoCanvas.width=HW*hdpr; histoCanvas.height=HH*hdpr; hctx.scale(hdpr,hdpr);
+const HPAD={l:60,r:15,t:14,b:52};
+const HPW2=HW-HPAD.l-HPAD.r, HPH2=HH-HPAD.t-HPAD.b;
+let histoBars = [];
+
+function drawHistogram() {
+  hctx.clearRect(0,0,HW,HH); hctx.fillStyle='#fff'; hctx.fillRect(0,0,HW,HH);
+  const bucketSize = parseInt(document.getElementById('bucketSize').value) || 10;
+  const quarter = document.getElementById('quarterSelect').value;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) return;
+
+  let entries = [];
+  qData.forEach(d => {
+    const trxAttain = d.trxGoal ? (d.trxActual/d.trxGoal*100) : 0;
+    const nrxAttain = d.nrxGoal ? (d.nrxActual/d.nrxGoal*100) : 0;
+    const pay = getCombinedPayout(componentMode==='nrx'?nrxAttain:trxAttain);
+    entries.push({name:d.territory, pct:componentMode==='combined'?pay.combined:(componentMode==='nrx'?pay.nrx:pay.trx)});
+  });
+
+  // Auto min/max from data, overridden by user inputs
+  const allPcts = entries.map(e=>e.pct);
+  const dataMin = Math.floor(Math.min(...allPcts) / bucketSize) * bucketSize;
+  const dataMax = Math.ceil(Math.max(...allPcts) / bucketSize) * bucketSize;
+  const hMinVal = parseInt(document.getElementById('hMin').value);
+  const hMaxVal = parseInt(document.getElementById('hMax').value);
+  const rangeMin = isNaN(hMinVal) ? dataMin : hMinVal;
+  const rangeMax = isNaN(hMaxVal) ? dataMax : hMaxVal;
+  const numBuckets = Math.max(1, Math.round((rangeMax - rangeMin) / bucketSize));
+  const actualBW = (rangeMax - rangeMin) / numBuckets;
+
+  const buckets = [];
+  for (let i = 0; i < numBuckets; i++) {
+    const lo = rangeMin + i * actualBW, hi = rangeMin + (i + 1) * actualBW;
+    const inB = entries.filter(e => e.pct >= lo && e.pct < hi);
+    buckets.push({lo,hi,count:inB.length,territories:inB.map(e=>e.name)});
+  }
+
+  const maxCount = Math.max(1,...buckets.map(b=>b.count));
+  histoBars = [];
+
+  // Grid
+  const yTicks = Math.max(1, Math.ceil(maxCount/5));
+  hctx.strokeStyle='rgba(0,0,0,0.06)'; hctx.lineWidth=0.5;
+  for(let i=0;i<=maxCount;i+=yTicks) {
+    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2;
+    hctx.beginPath(); hctx.moveTo(HPAD.l,sy); hctx.lineTo(HPAD.l+HPW2,sy); hctx.stroke();
+  }
+
+  // Axes
+  hctx.strokeStyle='#64748b'; hctx.lineWidth=1.5;
+  hctx.beginPath(); hctx.moveTo(HPAD.l,HPAD.t); hctx.lineTo(HPAD.l,HPAD.t+HPH2); hctx.lineTo(HPAD.l+HPW2,HPAD.t+HPH2); hctx.stroke();
+
+  // Y-axis labels
+  hctx.fillStyle='#334155'; hctx.font='bold 10px system-ui'; hctx.textAlign='right';
+  for(let i=0;i<=maxCount;i+=yTicks) {
+    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2; hctx.fillText(i,HPAD.l-8,sy+5);
+  }
+
+  // X-axis labels — show every bucket, angled to fit
+  const labelAngle = numBuckets > 8 ? -Math.PI/3 : -0.5;
+  const labelFont = numBuckets > 12 ? '7px system-ui' : '8px system-ui';
+  hctx.fillStyle='#334155'; hctx.font=labelFont; hctx.textAlign='right';
+  for(let i=0;i<numBuckets;i++) {
+    const b=buckets[i], barW=HPW2/numBuckets, sx=HPAD.l+i*barW;
+    const barH=(b.count/maxCount)*HPH2, sy=HPAD.t+HPH2-barH;
+    const hue=240-((b.lo-rangeMin)/(rangeMax-rangeMin||1))*120;
+    hctx.fillStyle=b.count>0?`hsla(${hue},70%,55%,0.75)`:'rgba(0,0,0,0.02)';
+    hctx.fillRect(sx+1,sy,barW-2,barH);
+    if(b.count>0){hctx.strokeStyle=`hsla(${hue},70%,45%,0.8)`;hctx.lineWidth=1;hctx.strokeRect(sx+1,sy,barW-2,barH);}
+    histoBars.push({...b,screenX:sx,screenW:barW});
+    // Show every bucket label, angled
+    hctx.save();
+    hctx.translate(sx+barW/2, HPAD.t+HPH2+20);
+    hctx.rotate(labelAngle);
+    hctx.fillStyle='#334155'; hctx.textAlign='right';
+    const loLabel = numBuckets <= 10 ? Math.round(b.lo) : b.lo.toFixed(1);
+    const hiLabel = numBuckets <= 10 ? Math.round(b.hi) : b.hi.toFixed(1);
+    hctx.fillText(loLabel+'-'+hiLabel+'%', 0, 0);
+    hctx.restore();
+  }
+
+  // X-axis title
+  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
+  hctx.fillText('% Payout', HPAD.l+HPW2/2, HPAD.t+HPH2+36);
+
+  // Y-axis title
+  hctx.save();
+  hctx.translate(8, HPAD.t+HPH2/2);
+  hctx.rotate(-Math.PI/2);
+  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
+  hctx.fillText('# Territories', 0, 0);
+  hctx.restore();
+
+  // Count labels
+  hctx.fillStyle='#1e293b'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
+  for(let i=0;i<numBuckets;i++) {
+    const b=buckets[i];
+    if(b.count>0){const barW=HPW2/numBuckets,sx=HPAD.l+i*barW,barH=(b.count/maxCount)*HPH2,sy=HPAD.t+HPH2-barH;hctx.fillText(b.count,sx+barW/2,sy-4);}
+  }
+}
+
+histoCanvas.addEventListener('mousemove', e => {
+  const rect=histoCanvas.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(HW/rect.width);
+  const hit=histoBars.find(b=>sx>=b.screenX&&sx<=b.screenX+b.screenW);
+  if(hit&&hit.count>0){
+    histoTip.style.display='block';
+    histoTip.style.left=(e.clientX-rect.left+12)+'px';
+    histoTip.style.top=(e.clientY-rect.top-10)+'px';
+    const names=hit.territories.length>12?hit.territories.slice(0,12).join(', ')+'...':hit.territories.join(', ');
+    histoTip.innerHTML=`<b>${hit.lo}-${hit.hi}%</b> (${hit.count})<br>${names}`;
+  } else { histoTip.style.display='none'; }
+});
+histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
+
+// ── Render Table ──
+function renderAll() {
+  if (!quarterlyData.length) return;
+  const quarter = document.getElementById('quarterSelect').value;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) return;
+
+  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
+  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const BASE_Q = getEffectiveBasePay();
+  const isCombined = componentMode === 'combined';
+
+  // Build rows
+  const rows = qData.map(d => {
+    const trxAttain = d.trxGoal ? parseFloat((d.trxActual/d.trxGoal*100).toFixed(1)) : 0;
+    const nrxAttain = d.nrxGoal ? parseFloat((d.nrxActual/d.nrxGoal*100).toFixed(1)) : 0;
+    const trxPayPct = trxPct(trxAttain);
+    const nrxPayPct = nrxPct(nrxAttain);
+    const combinedPct = trxPayPct*trxW + nrxPayPct*nrxW;
+
+    let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
+    if (isCombined) {
+      // Combined: split BASE_Q by weight
+      trxPayoutAmount = BASE_Q * trxW * (trxPayPct/100);
+      nrxPayoutAmount = BASE_Q * nrxW * (nrxPayPct/100);
+      combinedPayout = trxPayoutAmount + nrxPayoutAmount;
+      displayPct = combinedPct;
+      displayPayout = combinedPayout;
+    } else if (componentMode === 'nrx') {
+      // NRx only: BASE_Q is already the NRx budget
+      displayPct = nrxPayPct;
+      displayPayout = BASE_Q * (displayPct/100);
+      nrxPayoutAmount = displayPayout;
+      trxPayoutAmount = 0;
+      combinedPayout = displayPayout;
+    } else {
+      // TRx only: BASE_Q is already the TRx budget
+      displayPct = trxPayPct;
+      displayPayout = BASE_Q * (displayPct/100);
+      trxPayoutAmount = displayPayout;
+      nrxPayoutAmount = 0;
+      combinedPayout = displayPayout;
+    }
+
+    const attClass = trxAttain>=100?'att-good':trxAttain>=85?'att-ok':'att-bad';
+    return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
+      trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
+      displayPct, displayPayout, attClass};
+  });
+
+  // Summary stats
+  const headcount = new Set(qData.map(d=>d.territory)).size;
+  const totalCombined = rows.reduce((s,r)=>s+r.combinedPayout,0);
+  const totalBudget = BASE_Q * headcount;
+  const totalOver = totalCombined - totalBudget;
+  const payouts = rows.map(r=>r.displayPayout);
+  const maxPay = Math.max(...payouts), minPay = Math.min(...payouts);
+  const avgPay = totalCombined/headcount;
+  const displayPcts = rows.map(r=>r.displayPct);
+  const minAttain = Math.min(...rows.map(r=>r.trxAttain));
+  const maxAttain = Math.max(...rows.map(r=>r.trxAttain));
+  const minPct = Math.min(...displayPcts), maxPct = Math.max(...displayPcts);
+  const engaged = displayPcts.filter(p=>p>0).length;
+  const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
+
+  // Table header
+  let theadHTML;
+  if (isCombined) {
+    theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>NRx Goal</th><th>NRx Act</th><th>TRx%</th><th>NRx%</th><th>%Payout</th><th>Payout</th></tr>`;
+  } else {
+    theadHTML = `<tr><th>Territory</th><th>${componentMode==='nrx'?'NRx':'TRx'} Goal</th><th>Actual</th><th>Attain%</th><th>%Payout</th><th>Payout</th></tr>`;
+  }
+  document.getElementById('thead').innerHTML = theadHTML;
+
+  if (payoutSortState==='asc') rows.sort((a,b)=>a.displayPct-b.displayPct);
+  else if (payoutSortState==='desc') rows.sort((a,b)=>b.displayPct-a.displayPct);
+
+  document.getElementById('tbody').innerHTML = rows.map(r => {
+    if (isCombined) {
+      return `<tr>
+        <td>${r.territory}</td>
+        <td>$${r.trxGoal.toLocaleString()}</td><td>$${r.trxActual.toLocaleString()}</td>
+        <td>$${r.nrxGoal.toLocaleString()}</td><td>$${r.nrxActual.toLocaleString()}</td>
+        <td style="color:#6366f1;font-weight:600">${r.trxPayPct.toFixed(1)}%</td>
+        <td style="color:#059669;font-weight:600">${r.nrxPayPct.toFixed(1)}%</td>
+        <td style="font-weight:700;color:${r.combinedPct>=100?'#059669':r.combinedPct>=70?'#d97706':'#dc2626'}">${r.combinedPct.toFixed(1)}%</td>
+        <td style="font-weight:700;color:${r.combinedPayout>=BASE_Q?'#059669':'#dc2626'}">$${r.combinedPayout.toFixed(0)}</td>
+      </tr>`;
+    }
+    const goalVal = componentMode==='nrx' ? r.nrxGoal : r.trxGoal;
+    const actVal = componentMode==='nrx' ? r.nrxActual : r.trxActual;
+    const attVal = componentMode==='nrx' ? r.nrxAttain : r.trxAttain;
+    return `<tr>
+      <td>${r.territory}</td>
+      <td>$${goalVal.toLocaleString()}</td><td>$${actVal.toLocaleString()}</td>
+      <td>${attVal}%<div class="attainment-bar"><div class="attainment-fill ${r.attClass}" style="width:${Math.min(100,attVal*0.8)}%"></div></div></td>
+      <td style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</td>
+      <td style="font-weight:700;color:${r.displayPayout>=BASE_Q?'#059669':'#dc2626'}">$${r.displayPayout.toFixed(0)}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary
+  document.getElementById('summary').innerHTML = `
+    <h3>${isCombined?'Combined':componentMode==='nrx'?'NRx':'TRx'} ${quarter} Summary</h3>
+    <div class="stat-row"><span>Quarterly base / person</span><span class="val">$${BASE_Q.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Headcount</span><span class="val">${headcount}</span></div>
+    <div class="stat-row"><span>Base budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
+    ${isCombined ? `
+    <div class="stat-row"><span>TRx budget (${(trxW*100).toFixed(0)}%)</span><span class="val">$${(totalBudget*trxW).toLocaleString()}</span></div>
+    <div class="stat-row"><span>NRx budget (${(nrxW*100).toFixed(0)}%)</span><span class="val">$${(totalBudget*nrxW).toLocaleString()}</span></div>
+    <div class="stat-row"><span>TRx payout</span><span class="val" style="color:#6366f1">$${rows.reduce((s,r)=>s+r.trxPayout,0).toLocaleString()}</span></div>
+    <div class="stat-row"><span>NRx payout</span><span class="val" style="color:#059669">$${rows.reduce((s,r)=>s+r.nrxPayout,0).toLocaleString()}</span></div>
+    ` : ''}
+    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalCombined.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Over/Under</span><span class="val ${totalOver>0?'bad':'good'}">${totalOver>=0?'+':''}$${totalOver.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Utilization</span><span class="val">${((totalCombined/totalBudget)*100).toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Avg payout</span><span class="val">$${avgPay.toFixed(0)}</span></div>
+    <div class="stat-row"><span>Max / Min</span><span class="val">$${maxPay.toFixed(0)} / $${minPay.toFixed(0)}</span></div>
+    <div class="stat-row"><span>Attain range</span><span class="val">${minAttain}% – ${maxAttain}%</span></div>
+    <div class="stat-row"><span>Payout% range</span><span class="val">${minPct.toFixed(1)}% – ${maxPct.toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${engaged}/${headcount} (${((engaged/headcount)*100).toFixed(1)}%)</span></div>
+    <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
+  `;
+
+  drawHistogram();
+}
+
+// ── Import/Export ──
+function downloadSample() {
+  const sample = 'Territory\tQuarter\tTRx Goal\tTRx Actual\tNRx Goal\tNRx Actual\nNorthwest\tQ125\t200\t180\t150\t140\nPacific\tQ125\t275\t260\t200\t185\n';
+  const blob = new Blob([sample], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'sample_territories.txt'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function parseCSV(text) {
+  const firstLine = text.split('\n')[0]||'';
+  const delim = firstLine.includes('\t')?'\t':',';
+  const lines = text.trim().split('\n').filter(l=>l.trim());
+  if (lines.length<2) throw new Error('Need header + data');
+  const headers = lines[0].split(delim).map(h=>h.trim().toLowerCase());
+  const tIdx=headers.findIndex(h=>h==='territory'), qIdx=headers.findIndex(h=>h==='quarter');
+  const tgIdx=headers.findIndex(h=>h.includes('trx')&&h.includes('goal'));
+  const taIdx=headers.findIndex(h=>h.includes('trx')&&h.includes('actual'));
+  const ngIdx=headers.findIndex(h=>h.includes('nrx')&&h.includes('goal'));
+  const naIdx=headers.findIndex(h=>h.includes('nrx')&&h.includes('actual'));
+  if (tIdx<0||tgIdx<0||taIdx<0) throw new Error('Need: Territory, Quarter, TRx Goal, TRx Actual');
+  const result = [];
+  for(let i=1;i<lines.length;i++) {
+    const c=lines[i].split(delim).map(x=>x.trim());
+    const t=c[tIdx], q=c[qIdx]||'Q125', tg=parseInt(c[tgIdx]), ta=parseInt(c[taIdx]);
+    const ng=ngIdx>=0?parseInt(c[ngIdx]):Math.round(tg*0.7), na=naIdx>=0?parseInt(c[naIdx]):Math.round(ta*0.7);
+    if(!t||isNaN(tg)||isNaN(ta)) continue;
+    result.push({territory:t, quarter:q, trxGoal:tg, trxActual:ta, nrxGoal:ng, nrxActual:na});
+  }
+  if(!result.length) throw new Error('No valid rows');
+  return result;
+}
+
+function uploadData(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    try{
+      if(text.trim().startsWith('{')){
+        const d=JSON.parse(text);
+        if(d.quarterlyData&&Array.isArray(d.quarterlyData)){quarterlyData=d.quarterlyData;}
+        else throw new Error('JSON needs quarterlyData array');
+        if(d.points&&Array.isArray(d.points)) points=d.points;
+        if(d.nrxPoints&&Array.isArray(d.nrxPoints)) nrxPoints=d.nrxPoints;
+      } else {
+        quarterlyData = parseCSV(text);
+      }
+      updateUI();
+    }catch(err){alert('Upload failed: '+err.message);}
+  };
+  reader.readAsText(file); event.target.value='';
+}
+
+drawCurve(); buildInputs();
+</script>
+</body>
+</html>

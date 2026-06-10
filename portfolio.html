@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#06060d;color:#e0e0e0;
+  font-family:'SF Mono','Cascadia Code','Consolas',monospace;
+  min-height:100vh;padding:20px;
+}
+h1{font-size:20px;color:#4ade80;margin-bottom:4px}
+.sub{font-size:11px;color:#666;margin-bottom:20px}
+.totals{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;
+  margin-bottom:20px;
+}
+.total-card{
+  background:#0d0d1a;border:1px solid #1a1a2e;border-radius:8px;
+  padding:16px;text-align:center;
+}
+.total-card .label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.total-card .value{font-size:22px;font-weight:700}
+.total-card .sub{font-size:12px;margin-top:4px}
+.green{color:#4ade80}
+.red{color:#f87171}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid #1a1a2e}
+th{color:#888;font-size:10px;text-transform:uppercase;text-align:right}
+th:first-child,td:first-child{text-align:left}
+tr:hover{background:#0d0d1a}
+.ticker{font-weight:700;color:#a78bfa}
+.shares{color:#888;font-size:11px}
+.loading{text-align:center;color:#666;padding:40px}
+.error{color:#f87171;text-align:center;padding:20px;background:rgba(248,113,113,0.05);border:1px solid #f87171;border-radius:8px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #1a1a2e;border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<h1>💰 Portfolio</h1>
+<div class="sub" id="sub">Loading...</div>
+<div id="content"><div class="loading"><span class="spinner"></span>Loading positions...</div></div>
+
+<script>
+async function refresh(){
+  try{
+    const r=await fetch('/api/portfolio');const d=await r.json();
+    if(d.error){document.getElementById('content').innerHTML='<div class="error">'+esc(d.error)+'</div>';return}
+    document.getElementById('sub').textContent=d.timestamp+' · Auto-refresh 30s';
+
+    const t=d.totals;
+    const pnlCls=t.pnl>=0?'green':'red';
+    const dayCls=t.day_change>=0?'green':'red';
+
+    let html='<div class="totals">';
+    html+=`<div class="total-card"><div class="label">Portfolio Value</div><div class="value">$${fmt(t.value)}</div></div>`;
+    html+=`<div class="total-card"><div class="label">Cost Basis</div><div class="value">$${fmt(t.cost_basis)}</div></div>`;
+    html+=`<div class="total-card"><div class="label">Total P&L</div><div class="value ${pnlCls}">${t.pnl>=0?'+':''}$${fmt(t.pnl)}</div><div class="sub ${pnlCls}">${t.pnl_pct>=0?'+':''}${t.pnl_pct}%</div></div>`;
+    html+=`<div class="total-card"><div class="label">Day Change</div><div class="value ${dayCls}">${t.day_change>=0?'+':''}$${fmt(t.day_change)}</div></div>`;
+    html+='</div>';
+
+    html+='<table><thead><tr><th>Ticker</th><th>Shares</th><th>Cost</th><th>Price</th><th>Day</th><th>Value</th><th>P&L</th></tr></thead><tbody>';
+    d.holdings.forEach(h=>{
+      const pnlCls=h.pnl>=0?'green':'red';
+      const dayCls=(h.change_pct||0)>=0?'green':'red';
+      html+=`<tr>
+        <td><span class="ticker">${esc(h.ticker)}</span> <span class="shares">${esc(h.name||'')}</span></td>
+        <td>${h.shares}</td>
+        <td>$${fmt(h.cost_basis)}</td>
+        <td>$${fmt(h.price)}</td>
+        <td class="${dayCls}">${h.change_pct!=null?(h.change_pct>=0?'+':'')+h.change_pct+'%':'—'}</td>
+        <td>$${fmt(h.value)}</td>
+        <td class="${pnlCls}">${h.pnl>=0?'+':''}$${fmt(h.pnl)} <span style="font-size:11px">(${h.pnl_pct>=0?'+':''}${h.pnl_pct}%)</span></td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    document.getElementById('content').innerHTML=html;
+  }catch(e){
+    document.getElementById('content').innerHTML='<div class="error">'+esc(e.message)+'</div>';
+  }
+}
+
+function fmt(n){return n!=null?n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+refresh();
+setInterval(refresh,30000);
+</script>
+</body>
+</html>
