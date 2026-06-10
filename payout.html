@@ -782,7 +782,7 @@ function renderNPS(){
   document.getElementById('npsSection').style.display='';
   const trxW=parseInt(document.getElementById('trxWeight').value)/100||0.5;
   const nrxW=parseInt(document.getElementById('nrxWeight').value)/100||0.5;
-  const B=masterBasePayQ,N=qData.length,budget=B*N;
+  const B=getEffectiveBasePay(),N=qData.length,budget=B*N;
   const isComb=componentMode==='combined';
   const payout=(a)=>{if(componentMode==='nrx')return nrxPct(a.nrx);if(isComb)return trxPct(a.trx)*trxW+nrxPct(a.nrx)*nrxW;return trxPct(a.trx);};
   const sc=npsAttainments.map(a=>{const p=payout(a),t=B*(p/100)*N;return{t,budgetUtil:t/budget*100,avg:B*(p/100),min:B*(p/100),max:B*(p/100),eng:p>0?N:0,mean:p>75?100:0};});
