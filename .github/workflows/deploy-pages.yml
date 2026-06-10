@@ -1,9 +1,9 @@
-name: Deploy Paycurve Designer to GitHub Pages
+name: Deploy Payout Curve Designer to GitHub Pages
 
 on:
   push:
     branches:
-      - '**'
+      - master
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -26,8 +25,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Validate static site inputs
+        run: |
+          test -s index.html
+          python -m json.tool territories.json > /dev/null
+          grep -Fq "fetch('./territories.json')" index.html
+
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Prepare static site
         run: |

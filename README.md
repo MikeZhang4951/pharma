@@ -1,0 +1,60 @@
+# Payout Curve Designer
+
+A dependency-free, browser-based sales incentive modeling tool. The application lets compensation planners reshape TRx and NRx payout curves and immediately see the effect on territory-level payouts, budget utilization, and payout distribution.
+
+## What the application does
+
+- Displays separate editable TRx and NRx payout curves, plus a weighted combined view.
+- Supports dragging curve points, editing point coordinates, and adding or removing points.
+- Calculates quarterly territory attainment, payout percentages, payouts, budget variance, engagement, and other summary statistics.
+- Shows a configurable histogram of territory payout percentages.
+- Supports sorting territory results by payout percentage.
+- Imports tab-separated, CSV, or JSON territory data and provides a sample download.
+- Runs entirely in the browser; no application server, database, or API is required.
+
+## Repository structure
+
+| Path | Purpose |
+| --- | --- |
+| `index.html` | Complete user interface, styles, payout calculations, charts, and import/export logic. |
+| `territories.json` | Seed territory data used to generate deterministic quarterly demo data. |
+| `.github/workflows/deploy-pages.yml` | Validates and deploys the static files to GitHub Pages. |
+
+## Run locally
+
+Because the page loads `territories.json` with `fetch`, serve the directory over HTTP rather than opening `index.html` directly:
+
+```bash
+python3 -m http.server 8080
+```
+
+Then open <http://localhost:8080/>.
+
+## GitHub Pages deployment
+
+The repository deploys automatically from the `master` branch with GitHub Actions.
+
+### One-time repository setting
+
+GitHub requires Pages to be enabled once by a repository administrator:
+
+1. Open **Settings → Pages** in this repository.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Open **Actions → Deploy Payout Curve Designer to GitHub Pages** and run the workflow, or push a commit to `master`.
+
+After a successful deployment, the site is available at:
+
+<https://mikezhang4951.github.io/pharma/>
+
+Future pushes to `master` redeploy automatically. The workflow publishes only `index.html` and `territories.json`, and includes `.nojekyll` in the Pages artifact.
+
+## Input formats
+
+The text/CSV importer requires these fields:
+
+- `Territory`
+- `Quarter`
+- `TRx Goal`
+- `TRx Actual`
+
+`NRx Goal` and `NRx Actual` are optional; the application derives fallback values when they are omitted. JSON imports use an object containing a `quarterlyData` array and may optionally include `points` and `nrxPoints` arrays.
