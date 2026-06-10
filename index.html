@@ -5,146 +5,214 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sales Payout Curve</title>
 <style>
+  :root {
+    --bg:#f4f7fb; --surface:#fff; --surface-soft:#f8fafc; --border:#dfe5ee;
+    --text:#182230; --muted:#64748b; --primary:#4f46e5; --primary-dark:#4338ca;
+    --primary-soft:#eef2ff; --green:#059669; --amber:#d97706; --red:#dc2626;
+    --shadow:0 10px 30px rgba(15,23,42,0.06); --radius:14px;
+  }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#f8f9fb; color:#1a1a2e; font-family:system-ui,sans-serif; padding:clamp(8px,1.5vw,20px); min-height:100vh; }
-  h1 { font-size:clamp(1rem,1.8vw,1.3rem); text-align:center; margin-bottom:4px; color:#1e293b; }
-  .sub { font-size:clamp(0.6rem,0.9vw,0.75rem); color:#64748b; text-align:center; margin-bottom:clamp(8px,1vw,14px); }
-  .main { display:flex; gap:clamp(8px,1.2vw,14px); max-width:1500px; margin:0 auto; flex-wrap:wrap; }
-  .left { flex:1 1 55%; min-width:340px; max-width:100%; }
-  .right { flex:0 1 42%; min-width:300px; max-width:550px; }
-  canvas { border:1px solid #d1d5db; border-radius:6px; background:#fff; display:block; width:100%; cursor:crosshair; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
-  #curve { aspect-ratio:700/400; height:auto; }
-  #histoCanvas { aspect-ratio:700/180; height:auto; }
-
-  /* Controls */
-  .controls-row { display:flex; justify-content:center; align-items:center; gap:clamp(6px,1vw,12px); margin-bottom:clamp(4px,0.6vw,8px); flex-wrap:wrap; }
-  .controls-row button, .controls-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
-  .controls-row button.active { background:#6366f1; color:#fff; border-color:#6366f1; }
-  .controls-row button:hover { background:#f1f5f9; }
-  .controls-row button.active:hover { background:#4f46e5; }
-  .controls-row select:focus { outline:none; border-color:#6366f1; }
-  .controls-row label { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
-  .controls-row input[type=number] { width:clamp(36px,4vw,42px); background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  .controls-row input:focus { outline:none; border-color:#6366f1; }
-
-  .data-actions { display:flex; justify-content:center; gap:clamp(6px,1vw,10px); }
-  .data-actions button { background:#fff; color:#4b5563; border:1px solid #d1d5db; border-radius:5px; padding:clamp(4px,0.5vw,5px) clamp(12px,1.5vw,16px); cursor:pointer; font-size:clamp(0.55rem,0.7vw,0.65rem); }
-  .data-actions button:hover { background:#f1f5f9; border-color:#94a3b8; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif; min-height:100vh; }
+  button, input, select { font:inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid rgba(79,70,229,.2); outline-offset:2px; }
+  .app-shell { max-width:1500px; margin:0 auto; padding:clamp(16px,2.5vw,36px); }
+  .app-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:20px; }
+  .eyebrow { color:var(--primary); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:7px; }
+  h1 { color:#0f172a; font-size:clamp(1.55rem,2.7vw,2.25rem); line-height:1.1; letter-spacing:-.035em; }
+  .sub { color:var(--muted); font-size:.88rem; margin-top:8px; line-height:1.5; }
+  .data-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .btn { border:1px solid var(--border); border-radius:9px; background:var(--surface); color:#334155; padding:9px 13px; cursor:pointer; font-size:.76rem; font-weight:700; transition:.18s ease; }
+  .btn:hover { border-color:#b8c2d1; background:var(--surface-soft); transform:translateY(-1px); }
   #uploadInput { display:none; }
 
-  .dot-controls { display:flex; align-items:center; justify-content:center; gap:clamp(6px,1vw,10px); margin-top:clamp(4px,0.6vw,8px); }
-  .dot-controls button { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,4px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
-  .dot-controls button:hover { background:#f1f5f9; border-color:#94a3b8; }
-  .dot-controls button:disabled { opacity:0.4; cursor:not-allowed; }
-  .dot-controls span { color:#6366f1; font-weight:700; font-size:clamp(0.65rem,0.85vw,0.75rem); }
+  .setup-card, .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .setup-card { padding:18px; margin-bottom:18px; }
+  .section-label { color:#334155; display:block; font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+  .setup-grid { display:grid; grid-template-columns:minmax(260px,1.25fr) repeat(4,minmax(120px,.62fr)); align-items:end; gap:14px; }
+  .view-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:4px; border-radius:11px; background:#f1f5f9; }
+  .view-tabs button { border:0; border-radius:8px; background:transparent; color:#64748b; cursor:pointer; padding:10px 12px; font-size:.78rem; font-weight:800; transition:.18s ease; }
+  .view-tabs button:hover { color:#334155; background:rgba(255,255,255,.65); }
+  .view-tabs button.active { background:var(--surface); color:var(--primary); box-shadow:0 2px 8px rgba(15,23,42,.09); }
+  .field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+  .field label { color:#475569; font-size:.72rem; font-weight:700; }
+  .input-shell { display:flex; align-items:center; min-height:39px; overflow:hidden; border:1px solid #cfd8e5; border-radius:9px; background:var(--surface); transition:.18s ease; }
+  .input-shell:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+  .input-shell .prefix, .input-shell .suffix { color:#64748b; font-size:.76rem; font-weight:700; padding:0 10px; }
+  .input-shell input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#172033; padding:9px 0 9px 10px; font-size:.82rem; font-weight:700; }
+  .field select { min-height:39px; border:1px solid #cfd8e5; border-radius:9px; background:#fff; color:#172033; padding:8px 10px; cursor:pointer; font-size:.8rem; font-weight:700; }
+  .field-hint { color:#64748b; display:block; font-size:.68rem; line-height:1.4; margin-top:9px; }
+  .field-hint strong { color:#475569; }
 
-  .dot-inputs { display:flex; flex-wrap:wrap; gap:clamp(3px,0.5vw,5px); margin-top:clamp(4px,0.6vw,8px); justify-content:center; }
-  .dot-input-group { background:#fff; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(5px,0.7vw,8px); display:flex; align-items:center; gap:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); box-shadow:0 1px 2px rgba(0,0,0,0.04); }
-  .dot-input-group .idx { color:#6366f1; font-weight:700; min-width:16px; text-align:center; }
-  .dot-input-group label { color:#64748b; font-weight:600; }
-  .dot-input-group input { width:clamp(36px,5vw,44px); background:#f8f9fb; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  .dot-input-group input:focus { outline:none; border-color:#6366f1; }
-
-  .curve-controls { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; text-align:center; margin-top:5px; }
-
-  /* Summary & Table */
-  .summary { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(10px,1.2vw,14px); margin-top:clamp(6px,0.8vw,10px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-  .summary h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
-  .stat-row { display:flex; justify-content:space-between; padding:clamp(3px,0.4vw,4px) 0; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:1px solid #f1f5f9; }
-  .stat-row .val { font-weight:700; }
-  .stat-row .val.good { color:#059669; } .stat-row .val.warn { color:#d97706; } .stat-row .val.bad { color:#dc2626; }
-  .table-header-row { display:flex; align-items:center; justify-content:space-between; padding:clamp(6px,0.7vw,8px) clamp(8px,1vw,12px); background:#f8f9fb; border-bottom:1px solid #e5e7eb; font-size:clamp(0.55rem,0.7vw,0.65rem); color:#374151; font-weight:600; }
-  .table-header-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.4vw,4px) clamp(6px,0.8vw,8px); font-size:clamp(0.55rem,0.7vw,0.65rem); cursor:pointer; }
-  .table-wrap { max-height:clamp(300px,45vh,450px); overflow-y:auto; background:#fff; border:1px solid #e5e7eb; border-radius:0 0 8px 8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-  table { width:100%; border-collapse:collapse; font-size:clamp(0.55rem,0.7vw,0.65rem); }
-  th { background:#f8f9fb; padding:clamp(5px,0.6vw,7px) clamp(6px,0.8vw,10px); text-align:left; position:sticky; top:0; color:#6366f1; font-weight:600; z-index:1; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:2px solid #e5e7eb; }
-  td { padding:clamp(3px,0.5vw,5px) clamp(6px,0.8vw,10px); border-bottom:1px solid #f1f5f9; color:#374151; }
-  tr:hover td { background:#f8f9fb; }
-  tr:nth-child(even) td { background:#fafbfc; }
-  tr:nth-child(even):hover td { background:#f1f5f9; }
-  .attainment-bar { height:5px; border-radius:2px; background:#e5e7eb; margin-top:3px; }
-  .attainment-fill { height:100%; border-radius:2px; transition:width 0.3s; }
-  .att-good { background:#059669; } .att-ok { background:#d97706; } .att-bad { background:#dc2626; }
-
-  /* Hover & Histogram */
-  #hoverInfo { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.6rem,0.75vw,0.7rem); padding:clamp(4px,0.6vw,6px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; white-space:nowrap; z-index:10; }
+  .workspace { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(280px,.72fr); gap:18px; align-items:start; }
+  .panel { overflow:hidden; }
+  .panel-header { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding:16px 18px; border-bottom:1px solid #edf1f6; }
+  .panel-header h2 { color:#172033; font-size:.9rem; letter-spacing:-.01em; }
+  .panel-header p { color:var(--muted); font-size:.7rem; line-height:1.4; margin-top:4px; }
+  .curve-body { padding:16px; }
+  canvas { border:1px solid #d9e0ea; border-radius:10px; background:#fff; display:block; width:100%; box-shadow:0 1px 2px rgba(15,23,42,.03); }
+  #curve { aspect-ratio:700/400; height:auto; cursor:crosshair; }
+  #histoCanvas { aspect-ratio:700/180; height:auto; }
   .canvas-wrap { position:relative; }
-  .histo-section { margin-top:clamp(8px,1vw,12px); }
-  .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
-  .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
-  @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
+  .dot-controls { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px; }
+  .dot-controls button { border:1px solid var(--border); border-radius:8px; background:#fff; color:#334155; cursor:pointer; padding:7px 11px; font-size:.72rem; font-weight:700; }
+  .dot-controls button:hover { background:var(--surface-soft); border-color:#b8c2d1; }
+  .dot-controls button:disabled { opacity:.4; cursor:not-allowed; }
+  .dot-controls span { color:var(--primary); font-size:.72rem; font-weight:800; }
+  .dot-inputs { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:10px; }
+  .dot-input-group { display:flex; align-items:center; gap:4px; border:1px solid var(--border); border-radius:8px; background:var(--surface-soft); padding:5px 7px; font-size:.65rem; }
+  .dot-input-group .idx { color:var(--primary); font-weight:800; min-width:18px; text-align:center; }
+  .dot-input-group label { color:var(--muted); font-weight:700; }
+  .dot-input-group input { width:44px; border:1px solid #cfd8e5; border-radius:5px; background:#fff; color:#172033; padding:3px; text-align:center; font-size:.66rem; }
+
+  .summary { padding:16px 18px; }
+  .summary h3 { color:var(--primary); font-size:.82rem; margin-bottom:9px; }
+  .stat-row { display:flex; justify-content:space-between; gap:16px; border-bottom:1px solid #f0f3f7; padding:7px 0; color:#475569; font-size:.7rem; }
+  .stat-row:last-child { border-bottom:0; }
+  .stat-row .val { color:#172033; font-weight:800; text-align:right; }
+  .stat-row .val.good { color:var(--green); } .stat-row .val.warn { color:var(--amber); } .stat-row .val.bad { color:var(--red); }
+  .fixed-pay-note { display:flex; gap:9px; align-items:flex-start; margin:0 18px 16px; padding:10px; border:1px solid #c7d2fe; border-radius:9px; background:var(--primary-soft); color:#4338ca; font-size:.68rem; line-height:1.45; }
+  .fixed-pay-note span { font-size:.85rem; }
+
+  .lower-grid { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:18px; margin-top:18px; }
+  .histo-section { padding:14px 16px 16px; }
+  .histo-header { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; color:var(--muted); font-size:.68rem; }
+  .histo-header input { width:52px; border:1px solid #cfd8e5; border-radius:6px; background:#fff; color:#172033; padding:4px; text-align:center; font-size:.68rem; }
+  .table-header-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .table-header-row h2 { font-size:.9rem; }
+  .table-header-row p { color:var(--muted); font-size:.68rem; margin-top:3px; }
+  .table-header-row select { border:1px solid #cfd8e5; border-radius:8px; background:#fff; color:#334155; cursor:pointer; padding:7px 9px; font-size:.7rem; font-weight:700; }
+  .table-wrap { max-height:430px; overflow:auto; background:#fff; }
+  table { width:100%; border-collapse:collapse; font-size:.68rem; white-space:nowrap; }
+  th { position:sticky; top:0; z-index:1; border-bottom:2px solid #e6ebf2; background:#f8fafc; color:#4f46e5; padding:9px 10px; text-align:left; font-size:.68rem; font-weight:800; }
+  td { border-bottom:1px solid #f0f3f7; color:#475569; padding:7px 10px; }
+  tr:hover td { background:#f8fafc; }
+  .attainment-bar { height:4px; border-radius:2px; background:#e5e7eb; margin-top:3px; }
+  .attainment-fill { height:100%; border-radius:2px; transition:width .3s; }
+  .att-good { background:var(--green); } .att-ok { background:var(--amber); } .att-bad { background:var(--red); }
+
+  #hoverInfo, #histoTip { position:absolute; display:none; pointer-events:none; z-index:10; border:1px solid #6366f1; border-radius:7px; background:rgba(30,41,59,.96); color:#f1f5f9; padding:6px 10px; font-size:.68rem; line-height:1.45; }
+  #hoverInfo { white-space:nowrap; }
+  #histoTip { max-width:240px; }
+
+  @media (max-width:1050px) {
+    .setup-grid { grid-template-columns:repeat(4,1fr); }
+    .view-field { grid-column:1/-1; }
+    .workspace { grid-template-columns:1fr; }
+    .summary-panel { display:grid; grid-template-columns:1fr 1fr; }
+    .summary-panel .panel-header { grid-column:1/-1; }
+    .fixed-pay-note { margin-top:16px; }
+    .lower-grid { grid-template-columns:1fr; }
+  }
+  @media (max-width:700px) {
+    .app-shell { padding:14px; }
+    .app-header { flex-direction:column; }
+    .data-actions { justify-content:flex-start; }
+    .setup-grid { grid-template-columns:1fr 1fr; }
+    .view-field, .base-field { grid-column:1/-1; }
+    .summary-panel { display:block; }
+    .panel-header { padding:14px; }
+    .curve-body { padding:10px; }
+    .table-header-row { align-items:flex-start; flex-direction:column; }
+  }
 </style>
 </head>
 <body>
-<h1>Payout Curve Designer</h1>
-<div class="sub">Drag dots to reshape · X = Attainment%, Y = Payout%</div>
-
-<div class="data-actions">
-  <button onclick="document.getElementById('uploadInput').click()">⬆ Upload .txt</button>
-  <button onclick="downloadSample()">⬇ Sample .txt</button>
-  <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
-</div>
-
-<div class="controls-row">
-  <button id="btnTRx" class="active" onclick="setComponent('trx')">TRx</button>
-  <button id="btnNRx" onclick="setComponent('nrx')">NRx</button>
-  <button id="btnCombined" onclick="setComponent('combined')">Combined</button>
-  <label>TRx weight:</label><input type="number" id="trxWeight" value="50" min="0" max="100" onchange="updateBasePayInput();renderAll()">%
-  <label>NRx weight:</label><input type="number" id="nrxWeight" value="50" min="0" max="100" onchange="updateBasePayInput();renderAll()">%
-  <label style="margin-left:6px">Base pay:</label><input type="number" id="basePay" value="3375" min="0" step="100" onchange="syncMasterBase();renderAll()">
-  <label style="margin-left:6px">Quarter:</label>
-  <select id="quarterSelect" onchange="renderAll()">
-    <option value="Q125">Q125</option>
-    <option value="Q225">Q225</option>
-    <option value="Q325">Q325</option>
-    <option value="Q425">Q425</option>
-  </select>
-</div>
-
-<div class="main">
-  <div class="left">
-    <div class="canvas-wrap">
-      <canvas id="curve" width="700" height="400"></canvas>
-      <div id="hoverInfo"></div>
+<div class="app-shell">
+  <header class="app-header">
+    <div>
+      <div class="eyebrow">Sales compensation planning</div>
+      <h1>Payout Curve Designer</h1>
+      <p class="sub">Shape incentive curves, compare components, and review territory-level impact in real time.</p>
     </div>
-    <div class="dot-controls">
-      <button onclick="removeDot()" id="btnRemove">− Remove Dot</button>
-      <span id="dotCount">5 dots</span>
-      <button onclick="addDot()" id="btnAdd">+ Add Dot</button>
+    <div class="data-actions" aria-label="Data actions">
+      <button class="btn" onclick="document.getElementById('uploadInput').click()">Upload data</button>
+      <button class="btn" onclick="downloadSample()">Download sample</button>
+      <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
     </div>
-    <div class="dot-inputs" id="dotInputs"></div>
-    <div class="histo-section">
-      <div class="histo-header">
-        <span>Distribution</span>
-        <span>Bucket:</span><input type="number" id="bucketSize" value="10" min="1" max="50" step="1" onchange="drawHistogram()">%
-        <span>Min:</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
-        <span>Max:</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
-        <span style="color:#94a3b8">Y = # territories</span>
+  </header>
+
+  <section class="setup-card" aria-labelledby="setupHeading">
+    <span class="section-label" id="setupHeading">Plan setup</span>
+    <div class="setup-grid">
+      <div class="field view-field">
+        <label>Curve view</label>
+        <div class="view-tabs" role="tablist" aria-label="Curve component">
+          <button id="btnTRx" class="active" role="tab" aria-selected="true" onclick="setComponent('trx')">TRx</button>
+          <button id="btnNRx" role="tab" aria-selected="false" onclick="setComponent('nrx')">NRx</button>
+          <button id="btnCombined" role="tab" aria-selected="false" onclick="setComponent('combined')">Combined</button>
+        </div>
       </div>
-      <div style="position:relative">
-        <canvas id="histoCanvas" width="700" height="180"></canvas>
-        <div id="histoTip"></div>
+      <div class="field">
+        <label for="trxWeight">TRx weight</label>
+        <div class="input-shell"><input type="number" id="trxWeight" value="50" min="0" max="100" onchange="renderAll()"><span class="suffix">%</span></div>
+      </div>
+      <div class="field">
+        <label for="nrxWeight">NRx weight</label>
+        <div class="input-shell"><input type="number" id="nrxWeight" value="50" min="0" max="100" onchange="renderAll()"><span class="suffix">%</span></div>
+      </div>
+      <div class="field base-field">
+        <label for="basePay">Quarterly base pay</label>
+        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="renderAll()"></div>
+      </div>
+      <div class="field">
+        <label for="quarterSelect">Quarter</label>
+        <select id="quarterSelect" onchange="renderAll()">
+          <option value="Q125">Q1 2025</option><option value="Q225">Q2 2025</option>
+          <option value="Q325">Q3 2025</option><option value="Q425">Q4 2025</option>
+        </select>
       </div>
     </div>
-    <div class="summary" id="summary"></div>
-  </div>
-  <div class="right">
-    <div class="table-header-row">
-      <span>Territory Details</span>
-      <select id="payoutSort" onchange="applySort()">
-        <option value="">Default</option>
-        <option value="desc">Payout%: High → Low</option>
-        <option value="asc">Payout%: Low → High</option>
-      </select>
+    <span class="field-hint"><strong>Base pay stays fixed:</strong> the same quarterly value is used when switching between TRx, NRx, and Combined views. Weights only allocate the combined payout.</span>
+  </section>
+
+  <main>
+    <div class="workspace">
+      <section class="panel" aria-labelledby="curveHeading">
+        <div class="panel-header">
+          <div><h2 id="curveHeading">Payout curve</h2><p>Drag a point or edit its X/Y values to reshape the active component.</p></div>
+        </div>
+        <div class="curve-body">
+          <div class="canvas-wrap"><canvas id="curve" width="700" height="400"></canvas><div id="hoverInfo"></div></div>
+          <div class="dot-controls">
+            <button onclick="removeDot()" id="btnRemove">− Remove point</button>
+            <span id="dotCount">5 points</span>
+            <button onclick="addDot()" id="btnAdd">+ Add point</button>
+          </div>
+          <div class="dot-inputs" id="dotInputs"></div>
+        </div>
+      </section>
+
+      <aside class="panel summary-panel" aria-labelledby="summaryHeading">
+        <div class="panel-header"><div><h2 id="summaryHeading">Plan summary</h2><p>Budget and payout impact for the selected view.</p></div></div>
+        <div class="summary" id="summary"></div>
+        <div class="fixed-pay-note"><span>◆</span><div><strong>Consistent base pay</strong><br>The quarterly base is not recalculated when you change views.</div></div>
+      </aside>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead id="thead"></thead>
-        <tbody id="tbody"></tbody>
-      </table>
+
+    <div class="lower-grid">
+      <section class="panel" aria-labelledby="distributionHeading">
+        <div class="panel-header"><div><h2 id="distributionHeading">Payout distribution</h2><p>See how territories group by payout percentage.</p></div></div>
+        <div class="histo-section">
+          <div class="histo-header">
+            <span>Bucket</span><input type="number" id="bucketSize" value="10" min="1" max="50" step="1" onchange="drawHistogram()"><span>%</span>
+            <span>Min</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+            <span>Max</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+          </div>
+          <div style="position:relative"><canvas id="histoCanvas" width="700" height="180"></canvas><div id="histoTip"></div></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="territoryHeading">
+        <div class="table-header-row">
+          <div><h2 id="territoryHeading">Territory details</h2><p>Goals, attainment, and modeled payouts.</p></div>
+          <select id="payoutSort" aria-label="Sort territories" onchange="applySort()">
+            <option value="">Default order</option><option value="desc">Payout: high to low</option><option value="asc">Payout: low to high</option>
+          </select>
+        </div>
+        <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+      </section>
     </div>
-  </div>
+  </main>
 </div>
 
 <script>
@@ -155,36 +223,16 @@ let componentMode = 'trx';
 
 const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
-let masterBasePayQ = 3375; // total quarterly base (all components)
-
-function updateBasePayInput() {
-  const input = document.getElementById('basePay');
-  if (componentMode === 'combined') {
-    input.value = masterBasePayQ;
-  } else if (componentMode === 'trx') {
-    const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
-    input.value = Math.round(masterBasePayQ * trxW);
-  } else if (componentMode === 'nrx') {
-    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
-    input.value = Math.round(masterBasePayQ * nrxW);
-  }
-}
+const DEFAULT_BASE_PAY_Q = BASE_ANNUAL / 4;
 
 function getEffectiveBasePay() {
-  return parseInt(document.getElementById('basePay').value) || 3375;
+  const value = Number(document.getElementById('basePay').value);
+  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_BASE_PAY_Q;
 }
 
-function syncMasterBase() {
-  const val = parseInt(document.getElementById('basePay').value) || 3375;
-  if (componentMode === 'combined') {
-    masterBasePayQ = val;
-  } else if (componentMode === 'trx') {
-    const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
-    masterBasePayQ = Math.round(val / trxW);
-  } else if (componentMode === 'nrx') {
-    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
-    masterBasePayQ = Math.round(val / nrxW);
-  }
+function getComponentWeight(id) {
+  const value = Number(document.getElementById(id).value);
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) / 100 : 0.5;
 }
 function seededRandom(seed) {
   let s = seed;
@@ -314,7 +362,7 @@ function buildInputs() {
 
 function updateUI() {
   const pts = activePoints();
-  document.getElementById('dotCount').textContent = pts.length + ' dots';
+  document.getElementById('dotCount').textContent = pts.length + ' points';
   document.getElementById('btnRemove').disabled = pts.length <= 2;
   buildInputs();
   drawCurve(); renderAll();
@@ -325,7 +373,10 @@ function setComponent(mode) {
   document.getElementById('btnTRx').className = mode === 'trx' ? 'active' : '';
   document.getElementById('btnNRx').className = mode === 'nrx' ? 'active' : '';
   document.getElementById('btnCombined').className = mode === 'combined' ? 'active' : '';
-  updateBasePayInput();
+  const componentButtons = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
+  Object.entries(componentButtons).forEach(([name, id]) => {
+    document.getElementById(id).setAttribute('aria-selected', String(name === mode));
+  });
   updateUI();
 }
 
@@ -350,8 +401,8 @@ function trxPct(x) { return interpolatePts(points, x); }
 function nrxPct(x) { return interpolatePts(nrxPoints, x); }
 
 function getCombinedPayout(attainment) {
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
+  const trxW = getComponentWeight('trxWeight');
+  const nrxW = getComponentWeight('nrxWeight');
   return { trx:trxPct(attainment), nrx:nrxPct(attainment), combined: trxPct(attainment)*trxW + nrxPct(attainment)*nrxW };
 }
 
@@ -499,8 +550,8 @@ canvas.addEventListener('mousemove', e=>{
     hoverInfo.style.left = (e.clientX - rect.left + 18) + 'px';
     hoverInfo.style.top = (e.clientY - rect.top - 40) + 'px';
     const trx = trxPct(w.x), nrx = nrxPct(w.x);
-    const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+    const trxW = getComponentWeight('trxWeight');
+    const nrxW = getComponentWeight('nrxWeight');
     if (componentMode === 'combined') {
       hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
     } else if (componentMode === 'nrx') {
@@ -676,8 +727,8 @@ function renderAll() {
   const qData = quarterlyData.filter(d => d.quarter === quarter);
   if (!qData.length) return;
 
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const trxW = getComponentWeight('trxWeight');
+  const nrxW = getComponentWeight('nrxWeight');
   const BASE_Q = getEffectiveBasePay();
   const isCombined = componentMode === 'combined';
 
@@ -698,14 +749,14 @@ function renderAll() {
       displayPct = combinedPct;
       displayPayout = combinedPayout;
     } else if (componentMode === 'nrx') {
-      // NRx only: BASE_Q is already the NRx budget
+      // Component views use the same fixed quarterly base pay.
       displayPct = nrxPayPct;
       displayPayout = BASE_Q * (displayPct/100);
       nrxPayoutAmount = displayPayout;
       trxPayoutAmount = 0;
       combinedPayout = displayPayout;
     } else {
-      // TRx only: BASE_Q is already the TRx budget
+      // Component views use the same fixed quarterly base pay.
       displayPct = trxPayPct;
       displayPayout = BASE_Q * (displayPct/100);
       trxPayoutAmount = displayPayout;
@@ -713,7 +764,8 @@ function renderAll() {
       combinedPayout = displayPayout;
     }
 
-    const attClass = trxAttain>=100?'att-good':trxAttain>=85?'att-ok':'att-bad';
+    const activeAttainment = componentMode === 'nrx' ? nrxAttain : trxAttain;
+    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
     return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
       trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
       displayPct, displayPayout, attClass};
@@ -728,8 +780,9 @@ function renderAll() {
   const maxPay = Math.max(...payouts), minPay = Math.min(...payouts);
   const avgPay = totalCombined/headcount;
   const displayPcts = rows.map(r=>r.displayPct);
-  const minAttain = Math.min(...rows.map(r=>r.trxAttain));
-  const maxAttain = Math.max(...rows.map(r=>r.trxAttain));
+  const attainmentValues = rows.map(r => componentMode === 'nrx' ? r.nrxAttain : componentMode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
+  const minAttain = Math.min(...attainmentValues);
+  const maxAttain = Math.max(...attainmentValues);
   const minPct = Math.min(...displayPcts), maxPct = Math.max(...displayPcts);
   const engaged = displayPcts.filter(p=>p>0).length;
   const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
@@ -773,7 +826,7 @@ function renderAll() {
   // Summary
   document.getElementById('summary').innerHTML = `
     <h3>${isCombined?'Combined':componentMode==='nrx'?'NRx':'TRx'} ${quarter} Summary</h3>
-    <div class="stat-row"><span>Quarterly base / person</span><span class="val">$${BASE_Q.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Fixed quarterly base / person</span><span class="val">$${BASE_Q.toLocaleString()}</span></div>
     <div class="stat-row"><span>Headcount</span><span class="val">${headcount}</span></div>
     <div class="stat-row"><span>Base budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
     ${isCombined ? `
