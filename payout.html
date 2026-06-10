@@ -222,6 +222,11 @@
   .summary-card .delta-line .delta-val.up { color:var(--red); }
   .summary-card .delta-line .delta-val.down { color:var(--green); }
 
+  /* Single-plan histogram: cap width and center, otherwise the global
+     `canvas { width:100% }` rule stretches it across the whole panel
+     and the bars look distorted on wide screens. */
+  .histo-single-wrap { display:flex; justify-content:center; align-items:flex-start; width:100%; }
+  .histo-single-wrap canvas { width:auto; max-width:100%; }
   .histo-multiples { display:grid; gap:14px; }
   .histo-multiples.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .histo-multiples.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -1562,10 +1567,21 @@ function drawHistogram() {
   histoBars = [];
 
   if (!compareMode) {
-    container.innerHTML = '<canvas id="histoCanvas"></canvas>';
+    // Center the canvas inside a wrapper and cap its width. Without this, the
+    // global `canvas { width:100% }` rule stretches the chart across the full
+    // panel on wide screens, distorting the bars.
+    container.innerHTML = '<div class="histo-single-wrap"><canvas id="histoCanvas"></canvas></div>';
     const c = container.querySelector('canvas');
+    const wrap = container.firstElementChild;
+    const SINGLE_HISTO_MAX_W = 880;
+    const SINGLE_HISTO_MIN_W = 420;
+    const SINGLE_HISTO_H = 280;
+    const wrapW = wrap.getBoundingClientRect().width || 700;
+    const cssW = Math.min(SINGLE_HISTO_MAX_W, Math.max(SINGLE_HISTO_MIN_W, Math.round(wrapW)));
+    c.style.width = cssW + 'px';
+    c.style.height = SINGLE_HISTO_H + 'px';
     const buckets = bucketize(entriesPerPlan[0], range);
-    const bars = drawHistogramCanvas(c, 700, 260, buckets, range, { compact: false });
+    const bars = drawHistogramCanvas(c, cssW, SINGLE_HISTO_H, buckets, range, { compact: false });
     histoBars = bars;
     attachHistoMouseHandler(c);
   } else {
@@ -2274,6 +2290,14 @@ window.addEventListener('afterprint', () => {
     try { drawCurve(); } catch (e) {}
     try { drawHistogram(); } catch (e) {}
   }
+});
+
+// Re-fit the histogram when the window is resized so single-plan mode keeps
+// the canvas at the right CSS width (and compare-mode multiples re-flow).
+let _histoResizeT = null;
+window.addEventListener('resize', () => {
+  if (_histoResizeT) clearTimeout(_histoResizeT);
+  _histoResizeT = setTimeout(() => { try { drawHistogram(); } catch (e) {} }, 120);
 });
 
 // ── Keyboard shortcuts ──
