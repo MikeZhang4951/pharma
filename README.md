@@ -9,6 +9,7 @@ A dependency-free, browser-based sales incentive modeling tool. The application 
 - Calculates quarterly territory attainment, payout percentages, payouts, budget variance, engagement, and other summary statistics.
 - Treats TRx and NRx goals/actuals as prescription volumes and displays them without currency formatting.
 - Models TRx, NRx, and combined national payout at configurable normalized attainment levels, with attainment levels as columns, selectable summary metrics as rows, and independent TRx/NRx selectors for combined scenarios.
+
 - Shows a configurable histogram of territory payout percentages.
 - Supports sorting territory results by payout percentage.
 - Imports tab-separated, CSV, or JSON territory data and provides a sample download.
