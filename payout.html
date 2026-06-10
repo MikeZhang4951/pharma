@@ -5,181 +5,263 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sales Payout Curve</title>
 <style>
+  :root {
+    --bg:#f4f7fb; --surface:#fff; --surface-soft:#f8fafc; --border:#dfe5ee;
+    --text:#182230; --muted:#64748b; --primary:#4f46e5; --primary-dark:#4338ca;
+    --primary-soft:#eef2ff; --green:#059669; --amber:#d97706; --red:#dc2626;
+    --shadow:0 10px 30px rgba(15,23,42,0.06); --radius:14px;
+  }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#f8f9fb; color:#1a1a2e; font-family:system-ui,sans-serif; padding:clamp(8px,1.5vw,20px); min-height:100vh; }
-  h1 { font-size:clamp(1rem,1.8vw,1.3rem); text-align:center; margin-bottom:4px; color:#1e293b; }
-  .sub { font-size:clamp(0.6rem,0.9vw,0.75rem); color:#64748b; text-align:center; margin-bottom:clamp(8px,1vw,14px); }
-  .main { display:flex; gap:clamp(8px,1.2vw,14px); max-width:1500px; margin:0 auto; flex-wrap:wrap; }
-  .left { flex:1 1 55%; min-width:340px; max-width:100%; }
-  .right { flex:0 1 42%; min-width:300px; max-width:550px; }
-  canvas { border:1px solid #d1d5db; border-radius:6px; background:#fff; display:block; width:100%; cursor:crosshair; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
-  #curve { aspect-ratio:700/400; height:auto; }
-  #histoCanvas { aspect-ratio:700/180; height:auto; }
-
-  /* Controls */
-  .controls-row { display:flex; justify-content:center; align-items:center; gap:clamp(6px,1vw,12px); margin-bottom:clamp(4px,0.6vw,8px); flex-wrap:wrap; }
-  .controls-row button, .controls-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
-  .controls-row button.active { background:#6366f1; color:#fff; border-color:#6366f1; }
-  button.active { background:#6366f1 !important; color:#fff !important; border-color:#6366f1 !important; }
-  .controls-row button:hover { background:#f1f5f9; }
-  .controls-row button.active:hover { background:#4f46e5; }
-  .controls-row select:focus { outline:none; border-color:#6366f1; }
-  .controls-row label { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
-  .controls-row input[type=number] { width:clamp(36px,4vw,42px); background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  .controls-row input:focus { outline:none; border-color:#6366f1; }
-
-  .data-actions { display:flex; justify-content:center; gap:clamp(6px,1vw,10px); }
-  .data-actions button { background:#fff; color:#4b5563; border:1px solid #d1d5db; border-radius:5px; padding:clamp(4px,0.5vw,5px) clamp(12px,1.5vw,16px); cursor:pointer; font-size:clamp(0.55rem,0.7vw,0.65rem); }
-  .data-actions button:hover { background:#f1f5f9; border-color:#94a3b8; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif; min-height:100vh; }
+  button, input, select { font:inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid rgba(79,70,229,.2); outline-offset:2px; }
+  .app-shell { max-width:1500px; margin:0 auto; padding:clamp(16px,2.5vw,36px); }
+  .app-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:20px; }
+  .eyebrow { color:var(--primary); font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:7px; }
+  h1 { color:#0f172a; font-size:clamp(1.55rem,2.7vw,2.25rem); line-height:1.1; letter-spacing:-.035em; }
+  .sub { color:var(--muted); font-size:.88rem; margin-top:8px; line-height:1.5; }
+  .data-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .btn { border:1px solid var(--border); border-radius:9px; background:var(--surface); color:#334155; padding:9px 13px; cursor:pointer; font-size:.76rem; font-weight:700; transition:.18s ease; }
+  .btn:hover { border-color:#b8c2d1; background:var(--surface-soft); transform:translateY(-1px); }
   #uploadInput { display:none; }
 
-  .dot-controls { display:flex; align-items:center; justify-content:center; gap:clamp(6px,1vw,10px); margin-top:clamp(4px,0.6vw,8px); }
-  .dot-controls button { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,4px) clamp(10px,1.2vw,14px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); }
-  .dot-controls button:hover { background:#f1f5f9; border-color:#94a3b8; }
-  .dot-controls button:disabled { opacity:0.4; cursor:not-allowed; }
-  .dot-controls span { color:#6366f1; font-weight:700; font-size:clamp(0.65rem,0.85vw,0.75rem); }
+  .setup-card, .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .setup-card { padding:18px; margin-bottom:18px; }
+  .section-label { color:#334155; display:block; font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+  .setup-grid { display:grid; grid-template-columns:minmax(260px,1.25fr) repeat(4,minmax(120px,.62fr)); align-items:end; gap:14px; }
+  .view-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:4px; border-radius:11px; background:#f1f5f9; }
+  .view-tabs button { border:0; border-radius:8px; background:transparent; color:#64748b; cursor:pointer; padding:10px 12px; font-size:.78rem; font-weight:800; transition:.18s ease; }
+  .view-tabs button:hover { color:#334155; background:rgba(255,255,255,.65); }
+  .view-tabs button.active { background:var(--surface); color:var(--primary); box-shadow:0 2px 8px rgba(15,23,42,.09); }
+  .field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+  .field label { color:#475569; font-size:.72rem; font-weight:700; }
+  .input-shell { display:flex; align-items:center; min-height:39px; overflow:hidden; border:1px solid #cfd8e5; border-radius:9px; background:var(--surface); transition:.18s ease; }
+  .input-shell:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+  .input-shell .prefix, .input-shell .suffix { color:#64748b; font-size:.76rem; font-weight:700; padding:0 10px; }
+  .input-shell input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#172033; padding:9px 0 9px 10px; font-size:.82rem; font-weight:700; }
+  .field select { min-height:39px; border:1px solid #cfd8e5; border-radius:9px; background:#fff; color:#172033; padding:8px 10px; cursor:pointer; font-size:.8rem; font-weight:700; }
+  .field-hint { color:#64748b; display:block; font-size:.68rem; line-height:1.4; margin-top:9px; }
+  .field-hint strong { color:#475569; }
 
-  .dot-inputs { display:flex; flex-wrap:wrap; gap:clamp(3px,0.5vw,5px); margin-top:clamp(4px,0.6vw,8px); justify-content:center; }
-  .dot-input-group { background:#fff; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.5vw,5px) clamp(5px,0.7vw,8px); display:flex; align-items:center; gap:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); box-shadow:0 1px 2px rgba(0,0,0,0.04); }
-  .dot-input-group .idx { color:#6366f1; font-weight:700; min-width:16px; text-align:center; }
-  .dot-input-group label { color:#64748b; font-weight:600; }
-  .dot-input-group input { width:clamp(36px,5vw,44px); background:#f8f9fb; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  .dot-input-group input:focus { outline:none; border-color:#6366f1; }
-
-  .curve-controls { font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; text-align:center; margin-top:5px; }
-
-  /* Summary & Table */
-  .summary { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(10px,1.2vw,14px); margin-top:clamp(6px,0.8vw,10px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-  .summary h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
-  .stat-row { display:flex; justify-content:space-between; padding:clamp(3px,0.4vw,4px) 0; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:1px solid #f1f5f9; }
-  .stat-row .val { font-weight:700; }
-  .stat-row .val.good { color:#059669; } .stat-row .val.warn { color:#d97706; } .stat-row .val.bad { color:#dc2626; }
-  .table-header-row { display:flex; align-items:center; justify-content:space-between; padding:clamp(6px,0.7vw,8px) clamp(8px,1vw,12px); background:#f8f9fb; border-bottom:1px solid #e5e7eb; font-size:clamp(0.55rem,0.7vw,0.65rem); color:#374151; font-weight:600; }
-  .table-header-row select { background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:5px; padding:clamp(3px,0.4vw,4px) clamp(6px,0.8vw,8px); font-size:clamp(0.55rem,0.7vw,0.65rem); cursor:pointer; }
-  .table-wrap { max-height:clamp(300px,45vh,450px); overflow-y:auto; background:#fff; border:1px solid #e5e7eb; border-radius:0 0 8px 8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-  table { width:100%; border-collapse:collapse; font-size:clamp(0.55rem,0.7vw,0.65rem); }
-  th { background:#f8f9fb; padding:clamp(5px,0.6vw,7px) clamp(6px,0.8vw,10px); text-align:left; position:sticky; top:0; color:#6366f1; font-weight:600; z-index:1; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:2px solid #e5e7eb; }
-  td { padding:clamp(3px,0.5vw,5px) clamp(6px,0.8vw,10px); border-bottom:1px solid #f1f5f9; color:#374151; }
-  tr:hover td { background:#f8f9fb; }
-  tr:nth-child(even) td { background:#fafbfc; }
-  tr:nth-child(even):hover td { background:#f1f5f9; }
-  .attainment-bar { height:5px; border-radius:2px; background:#e5e7eb; margin-top:3px; }
-  .attainment-fill { height:100%; border-radius:2px; transition:width 0.3s; }
-  .att-good { background:#059669; } .att-ok { background:#d97706; } .att-bad { background:#dc2626; }
-
-  /* Hover & Histogram */
-  #hoverInfo { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.6rem,0.75vw,0.7rem); padding:clamp(4px,0.6vw,6px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; white-space:nowrap; z-index:10; }
+  .workspace { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(280px,.72fr); gap:18px; align-items:start; }
+  .panel { overflow:hidden; }
+  .panel-header { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding:16px 18px; border-bottom:1px solid #edf1f6; }
+  .panel-header h2 { color:#172033; font-size:.9rem; letter-spacing:-.01em; }
+  .panel-header p { color:var(--muted); font-size:.7rem; line-height:1.4; margin-top:4px; }
+  .curve-body { padding:16px; }
+  canvas { border:1px solid #d9e0ea; border-radius:10px; background:#fff; display:block; width:100%; box-shadow:0 1px 2px rgba(15,23,42,.03); }
+  #curve { aspect-ratio:700/400; height:auto; cursor:crosshair; }
+  #histoCanvas { aspect-ratio:700/260; height:auto; min-height:260px; }
   .canvas-wrap { position:relative; }
-  .histo-section { margin-top:clamp(8px,1vw,12px); }
-  .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
-  .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
-  #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
-  @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
+  .dot-controls { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px; }
+  .dot-controls button { border:1px solid var(--border); border-radius:8px; background:#fff; color:#334155; cursor:pointer; padding:7px 11px; font-size:.72rem; font-weight:700; }
+  .dot-controls button:hover { background:var(--surface-soft); border-color:#b8c2d1; }
+  .dot-controls button:disabled { opacity:.4; cursor:not-allowed; }
+  .dot-controls span { color:var(--primary); font-size:.72rem; font-weight:800; }
+  .dot-inputs { max-width:520px; margin:12px auto 0; overflow:hidden; border:1px solid var(--border); border-radius:9px; }
+  .points-table { width:100%; border-collapse:collapse; table-layout:fixed; white-space:normal; }
+  .points-table th { position:static; border-bottom:1px solid var(--border); background:var(--surface-soft); color:#475569; padding:7px 10px; font-size:.66rem; text-align:left; }
+  .points-table td { border-bottom:1px solid #edf1f6; padding:6px 10px; }
+  .points-table tbody tr:last-child td { border-bottom:0; }
+  .points-table tbody tr:hover td { background:#fafbff; }
+  .points-table .idx { color:var(--primary); font-size:.68rem; font-weight:800; }
+  .points-table input { width:100%; border:1px solid #cfd8e5; border-radius:6px; background:#fff; color:#172033; padding:5px 7px; text-align:right; font-size:.7rem; }
+
+  .summary { padding:16px 18px; }
+  .summary h3 { color:var(--primary); font-size:.82rem; margin-bottom:9px; }
+  .stat-row { display:flex; justify-content:space-between; gap:16px; border-bottom:1px solid #f0f3f7; padding:7px 0; color:#475569; font-size:.7rem; }
+  .stat-row:last-child { border-bottom:0; }
+  .stat-row .val { color:#172033; font-weight:800; text-align:right; }
+  .stat-row .val.good { color:var(--green); } .stat-row .val.warn { color:var(--amber); } .stat-row .val.bad { color:var(--red); }
+  .fixed-pay-note { display:flex; gap:9px; align-items:flex-start; margin:0 18px 16px; padding:10px; border:1px solid #c7d2fe; border-radius:9px; background:var(--primary-soft); color:#4338ca; font-size:.68rem; line-height:1.45; }
+  .fixed-pay-note span { font-size:.85rem; }
+
+  .lower-grid { display:grid; grid-template-columns:1fr; gap:18px; margin-top:18px; }
+  .national-section { margin-top:18px; }
+  .normalization-controls { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding:16px 18px; border-bottom:1px solid var(--border); background:var(--surface-soft); }
+  .normalization-copy { max-width:760px; color:var(--muted); font-size:.72rem; line-height:1.55; }
+  .normalization-copy strong { color:#334155; }
+  .level-editor { display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap; }
+  .level-editor .field { width:120px; }
+  .level-editor button { min-height:39px; }
+  .level-chips { display:flex; flex-wrap:wrap; gap:7px; padding:12px 18px 0; }
+  .level-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid #c7d2fe; border-radius:999px; background:var(--primary-soft); color:#4338ca; padding:5px 8px 5px 10px; font-size:.7rem; font-weight:800; }
+  .level-chip button { width:18px; height:18px; border:0; border-radius:50%; background:#c7d2fe; color:#4338ca; cursor:pointer; font-size:.72rem; line-height:1; }
+  .national-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:14px 18px 18px; }
+  .national-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:11px; background:#fff; }
+  .national-card.combined-card { grid-column:1/-1; }
+  .national-card-header { padding:12px 14px; border-bottom:1px solid var(--border); background:#fafbff; }
+  .national-card-header h3 { color:#172033; font-size:.82rem; }
+  .national-card-header p { color:var(--muted); font-size:.67rem; line-height:1.45; margin-top:4px; }
+  .national-table-wrap { overflow:auto; }
+  .national-table { min-width:520px; }
+  .national-table th, .national-table td { text-align:right; }
+  .national-table th:first-child, .national-table td:first-child { text-align:left; }
+  .national-table .matrix-cell { font-weight:800; color:#172033; }
+  .national-table .matrix-cell small { display:block; color:var(--muted); font-size:.58rem; font-weight:600; margin-top:2px; }
+  .empty-levels { padding:20px; color:var(--muted); font-size:.72rem; text-align:center; }
+  .histo-section { padding:14px 16px 16px; }
+  .histo-header { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; color:var(--muted); font-size:.68rem; }
+  .histo-header input { width:52px; border:1px solid #cfd8e5; border-radius:6px; background:#fff; color:#172033; padding:4px; text-align:center; font-size:.68rem; }
+  .table-header-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .table-header-row h2 { font-size:.9rem; }
+  .table-header-row p { color:var(--muted); font-size:.68rem; margin-top:3px; }
+  .table-header-row select { border:1px solid #cfd8e5; border-radius:8px; background:#fff; color:#334155; cursor:pointer; padding:7px 9px; font-size:.7rem; font-weight:700; }
+  .table-wrap { max-height:430px; overflow:auto; background:#fff; }
+  table { width:100%; border-collapse:collapse; font-size:.68rem; white-space:nowrap; }
+  th { position:sticky; top:0; z-index:1; border-bottom:2px solid #e6ebf2; background:#f8fafc; color:#4f46e5; padding:9px 10px; text-align:left; font-size:.68rem; font-weight:800; }
+  td { border-bottom:1px solid #f0f3f7; color:#475569; padding:7px 10px; }
+  tr:hover td { background:#f8fafc; }
+  .attainment-bar { height:4px; border-radius:2px; background:#e5e7eb; margin-top:3px; }
+  .attainment-fill { height:100%; border-radius:2px; transition:width .3s; }
+  .att-good { background:var(--green); } .att-ok { background:var(--amber); } .att-bad { background:var(--red); }
+
+  #hoverInfo, #histoTip { position:absolute; display:none; pointer-events:none; z-index:10; border:1px solid #6366f1; border-radius:7px; background:rgba(30,41,59,.96); color:#f1f5f9; padding:6px 10px; font-size:.68rem; line-height:1.45; }
+  #hoverInfo { white-space:nowrap; }
+  #histoTip { max-width:240px; }
+
+  @media (max-width:1050px) {
+    .setup-grid { grid-template-columns:repeat(4,1fr); }
+    .view-field { grid-column:1/-1; }
+    .workspace { grid-template-columns:1fr; }
+    .summary-panel { display:grid; grid-template-columns:1fr 1fr; }
+    .summary-panel .panel-header { grid-column:1/-1; }
+    .fixed-pay-note { margin-top:16px; }
+    .lower-grid { grid-template-columns:1fr; }
+    .normalization-controls { align-items:flex-start; flex-direction:column; }
+    .national-grid { grid-template-columns:1fr; }
+    .national-card.combined-card { grid-column:auto; }
+  }
+  @media (max-width:700px) {
+    .app-shell { padding:14px; }
+    .app-header { flex-direction:column; }
+    .data-actions { justify-content:flex-start; }
+    .setup-grid { grid-template-columns:1fr 1fr; }
+    .view-field, .base-field { grid-column:1/-1; }
+    .summary-panel { display:block; }
+    .panel-header { padding:14px; }
+    .curve-body { padding:10px; }
+    .table-header-row { align-items:flex-start; flex-direction:column; }
+    .normalization-controls, .national-grid { padding-left:14px; padding-right:14px; }
+    .level-editor { width:100%; }
+    .level-editor .field { flex:1; }
+  }
 </style>
 </head>
 <body>
-<h1>Payout Curve Designer</h1>
-<div class="sub">Drag dots to reshape · X = Attainment%, Y = Payout%</div>
-
-<div class="data-actions">
-  <button onclick="document.getElementById('uploadInput').click()">⬆ Upload .txt</button>
-  <button onclick="downloadSample()">⬇ Sample .txt</button>
-  <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
-</div>
-
-<div class="controls-row">
-  <button id="btnTRx" class="active" onclick="setComponent('trx')">TRx</button>
-  <button id="btnNRx" onclick="setComponent('nrx')">NRx</button>
-  <button id="btnCombined" onclick="setComponent('combined')">Combined</button>
-  <label>TRx weight:</label><input type="number" id="trxWeight" value="50" min="0" max="100" onchange="renderAll()">%
-  <label>NRx weight:</label><input type="number" id="nrxWeight" value="50" min="0" max="100" onchange="renderAll()">%
-  <label style="margin-left:6px">Base pay:</label><input type="number" id="basePay" value="3375" min="0" step="100" onchange="syncMasterBase();renderAll()">
-  <label style="margin-left:6px">Quarter:</label>
-  <select id="quarterSelect" onchange="renderAll()">
-    <option value="Q125">Q125</option>
-    <option value="Q225">Q225</option>
-    <option value="Q325">Q325</option>
-    <option value="Q425">Q425</option>
-  </select>
-</div>
-
-<div class="main">
-  <div class="left">
-    <div class="canvas-wrap">
-      <canvas id="curve" width="700" height="400"></canvas>
-      <div id="hoverInfo"></div>
+<div class="app-shell">
+  <header class="app-header">
+    <div>
+      <div class="eyebrow">Sales compensation planning</div>
+      <h1>Payout Curve Designer</h1>
+      <p class="sub">Shape incentive curves, compare components, and review territory-level impact in real time.</p>
     </div>
-    <div class="dot-controls">
-      <button onclick="removeDot()" id="btnRemove">− Remove Dot</button>
-      <span id="dotCount">5 dots</span>
-      <button onclick="addDot()" id="btnAdd">+ Add Dot</button>
+    <div class="data-actions" aria-label="Data actions">
+      <button class="btn" onclick="document.getElementById('uploadInput').click()">Upload data</button>
+      <button class="btn" onclick="downloadSample()">Download sample</button>
+      <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
     </div>
-    <div class="dot-inputs" id="dotInputs"></div>
-    <div class="histo-section">
-      <div class="histo-header">
-        <span>Distribution</span>
-        <span>Bucket:</span><input type="number" id="bucketSize" value="10" min="1" max="50" step="1" onchange="drawHistogram()">%
-        <span>Min:</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
-        <span>Max:</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
-        <span style="color:#94a3b8">Y = # territories</span>
-      </div>
-      <div style="position:relative">
-        <canvas id="histoCanvas" width="700" height="180"></canvas>
-        <div id="histoTip"></div>
-      </div>
-    </div>
-    <div class="histo-section">
-      <div class="histo-header">
-        <span>National Pay Summary</span>
-        <div style="display:flex;gap:4px;">
-          <button id="btnNatTRx" class="active" onclick="setNatMode('trx')" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:0.65rem;">TRx</button>
-          <button id="btnNatNRx" onclick="setNatMode('nrx')" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:0.65rem;">NRx</button>
-          <button id="btnNatComb" onclick="setNatMode('combined')" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:0.65rem;">Combined</button>
+  </header>
+
+  <section class="setup-card" aria-labelledby="setupHeading">
+    <span class="section-label" id="setupHeading">Plan setup</span>
+    <div class="setup-grid">
+      <div class="field view-field">
+        <label>Curve view</label>
+        <div class="view-tabs" role="tablist" aria-label="Curve component">
+          <button id="btnTRx" class="active" role="tab" aria-selected="true" onclick="setComponent('trx')">TRx</button>
+          <button id="btnNRx" role="tab" aria-selected="false" onclick="setComponent('nrx')">NRx</button>
+          <button id="btnCombined" role="tab" aria-selected="false" onclick="setComponent('combined')">Combined</button>
         </div>
       </div>
-      <div id="natAttainRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-        <span style="font-size:0.6rem;color:#64748b;">Attainment:</span>
-        <div id="natPills" style="display:flex;gap:3px;flex-wrap:wrap;"></div>
-        <input type="number" id="natCustom" placeholder="+%" min="0" max="300" style="width:40px;font-size:0.6rem;padding:2px 4px;border:1px solid #d1d5db;border-radius:12px;text-align:center;" onkeydown="if(event.key==='Enter')addNatAttain()">
+      <div class="field">
+        <label for="trxWeight">TRx weight</label>
+        <div class="input-shell"><input type="number" id="trxWeight" value="50" min="0" max="100" step="1" oninput="syncComponentWeights('trx')"><span class="suffix">%</span></div>
       </div>
-      <div id="natCombRow" style="display:none;align-items:center;gap:8px;margin-bottom:6px;font-size:0.6rem;">
-        <span style="color:#64748b;">TRx att:</span><input type="number" id="natCombTRx" value="100" min="0" max="300" style="width:44px;padding:2px 4px;border:1px solid #d1d5db;border-radius:5px;text-align:center;font-size:0.6rem;" onchange="drawNatSummary()">
-        <span style="color:#64748b;">NRx att:</span><input type="number" id="natCombNRx" value="100" min="0" max="300" style="width:44px;padding:2px 4px;border:1px solid #d1d5db;border-radius:5px;text-align:center;font-size:0.6rem;" onchange="drawNatSummary()">
+      <div class="field">
+        <label for="nrxWeight">NRx weight</label>
+        <div class="input-shell"><input type="number" id="nrxWeight" value="50" min="0" max="100" step="1" oninput="syncComponentWeights('nrx')"><span class="suffix">%</span></div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;font-size:0.55rem;color:#94a3b8;" id="natMetrics">
-        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="totalPay"> Total Pay</label>
-        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="budgetUtil"> Util%</label>
-        <label style="cursor:pointer;"><input type="checkbox" checked onchange="drawNatSummary()" data-m="avgPay"> Avg</label>
-        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="minPay"> Min</label>
-        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="maxPay"> Max</label>
-        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="engaged"> Eng%</label>
-        <label style="cursor:pointer;"><input type="checkbox" onchange="drawNatSummary()" data-m="pctRange"> Range</label>
+      <div class="field base-field">
+        <label for="basePay">Quarterly base pay</label>
+        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="renderAll()"></div>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;font-size:0.6rem;" id="natTable">
-          <thead id="natThead"></thead>
-          <tbody id="natTbody"></tbody>
-        </table>
+      <div class="field">
+        <label for="quarterSelect">Quarter</label>
+        <select id="quarterSelect" onchange="renderAll()">
+          <option value="Q125">Q1 2025</option><option value="Q225">Q2 2025</option>
+          <option value="Q325">Q3 2025</option><option value="Q425">Q4 2025</option>
+        </select>
       </div>
     </div>
-    <div class="summary" id="summary"></div>
-  </div>
-  <div class="right">
-    <div class="table-header-row">
-      <span>Territory Details</span>
-      <select id="payoutSort" onchange="applySort()">
-        <option value="">Default</option>
-        <option value="desc">Comb%: High → Low</option>
-        <option value="asc">Comb%: Low → High</option>
-      </select>
+    <span class="field-hint"><strong>Weights always total 100%:</strong> changing either component automatically updates the other. The quarterly base is allocated to TRx and NRx by these weights.</span>
+  </section>
+
+  <main>
+    <div class="workspace">
+      <section class="panel" aria-labelledby="curveHeading">
+        <div class="panel-header">
+          <div><h2 id="curveHeading">Payout curve</h2><p>Drag a point or edit its X/Y values to reshape the active component.</p></div>
+        </div>
+        <div class="curve-body">
+          <div class="canvas-wrap"><canvas id="curve" width="700" height="400"></canvas><div id="hoverInfo"></div></div>
+          <div class="dot-controls">
+            <button onclick="removeDot()" id="btnRemove">− Remove point</button>
+            <span id="dotCount">5 points</span>
+            <button onclick="addDot()" id="btnAdd">+ Add point</button>
+          </div>
+          <div class="dot-inputs" id="dotInputs"></div>
+        </div>
+      </section>
+
+      <aside class="panel summary-panel" aria-labelledby="summaryHeading">
+        <div class="panel-header"><div><h2 id="summaryHeading">Plan summary</h2><p>Budget and payout impact for the selected view.</p></div></div>
+        <div class="summary" id="summary"></div>
+        <div class="fixed-pay-note"><span>◆</span><div><strong>Allocated base pay</strong><br>Component views show their weighted share; Combined shows the full quarterly base.</div></div>
+      </aside>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead id="thead"></thead>
-        <tbody id="tbody"></tbody>
-      </table>
+
+    <div class="lower-grid">
+      <section class="panel" aria-labelledby="distributionHeading">
+        <div class="panel-header"><div><h2 id="distributionHeading">Payout distribution</h2><p>See how territories group by payout percentage.</p></div></div>
+        <div class="histo-section">
+          <div class="histo-header">
+            <span>Bucket</span><input type="number" id="bucketSize" value="10" min="1" max="50" step="1" onchange="drawHistogram()"><span>%</span>
+            <span>Min</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+            <span>Max</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
+          </div>
+          <div style="position:relative"><canvas id="histoCanvas" width="700" height="260"></canvas><div id="histoTip"></div></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="territoryHeading">
+        <div class="table-header-row">
+          <div><h2 id="territoryHeading">Territory details</h2><p>Goals, attainment, and modeled payouts.</p></div>
+          <select id="payoutSort" aria-label="Sort territories" onchange="applySort()">
+            <option value="">Default order</option><option value="desc">Comb%: high to low</option><option value="asc">Comb%: low to high</option>
+          </select>
+        </div>
+        <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+      </section>
     </div>
-  </div>
+
+    <section class="panel national-section" aria-labelledby="nationalSummaryHeading">
+      <div class="panel-header"><div><h2 id="nationalSummaryHeading">Normalized national pay summaries</h2><p>Model national payout at configurable TRx and NRx attainment levels.</p></div></div>
+      <div class="normalization-controls">
+        <p class="normalization-copy"><strong>How normalization works:</strong> current national attainment is calculated as total actual volume ÷ total goal volume. Each territory’s attainment is multiplied by the target-to-current national ratio before its payout curve is applied.</p>
+        <div class="level-editor">
+          <div class="field"><label for="normalizationLevel">Add attainment level</label><div class="input-shell"><input type="number" id="normalizationLevel" value="120" min="0" max="300" step="1" onkeydown="if(event.key==='Enter') addNormalizationLevel()"><span class="suffix">%</span></div></div>
+          <button class="btn" type="button" onclick="addNormalizationLevel()">+ Add level</button>
+        </div>
+      </div>
+      <div class="level-chips" id="normalizationChips"></div>
+      <div class="national-grid">
+        <article class="national-card"><div class="national-card-header"><h3>TRx national pay summary</h3><p id="trxNationalContext"></p></div><div class="national-table-wrap" id="trxNationalSummary"></div></article>
+        <article class="national-card"><div class="national-card-header"><h3>NRx national pay summary</h3><p id="nrxNationalContext"></p></div><div class="national-table-wrap" id="nrxNationalSummary"></div></article>
+        <article class="national-card combined-card"><div class="national-card-header"><h3>Combined national pay summary</h3><p>Mix any TRx normalized level (rows) with any NRx normalized level (columns). Each cell shows total payout and full-plan budget utilization.</p></div><div class="national-table-wrap" id="combinedNationalSummary"></div></article>
+      </div>
+    </section>
+  </main>
 </div>
 
 <script>
@@ -187,16 +269,31 @@
 let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
 let payoutSortState = '';
 let componentMode = 'trx';
+let normalizationLevels = [80, 90, 100, 110];
 
 const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
-let masterBasePayQ = 3375;
+const DEFAULT_BASE_PAY_Q = BASE_ANNUAL / 4;
 
 function getEffectiveBasePay() {
-  return parseInt(document.getElementById('basePay').value) || 3375;
+  const value = Number(document.getElementById('basePay').value);
+  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_BASE_PAY_Q;
 }
-function syncMasterBase() {
-  masterBasePayQ = parseInt(document.getElementById('basePay').value) || 3375;
+
+function getComponentWeight(id) {
+  const value = Number(document.getElementById(id).value);
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) / 100 : 0.5;
+}
+
+function syncComponentWeights(changedComponent) {
+  const changedInput = document.getElementById(changedComponent + 'Weight');
+  if (changedInput.value === '') return;
+  const changedWeight = Math.min(100, Math.max(0, Number(changedInput.value)));
+  if (!Number.isFinite(changedWeight)) return;
+  const otherInput = document.getElementById(changedComponent === 'trx' ? 'nrxWeight' : 'trxWeight');
+  changedInput.value = changedWeight;
+  otherInput.value = 100 - changedWeight;
+  renderAll();
 }
 function seededRandom(seed) {
   let s = seed;
@@ -204,7 +301,7 @@ function seededRandom(seed) {
 }
 
 // Load & generate quarterly data from territories.json
-fetch('/territories.json').then(r=>r.json()).then(territories=>{
+fetch('./territories.json').then(r=>r.json()).then(territories=>{
   quarterlyData = [];
   const quarters = ['Q125','Q225','Q325','Q425'];
   territories.forEach((t,i) => {
@@ -315,18 +412,23 @@ function updateDotFromInput(idx, field, value) {
 
 function buildInputs() {
   const pts = activePoints();
-  document.getElementById('dotInputs').innerHTML = pts.map((p,i) => `
-    <div class="dot-input-group">
-      <span class="idx">#${i}</span>
-      <label>X:</label><input type="number" min="0" max="${MAX_X}" value="${p.x}" onchange="updateDotFromInput(${i},'x',this.value)" step="1">
-      <label>Y:</label><input type="number" min="0" max="${MAX_Y}" value="${p.y}" onchange="updateDotFromInput(${i},'y',this.value)" step="1">
-    </div>
+  const rows = pts.map((p,i) => `
+    <tr>
+      <td><span class="idx">Point ${i + 1}</span></td>
+      <td><input aria-label="Point ${i + 1} attainment" type="number" min="0" max="${MAX_X}" value="${p.x}" onchange="updateDotFromInput(${i},'x',this.value)" step="1"></td>
+      <td><input aria-label="Point ${i + 1} payout" type="number" min="0" max="${MAX_Y}" value="${p.y}" onchange="updateDotFromInput(${i},'y',this.value)" step="1"></td>
+    </tr>
   `).join('');
+  document.getElementById('dotInputs').innerHTML = `
+    <table class="points-table">
+      <thead><tr><th>Curve point</th><th>Attainment (X%)</th><th>Payout (Y%)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 function updateUI() {
   const pts = activePoints();
-  document.getElementById('dotCount').textContent = pts.length + ' dots';
+  document.getElementById('dotCount').textContent = pts.length + ' points';
   document.getElementById('btnRemove').disabled = pts.length <= 2;
   buildInputs();
   drawCurve(); renderAll();
@@ -337,6 +439,10 @@ function setComponent(mode) {
   document.getElementById('btnTRx').className = mode === 'trx' ? 'active' : '';
   document.getElementById('btnNRx').className = mode === 'nrx' ? 'active' : '';
   document.getElementById('btnCombined').className = mode === 'combined' ? 'active' : '';
+  const componentButtons = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
+  Object.entries(componentButtons).forEach(([name, id]) => {
+    document.getElementById(id).setAttribute('aria-selected', String(name === mode));
+  });
   updateUI();
 }
 
@@ -361,8 +467,8 @@ function trxPct(x) { return interpolatePts(points, x); }
 function nrxPct(x) { return interpolatePts(nrxPoints, x); }
 
 function getCombinedPayout(attainment) {
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100 || 0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100 || 0.5;
+  const trxW = getComponentWeight('trxWeight');
+  const nrxW = getComponentWeight('nrxWeight');
   return { trx:trxPct(attainment), nrx:nrxPct(attainment), combined: trxPct(attainment)*trxW + nrxPct(attainment)*nrxW };
 }
 
@@ -510,8 +616,8 @@ canvas.addEventListener('mousemove', e=>{
     hoverInfo.style.left = (e.clientX - rect.left + 18) + 'px';
     hoverInfo.style.top = (e.clientY - rect.top - 40) + 'px';
     const trx = trxPct(w.x), nrx = nrxPct(w.x);
-    const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-    const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+    const trxW = getComponentWeight('trxWeight');
+    const nrxW = getComponentWeight('nrxWeight');
     if (componentMode === 'combined') {
       hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
     } else if (componentMode === 'nrx') {
@@ -562,7 +668,7 @@ canvas.addEventListener('touchend',()=>{dragging=-1;draggingSet=null;drawCurve()
 const histoCanvas = document.getElementById('histoCanvas');
 const hctx = histoCanvas.getContext('2d');
 const histoTip = document.getElementById('histoTip');
-const HW=700, HH=180;
+const HW=700, HH=260;
 const hdpr = Math.min(window.devicePixelRatio||1,2);
 histoCanvas.width=HW*hdpr; histoCanvas.height=HH*hdpr; hctx.scale(hdpr,hdpr);
 const HPAD={l:60,r:15,t:14,b:52};
@@ -680,127 +786,6 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
-// ── National Pay Summary ──
-let natMode = 'trx';
-let natAttainTRx = [90, 100, 110, -1];
-let natAttainNRx = [90, 100, 110, -1];
-
-function setNatMode(mode) {
-  natMode = mode;
-  document.getElementById('btnNatTRx').className = mode==='trx'?'active':'';
-  document.getElementById('btnNatNRx').className = mode==='nrx'?'active':'';
-  document.getElementById('btnNatComb').className = mode==='combined'?'active':'';
-  document.getElementById('natAttainRow').style.display = mode==='combined'?'none':'';
-  document.getElementById('natCombRow').style.display = mode==='combined'?'':'none';
-  drawNatSummary();
-}
-function addNatAttain() {
-  const inp = document.getElementById('natCustom');
-  const v = parseInt(inp.value);
-  if (isNaN(v) || v < 0 || v > 300) return;
-  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
-  if (!arr.includes(v)) { arr.push(v); arr.sort((a,b)=>a-b); drawNatSummary(); }
-  inp.value = '';
-}
-function removeNatAttain(v) {
-  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
-  const idx = arr.indexOf(v);
-  if (idx >= 0) { arr.splice(idx,1); drawNatSummary(); }
-}
-function drawNatSummary() {
-  if (!quarterlyData.length) return;
-  const arr = natMode==='nrx' ? natAttainNRx : natAttainTRx;
-  const pillsHTML = arr.map(a => {
-    const label = a === -1 ? 'Current' : a+'%';
-    return `<span class="pill" style="cursor:pointer;display:inline-flex;align-items:center;gap:2px;background:${a===-1?'#eef2ff':'#f8fafc'};border:1px solid #e2e8f0;border-radius:20px;padding:2px 7px;font-size:0.6rem;"><span style="color:#6366f1;font-weight:700;">${label}</span><span onclick="removeNatAttain(${a})" style="cursor:pointer;color:#94a3b8;font-size:0.5rem;">×</span></span>`;
-  }).join('');
-  document.getElementById('natPills').innerHTML = pillsHTML;
-
-  const checks = document.querySelectorAll('#natMetrics input[type=checkbox]');
-  const metrics = [];
-  checks.forEach(c => { if (c.checked) metrics.push(c.dataset.m); });
-
-  const quarter = document.getElementById('quarterSelect').value;
-  const qData = quarterlyData.filter(d => d.quarter === quarter);
-  if (!qData.length) return;
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
-  const BASE_Q = getEffectiveBasePay();
-  const headcount = new Set(qData.map(d=>d.territory)).size;
-
-  const compact = n => n >= 1000 ? (n/1000).toFixed(0)+'k' : String(n);
-
-  if (natMode === 'combined') {
-    const trxA = parseInt(document.getElementById('natCombTRx').value)||100;
-    const nrxA = parseInt(document.getElementById('natCombNRx').value)||100;
-    const trxPay = trxPct(trxA), nrxPay = nrxPct(nrxA);
-    const combinedPct = trxPay*trxW + nrxPay*nrxW;
-    const perPerson = BASE_Q * trxW * (trxPay/100) + BASE_Q * nrxW * (nrxPay/100);
-    const totalPay = perPerson * headcount;
-    const budget = BASE_Q * headcount;
-    const thead = ['TRx Att','NRx Att','TRx Pay%','NRx Pay%','Comb%',...metrics.map(m=>metricLabel(m))];
-    const tbody = [[trxA+'%',nrxA+'%',trxPay.toFixed(1)+'%',nrxPay.toFixed(1)+'%',combinedPct.toFixed(1)+'%',
-      ...metrics.map(m=>metricVal(m,{totalPay,budget,perPerson,minPay:perPerson,maxPay:perPerson,minPct:combinedPct,maxPct:combinedPct,engaged:combinedPct>0?100:0,headcount}))]];
-    renderNatTable(thead, tbody);
-    return;
-  }
-
-  const isNRx = natMode === 'nrx';
-  const fnPct = isNRx ? nrxPct : trxPct;
-  const thead = ['Attain%','Pay%',...metrics.map(m=>metricLabel(m))];
-  const tbody = arr.map(a => {
-    let payPct, totalPay, perPerson, minPct, maxPct, minPay, maxPay, engagedPct;
-    if (a === -1) {
-      const payouts = qData.map(d => {
-        const attain = isNRx ? (d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0) : (d.trxGoal ? d.trxActual/d.trxGoal*100 : 0);
-        return BASE_Q * (isNRx?nrxW:trxW) * (fnPct(attain)/100);
-      });
-      totalPay = payouts.reduce((s,v)=>s+v,0);
-      perPerson = totalPay / headcount;
-      const pcts = qData.map(d => {
-        const attain = isNRx ? (d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0) : (d.trxGoal ? d.trxActual/d.trxGoal*100 : 0);
-        return fnPct(attain);
-      });
-      payPct = pcts.reduce((s,v)=>s+v,0) / pcts.length;
-      minPct = Math.min(...pcts); maxPct = Math.max(...pcts);
-      minPay = Math.min(...payouts.map(v=>Math.round(v))); maxPay = Math.max(...payouts.map(v=>Math.round(v)));
-      engagedPct = pcts.filter(v=>v>0).length / headcount * 100;
-    } else {
-      payPct = fnPct(a);
-      perPerson = BASE_Q * (isNRx?nrxW:trxW) * (payPct/100);
-      totalPay = perPerson * headcount;
-      minPct = maxPct = payPct;
-      minPay = maxPay = perPerson;
-      engagedPct = payPct > 0 ? 100 : 0;
-    }
-    const budget = BASE_Q * (isNRx?nrxW:trxW) * headcount;
-    return [a===-1?'Current':a+'%', a===-1?payPct.toFixed(1)+'%':payPct.toFixed(1)+'%',
-      ...metrics.map(m=>metricVal(m,{totalPay,budget,perPerson,minPay,maxPay,minPct,maxPct,engaged:engagedPct,headcount}))];
-  });
-  renderNatTable(thead, tbody);
-}
-
-function metricLabel(m) {
-  const map = {totalPay:'Total Pay',budgetUtil:'Util%',avgPay:'Avg Pay',minPay:'Min',maxPay:'Max',engaged:'Eng%',pctRange:'Pay% Range'};
-  return map[m]||m;
-}
-function metricVal(m, d) {
-  switch(m) {
-    case 'totalPay': return '$'+(d.totalPay>=1000?(d.totalPay/1000).toFixed(0)+'k':Math.round(d.totalPay));
-    case 'budgetUtil': return (d.totalPay/d.budget*100).toFixed(1)+'%';
-    case 'avgPay': return '$'+Math.round(d.perPerson);
-    case 'minPay': return '$'+Math.round(d.minPay);
-    case 'maxPay': return '$'+Math.round(d.maxPay);
-    case 'engaged': return d.engaged.toFixed(0)+'%';
-    case 'pctRange': return d.minPct.toFixed(0)+'%–'+d.maxPct.toFixed(0)+'%';
-    default: return '';
-  }
-}
-function renderNatTable(thead, tbody) {
-  document.getElementById('natThead').innerHTML = '<tr>'+thead.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-  document.getElementById('natTbody').innerHTML = tbody.map(row => '<tr>'+row.map((c,i)=>`<td style="${i<2?'font-weight:600':''}">${c}</td>`).join('')+'</tr>').join('');
-}
-
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -808,10 +793,12 @@ function renderAll() {
   const qData = quarterlyData.filter(d => d.quarter === quarter);
   if (!qData.length) return;
 
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const trxW = getComponentWeight('trxWeight');
+  const nrxW = getComponentWeight('nrxWeight');
   const BASE_Q = getEffectiveBasePay();
   const isCombined = componentMode === 'combined';
+  const activeWeight = componentMode === 'nrx' ? nrxW : trxW;
+  const displayBasePay = isCombined ? BASE_Q : BASE_Q * activeWeight;
 
   // Build rows
   const rows = qData.map(d => {
@@ -823,85 +810,172 @@ function renderAll() {
 
     let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
     if (isCombined) {
+      // Combined: split BASE_Q by weight
       trxPayoutAmount = BASE_Q * trxW * (trxPayPct/100);
       nrxPayoutAmount = BASE_Q * nrxW * (nrxPayPct/100);
       combinedPayout = trxPayoutAmount + nrxPayoutAmount;
       displayPct = combinedPct;
       displayPayout = combinedPayout;
     } else if (componentMode === 'nrx') {
+      // Component views use their weighted share of the quarterly base pay.
       displayPct = nrxPayPct;
-      displayPayout = BASE_Q * nrxW * (displayPct/100);
-      nrxPayoutAmount = displayPayout; trxPayoutAmount = 0;
+      displayPayout = displayBasePay * (displayPct/100);
+      nrxPayoutAmount = displayPayout;
+      trxPayoutAmount = 0;
       combinedPayout = displayPayout;
     } else {
+      // Component views use their weighted share of the quarterly base pay.
       displayPct = trxPayPct;
-      displayPayout = BASE_Q * trxW * (displayPct/100);
-      trxPayoutAmount = displayPayout; nrxPayoutAmount = 0;
+      displayPayout = displayBasePay * (displayPct/100);
+      trxPayoutAmount = displayPayout;
+      nrxPayoutAmount = 0;
       combinedPayout = displayPayout;
     }
 
+    const activeAttainment = componentMode === 'nrx' ? nrxAttain : trxAttain;
+    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
     return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
       trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
-      displayPct, displayPayout};
+      displayPct, displayPayout, attClass};
   });
 
+  // Summary stats
   const headcount = new Set(qData.map(d=>d.territory)).size;
-  const totalDisplay = rows.reduce((s,r)=>s+r.displayPayout,0);
-  const effBase = isCombined ? BASE_Q : (componentMode==='nrx' ? BASE_Q*nrxW : BASE_Q*trxW);
-  const totalBudget = effBase * headcount;
-  const totalOver = totalDisplay - totalBudget;
+  const totalCombined = rows.reduce((s,r)=>s+r.combinedPayout,0);
+  const totalBudget = displayBasePay * headcount;
+  const totalOver = totalCombined - totalBudget;
   const payouts = rows.map(r=>r.displayPayout);
   const maxPay = Math.max(...payouts), minPay = Math.min(...payouts);
-  const avgPay = totalDisplay/headcount;
+  const avgPay = totalCombined/headcount;
   const displayPcts = rows.map(r=>r.displayPct);
-  const minAttain = Math.min(...rows.map(r=>r.trxAttain));
-  const maxAttain = Math.max(...rows.map(r=>r.trxAttain));
+  const attainmentValues = rows.map(r => componentMode === 'nrx' ? r.nrxAttain : componentMode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
+  const minAttain = Math.min(...attainmentValues);
+  const maxAttain = Math.max(...attainmentValues);
   const minPct = Math.min(...displayPcts), maxPct = Math.max(...displayPcts);
   const engaged = displayPcts.filter(p=>p>0).length;
   const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
 
-  // Unified table
+  // Table header — unified: always show all columns
   const theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>TRx Att%</th><th>TRx Pay%</th><th>NRx Goal</th><th>NRx Act</th><th>NRx Att%</th><th>NRx Pay%</th><th>Comb%</th><th>Payout</th></tr>`;
   document.getElementById('thead').innerHTML = theadHTML;
+
   if (payoutSortState==='asc') rows.sort((a,b)=>a.combinedPct-b.combinedPct);
   else if (payoutSortState==='desc') rows.sort((a,b)=>b.combinedPct-a.combinedPct);
+
   document.getElementById('tbody').innerHTML = rows.map(r => `
     <tr>
       <td>${r.territory}</td>
-      <td>$${r.trxGoal.toLocaleString()}</td><td>$${r.trxActual.toLocaleString()}</td>
+      <td>${r.trxGoal.toLocaleString()}</td><td>${r.trxActual.toLocaleString()}</td>
       <td>${r.trxAttain}%<div class="attainment-bar"><div class="attainment-fill ${r.trxAttain>=100?'att-good':r.trxAttain>=85?'att-ok':'att-bad'}" style="width:${Math.min(100,r.trxAttain*0.8)}%"></div></div></td>
-      <td style="font-weight:700;color:${r.trxPayPct>=100?'#059669':r.trxPayPct>=70?'#d97706':'#dc2626'}">${r.trxPayPct.toFixed(1)}%</td>
-      <td>$${r.nrxGoal.toLocaleString()}</td><td>$${r.nrxActual.toLocaleString()}</td>
+      <td style="font-weight:700;color:${r.trxPayPct>=100?'var(--green)':r.trxPayPct>=70?'var(--amber)':'var(--red)'}">${r.trxPayPct.toFixed(1)}%</td>
+      <td>${r.nrxGoal.toLocaleString()}</td><td>${r.nrxActual.toLocaleString()}</td>
       <td>${r.nrxAttain}%<div class="attainment-bar"><div class="attainment-fill ${r.nrxAttain>=100?'att-good':r.nrxAttain>=85?'att-ok':'att-bad'}" style="width:${Math.min(100,r.nrxAttain*0.8)}%"></div></div></td>
-      <td style="font-weight:700;color:${r.nrxPayPct>=100?'#059669':r.nrxPayPct>=70?'#d97706':'#dc2626'}">${r.nrxPayPct.toFixed(1)}%</td>
-      <td style="font-weight:700;color:${r.combinedPct>=100?'#059669':r.combinedPct>=70?'#d97706':'#dc2626'}">${r.combinedPct.toFixed(1)}%</td>
-      <td style="font-weight:700;color:${r.combinedPayout>=effBase?'#059669':'#dc2626'}">$${r.combinedPayout.toFixed(0)}</td>
+      <td style="font-weight:700;color:${r.nrxPayPct>=100?'var(--green)':r.nrxPayPct>=70?'var(--amber)':'var(--red)'}">${r.nrxPayPct.toFixed(1)}%</td>
+      <td style="font-weight:700;color:${r.combinedPct>=100?'var(--green)':r.combinedPct>=70?'var(--amber)':'var(--red)'}">${r.combinedPct.toFixed(1)}%</td>
+      <td style="font-weight:700;color:${r.combinedPayout>=displayBasePay?'var(--green)':'var(--red)'}">$${r.combinedPayout.toFixed(0)}</td>
     </tr>
   `).join('');
 
-  // Old-style summary
+  // Summary
   document.getElementById('summary').innerHTML = `
     <h3>${isCombined?'Combined':componentMode==='nrx'?'NRx':'TRx'} ${quarter} Summary</h3>
-    <div class="stat-row"><span>Base / person</span><span class="val">$${effBase.toLocaleString()}</span></div>
+    <div class="stat-row"><span>${isCombined ? 'Total quarterly base / person' : `${componentMode === 'nrx' ? 'NRx' : 'TRx'} base / person (${(activeWeight*100).toFixed(0)}%)`}</span><span class="val">$${displayBasePay.toLocaleString()}</span></div>
     <div class="stat-row"><span>Headcount</span><span class="val">${headcount}</span></div>
-    <div class="stat-row"><span>Total Budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Base budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
     ${isCombined ? `
-    <div class="stat-row"><span>TRx Payout</span><span class="val" style="color:#6366f1">$${rows.reduce((s,r)=>s+r.trxPayout,0).toLocaleString()}</span></div>
-    <div class="stat-row"><span>NRx Payout</span><span class="val" style="color:#059669">$${rows.reduce((s,r)=>s+r.nrxPayout,0).toLocaleString()}</span></div>
+    <div class="stat-row"><span>TRx budget (${(trxW*100).toFixed(0)}%)</span><span class="val">$${(totalBudget*trxW).toLocaleString()}</span></div>
+    <div class="stat-row"><span>NRx budget (${(nrxW*100).toFixed(0)}%)</span><span class="val">$${(totalBudget*nrxW).toLocaleString()}</span></div>
+    <div class="stat-row"><span>TRx payout</span><span class="val" style="color:#6366f1">$${rows.reduce((s,r)=>s+r.trxPayout,0).toLocaleString()}</span></div>
+    <div class="stat-row"><span>NRx payout</span><span class="val" style="color:#059669">$${rows.reduce((s,r)=>s+r.nrxPayout,0).toLocaleString()}</span></div>
     ` : ''}
-    <div class="stat-row"><span>Total Payout</span><span class="val ${totalOver>0?'warn':''}">$${totalDisplay.toLocaleString()}</span></div>
-    <div class="stat-row"><span>Over / Under</span><span class="val ${totalOver>0?'bad':'good'}">${totalOver>=0?'+':''}$${totalOver.toLocaleString()}</span></div>
-    <div class="stat-row"><span>Utilization</span><span class="val">${((totalDisplay/totalBudget)*100).toFixed(1)}%</span></div>
-    <div class="stat-row"><span>Avg Payout</span><span class="val">$${avgPay.toFixed(0)}</span></div>
+    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalCombined.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Over/Under</span><span class="val ${totalOver>0?'bad':'good'}">${totalOver>=0?'+':''}$${totalOver.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Utilization</span><span class="val">${((totalCombined/totalBudget)*100).toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Avg payout</span><span class="val">$${avgPay.toFixed(0)}</span></div>
     <div class="stat-row"><span>Max / Min</span><span class="val">$${maxPay.toFixed(0)} / $${minPay.toFixed(0)}</span></div>
-    <div class="stat-row"><span>Attain Range</span><span class="val">${minAttain}% – ${maxAttain}%</span></div>
-    <div class="stat-row"><span>Payout% Range</span><span class="val">${minPct.toFixed(1)}% – ${maxPct.toFixed(1)}%</span></div>
-    <div class="stat-row"><span>Engaged (>0%)</span><span class="val">${engaged}/${headcount} (${((engaged/headcount)*100).toFixed(1)}%)</span></div>
+    <div class="stat-row"><span>Attain range</span><span class="val">${minAttain}% – ${maxAttain}%</span></div>
+    <div class="stat-row"><span>Payout% range</span><span class="val">${minPct.toFixed(1)}% – ${maxPct.toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${engaged}/${headcount} (${((engaged/headcount)*100).toFixed(1)}%)</span></div>
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
+  renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   drawHistogram();
-  drawNatSummary();
+}
+
+// ── National normalization summaries ──
+function formatMoney(value) {
+  return '$' + Math.round(value).toLocaleString();
+}
+
+function addNormalizationLevel() {
+  const input = document.getElementById('normalizationLevel');
+  if (input.value.trim() === '') return;
+  const level = Number(input.value);
+  if (!Number.isFinite(level) || level < 0 || level > MAX_X) return;
+  const rounded = Math.round(level * 10) / 10;
+  if (!normalizationLevels.includes(rounded)) normalizationLevels.push(rounded);
+  normalizationLevels.sort((a,b) => a-b);
+  input.value = '';
+  renderAll();
+}
+
+function removeNormalizationLevel(level) {
+  normalizationLevels = normalizationLevels.filter(value => value !== level);
+  renderAll();
+}
+
+function getNationalMetrics(qData, component, targetLevel, basePay, weight) {
+  const goalKey = component + 'Goal';
+  const actualKey = component + 'Actual';
+  const totalGoal = qData.reduce((sum, row) => sum + (Number(row[goalKey]) || 0), 0);
+  const totalActual = qData.reduce((sum, row) => sum + (Number(row[actualKey]) || 0), 0);
+  const currentAttainment = totalGoal ? totalActual / totalGoal * 100 : 0;
+  const scaleFactor = currentAttainment ? targetLevel / currentAttainment : 0;
+  const curve = component === 'trx' ? trxPct : nrxPct;
+  const payouts = qData.map(row => {
+    const territoryAttainment = Number(row[goalKey]) ? Number(row[actualKey]) / Number(row[goalKey]) * 100 : 0;
+    return basePay * weight * curve(territoryAttainment * scaleFactor) / 100;
+  });
+  const totalPayout = payouts.reduce((sum, payout) => sum + payout, 0);
+  const budget = basePay * weight * qData.length;
+  return {
+    targetLevel, currentAttainment, scaleFactor, totalGoal, totalActual, totalPayout, budget,
+    averagePayout: qData.length ? totalPayout / qData.length : 0,
+    utilization: budget ? totalPayout / budget * 100 : 0
+  };
+}
+
+function renderComponentNationalTable(metrics) {
+  if (!metrics.length) return '<div class="empty-levels">Add a normalization level to model payout.</div>';
+  return `<table class="national-table"><thead><tr><th>Normalized attainment</th><th>Scale factor</th><th>Total payout</th><th>Avg / territory</th><th>Utilization</th></tr></thead><tbody>${metrics.map(metric => `
+    <tr><td><strong>${metric.targetLevel.toFixed(1)}%</strong></td><td>${metric.scaleFactor.toFixed(3)}×</td><td>${formatMoney(metric.totalPayout)}</td><td>${formatMoney(metric.averagePayout)}</td><td>${metric.utilization.toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderNationalSummaries(qData, basePay, trxWeight, nrxWeight) {
+  const chips = document.getElementById('normalizationChips');
+  chips.innerHTML = normalizationLevels.map(level => `<span class="level-chip">${level.toFixed(1)}%<button type="button" aria-label="Remove ${level.toFixed(1)}% normalization level" onclick="removeNormalizationLevel(${level})">×</button></span>`).join('');
+
+  const trxMetrics = normalizationLevels.map(level => getNationalMetrics(qData, 'trx', level, basePay, trxWeight));
+  const nrxMetrics = normalizationLevels.map(level => getNationalMetrics(qData, 'nrx', level, basePay, nrxWeight));
+  const trxCurrent = getNationalMetrics(qData, 'trx', 0, basePay, trxWeight);
+  const nrxCurrent = getNationalMetrics(qData, 'nrx', 0, basePay, nrxWeight);
+  document.getElementById('trxNationalContext').textContent = `Current national attainment: ${trxCurrent.currentAttainment.toFixed(1)}% (${trxCurrent.totalActual.toLocaleString()} actual / ${trxCurrent.totalGoal.toLocaleString()} goal).`;
+  document.getElementById('nrxNationalContext').textContent = `Current national attainment: ${nrxCurrent.currentAttainment.toFixed(1)}% (${nrxCurrent.totalActual.toLocaleString()} actual / ${nrxCurrent.totalGoal.toLocaleString()} goal).`;
+  document.getElementById('trxNationalSummary').innerHTML = renderComponentNationalTable(trxMetrics);
+  document.getElementById('nrxNationalSummary').innerHTML = renderComponentNationalTable(nrxMetrics);
+
+  const combined = document.getElementById('combinedNationalSummary');
+  if (!normalizationLevels.length) {
+    combined.innerHTML = '<div class="empty-levels">Add a normalization level to build the combined summary.</div>';
+    return;
+  }
+  const fullBudget = basePay * qData.length;
+  combined.innerHTML = `<table class="national-table"><thead><tr><th>TRx ↓ / NRx →</th>${nrxMetrics.map(metric => `<th>${metric.targetLevel.toFixed(1)}%</th>`).join('')}</tr></thead><tbody>${trxMetrics.map(trxMetric => `<tr><td><strong>${trxMetric.targetLevel.toFixed(1)}%</strong></td>${nrxMetrics.map(nrxMetric => {
+    const total = trxMetric.totalPayout + nrxMetric.totalPayout;
+    const utilization = fullBudget ? total / fullBudget * 100 : 0;
+    return `<td class="matrix-cell">${formatMoney(total)}<small>${utilization.toFixed(1)}% utilization</small></td>`;
+  }).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
 // ── Import/Export ──
