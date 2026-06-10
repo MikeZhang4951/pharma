@@ -8,6 +8,7 @@ A dependency-free, browser-based sales incentive modeling tool. The application 
 - Supports dragging curve points, editing point coordinates, and adding or removing points.
 - Calculates quarterly territory attainment, payout percentages, payouts, budget variance, engagement, and other summary statistics.
 - Treats TRx and NRx goals/actuals as prescription volumes and displays them without currency formatting.
+- Models TRx and NRx national payout with normalized attainment scenarios as columns and plan-summary metrics as selectable rows, plus typed hypothetical TRx/NRx inputs for the combined national summary.
 - Models TRx, NRx, and combined national payout at configurable normalized attainment levels; combined scenarios can mix different TRx and NRx targets.
 - Shows a configurable histogram of territory payout percentages.
 - Supports sorting territory results by payout percentage.
@@ -18,7 +19,9 @@ A dependency-free, browser-based sales incentive modeling tool. The application 
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | Complete user interface, styles, payout calculations, charts, and import/export logic. |
+| `index.html` | Core user interface, payout calculations, charts, and import/export logic. |
+| `national-summary.css` | Styles for the normalized national summary extension. |
+| `national-summary.js` | National normalization controls, calculations, and summary rendering. |
 | `territories.json` | Seed territory data used to generate deterministic quarterly demo data. |
 | `.github/workflows/deploy-pages.yml` | Validates and deploys the static files to GitHub Pages. |
 
@@ -48,7 +51,10 @@ After a successful deployment, the site is available at:
 
 <https://mikezhang4951.github.io/pharma/>
 
-Future pushes to `master` redeploy automatically. The workflow publishes only `index.html` and `territories.json`, and includes `.nojekyll` in the Pages artifact.
+Future pushes to `master` redeploy automatically. The workflow publishes `index.html`, the national summary CSS/JavaScript assets, and `territories.json`, and includes `.nojekyll` in the Pages artifact.
+
+The core application loads before the national-summary extension. If that optional JavaScript asset is unavailable or stale during a deployment, territory data and the main plan summary continue to render.
+The deployment workflow validates only the required static files and their syntax; it does not reject a deployment based on brittle source-text or script-position checks.
 
 ## Input formats
 
