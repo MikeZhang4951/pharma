@@ -118,6 +118,7 @@
     .table-header-row { align-items:flex-start; flex-direction:column; }
   }
 </style>
+<link rel="stylesheet" href="./national-summary.css">
 </head>
 <body>
 <div class="app-shell">
@@ -215,6 +216,8 @@
         <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
       </section>
     </div>
+
+    <div id="nationalSummaryRoot"></div>
   </main>
 </div>
 
@@ -824,8 +827,8 @@ function renderAll() {
     if (isCombined) {
       return `<tr>
         <td>${r.territory}</td>
-        <td>$${r.trxGoal.toLocaleString()}</td><td>$${r.trxActual.toLocaleString()}</td>
-        <td>$${r.nrxGoal.toLocaleString()}</td><td>$${r.nrxActual.toLocaleString()}</td>
+        <td>${r.trxGoal.toLocaleString()}</td><td>${r.trxActual.toLocaleString()}</td>
+        <td>${r.nrxGoal.toLocaleString()}</td><td>${r.nrxActual.toLocaleString()}</td>
         <td style="color:#6366f1;font-weight:600">${r.trxPayPct.toFixed(1)}%</td>
         <td style="color:#059669;font-weight:600">${r.nrxPayPct.toFixed(1)}%</td>
         <td style="font-weight:700;color:${r.combinedPct>=100?'#059669':r.combinedPct>=70?'#d97706':'#dc2626'}">${r.combinedPct.toFixed(1)}%</td>
@@ -837,7 +840,7 @@ function renderAll() {
     const attVal = componentMode==='nrx' ? r.nrxAttain : r.trxAttain;
     return `<tr>
       <td>${r.territory}</td>
-      <td>$${goalVal.toLocaleString()}</td><td>$${actVal.toLocaleString()}</td>
+      <td>${goalVal.toLocaleString()}</td><td>${actVal.toLocaleString()}</td>
       <td>${attVal}%<div class="attainment-bar"><div class="attainment-fill ${r.attClass}" style="width:${Math.min(100,attVal*0.8)}%"></div></div></td>
       <td style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</td>
       <td style="font-weight:700;color:${r.displayPayout>=displayBasePay?'#059669':'#dc2626'}">$${r.displayPayout.toFixed(0)}</td>
@@ -868,6 +871,9 @@ function renderAll() {
   `;
 
   drawHistogram();
+  if (typeof renderNationalSummaries === 'function') {
+    renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
+  }
 }
 
 // ── Import/Export ──
@@ -925,5 +931,6 @@ function uploadData(event) {
 
 drawCurve(); buildInputs();
 </script>
+<script src="./national-summary.js"></script>
 </body>
 </html>

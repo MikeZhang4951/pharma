@@ -1,0 +1,46 @@
+.national-section { margin-top:18px; }
+  .normalization-controls { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding:16px 18px; border-bottom:1px solid var(--border); background:var(--surface-soft); }
+  .normalization-copy { max-width:760px; color:var(--muted); font-size:.72rem; line-height:1.55; }
+  .normalization-copy strong { color:#334155; }
+  .level-editor { display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap; }
+  .level-editor .field { width:140px; }
+  .level-editor button { min-height:39px; }
+  .summary-config { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:12px 18px 0; }
+  .config-group { min-width:0; padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; }
+  .config-group-label { display:block; color:#475569; font-size:.68rem; font-weight:800; margin-bottom:8px; }
+  .config-row { display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap; }
+  .config-row select { min-height:36px; flex:1; min-width:160px; border:1px solid #cfd8e5; border-radius:8px; background:#fff; color:#172033; padding:7px 9px; font-size:.72rem; font-weight:700; }
+  .level-chips, .metric-chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .level-chips { padding:12px 18px 0; }
+  .metric-chips { margin-top:9px; }
+  .level-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid #c7d2fe; border-radius:999px; background:var(--primary-soft); color:#4338ca; padding:5px 8px 5px 10px; font-size:.7rem; font-weight:800; }
+  .level-chip button { width:18px; height:18px; border:0; border-radius:50%; background:#c7d2fe; color:#4338ca; cursor:pointer; font-size:.72rem; line-height:1; }
+  .national-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:14px 18px 18px; }
+  .national-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:11px; background:#fff; }
+  .national-card.combined-card { grid-column:1/-1; }
+  .national-card-header { padding:12px 14px; border-bottom:1px solid var(--border); background:#fafbff; }
+  .national-card-header h3 { color:#172033; font-size:.82rem; }
+  .national-card-header p { color:var(--muted); font-size:.67rem; line-height:1.45; margin-top:4px; }
+  .national-table-wrap { overflow:auto; }
+  .national-table { min-width:520px; }
+  .national-table th, .national-table td { text-align:right; }
+  .national-table th:first-child, .national-table td:first-child { text-align:left; }
+  .national-table td { color:#172033; font-weight:700; }
+  .national-table .metric-label { color:#475569; font-weight:700; }
+  .national-table .good { color:var(--green); }
+  .national-table .bad { color:var(--red); }
+  .empty-levels { padding:20px; color:var(--muted); font-size:.72rem; text-align:center; }
+
+@media (max-width:1100px) {
+  .normalization-controls { align-items:flex-start; flex-direction:column; }
+  .summary-config { grid-template-columns:1fr; }
+  .national-grid { grid-template-columns:1fr; }
+  .national-card.combined-card { grid-column:auto; }
+}
+
+@media (max-width:700px) {
+  .normalization-controls, .summary-config, .national-grid { padding-left:14px; padding-right:14px; }
+  .level-editor { width:100%; }
+  .level-editor .field { flex:1; }
+  .config-row select { min-width:0; width:100%; }
+}
