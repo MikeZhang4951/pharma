@@ -147,6 +147,7 @@
     .level-editor .field { flex:1; }
   }
 </style>
+<link rel="stylesheet" href="./national-summary.css">
 </head>
 <body>
 <div class="app-shell">
@@ -264,6 +265,7 @@
   </main>
 </div>
 
+<script src="./national-summary.js"></script>
 <script>
 // ── Data ──
 let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
@@ -916,6 +918,7 @@ function renderAll() {
 
   renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   drawHistogram();
+  renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
 }
 
 // ── National normalization summaries ──
