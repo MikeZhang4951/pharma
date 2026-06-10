@@ -1324,7 +1324,9 @@ function buildNPSTableInnerHTML(plan, qData) {
   const isComb = componentMode === 'combined';
   const trxW = (plan.trxWeight || 0) / 100;
   const nrxW = (plan.nrxWeight || 0) / 100;
-  const B = plan.basePay;
+  // Use the weighted base pay so NPS values match the rest of the app in TRx-only / NRx-only modes.
+  // (In Combined mode displayBasePayForPlan returns the full base pay, so behavior is unchanged.)
+  const B = displayBasePayForPlan(plan, componentMode);
   const N = qData.length;
   const budget = B * N;
   const payout = (a) => {
