@@ -26,7 +26,7 @@
   #uploadInput { display:none; }
 
   .setup-card, .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
-  .setup-card { padding:18px; margin-bottom:18px; }
+  .setup-card { padding:18px; margin-bottom:18px; position:sticky; top:0; z-index:100; background:var(--bg); border-radius:0 0 var(--radius) var(--radius); }
   .section-label { color:#334155; display:block; font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
   .setup-grid { display:grid; grid-template-columns:minmax(260px,1.25fr) repeat(4,minmax(120px,.62fr)); align-items:end; gap:14px; }
   .view-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:4px; border-radius:11px; background:#f1f5f9; }
@@ -149,6 +149,11 @@
     </div>
   </header>
 
+  <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
+    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios: every territory hits the same attainment. Edit % directly, remove columns, or add new ones.</p></div></div>
+    <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
+  </section>
+
   <section class="setup-card" aria-labelledby="setupHeading">
     <span class="section-label" id="setupHeading">Plan setup</span>
     <div class="setup-grid">
@@ -181,11 +186,6 @@
       </div>
     </div>
     <span class="field-hint"><strong>Weights always total 100%:</strong> changing either component automatically updates the other. The quarterly base is allocated to TRx and NRx by these weights.</span>
-  </section>
-
-  <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
-    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios: every territory hits the same attainment. Edit % directly, remove columns, or add new ones.</p></div></div>
-    <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
   </section>
 
   <main>
