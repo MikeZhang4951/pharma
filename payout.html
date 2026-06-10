@@ -73,6 +73,22 @@
   .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
   .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
   #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
+  /* National Pay Summary */
+  .nps-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(10px,1.2vw,14px); max-width:1500px; margin:0 auto clamp(8px,1vw,14px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  .nps-wrap h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
+  .nps-wrap table { width:100%; border-collapse:collapse; font-size:clamp(0.55rem,0.7vw,0.65rem); }
+  .nps-wrap th { background:#f8f9fb; padding:clamp(4px,0.5vw,6px) clamp(6px,0.8vw,10px); color:#6366f1; font-weight:600; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:2px solid #e5e7eb; text-align:right; white-space:nowrap; }
+  .nps-wrap th:first-child { text-align:left; }
+  .nps-wrap th .nps-attainment-val { width:clamp(36px,4vw,42px); background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; font-weight:700; }
+  .nps-wrap th .nps-attainment-val:focus { outline:none; border-color:#6366f1; }
+  .nps-wrap th .nps-remove { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:clamp(0.6rem,0.7vw,0.7rem); padding:0 2px; line-height:1; vertical-align:middle; }
+  .nps-wrap th .nps-remove:hover { color:#dc2626; }
+  .nps-wrap .nps-add { background:#fff; color:#6366f1; border:1px dashed #6366f1; border-radius:5px; padding:clamp(2px,0.4vw,4px) clamp(6px,0.8vw,8px); cursor:pointer; font-size:clamp(0.6rem,0.8vw,0.7rem); font-weight:700; margin-left:4px; }
+  .nps-wrap .nps-add:hover { background:#eef2ff; }
+  .nps-wrap td { padding:clamp(3px,0.4vw,5px) clamp(6px,0.8vw,10px); border-bottom:1px solid #f1f5f9; text-align:right; font-weight:700; }
+  .nps-wrap td:first-child { text-align:left; font-weight:600; color:#64748b; }
+  .nps-wrap tr:hover td { background:#f8f9fb; }
+  .nps-wrap .good { color:#059669; } .nps-wrap .warn { color:#d97706; } .nps-wrap .bad { color:#dc2626; }
   @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
 </style>
 </head>
@@ -100,6 +116,12 @@
     <option value="Q325">Q325</option>
     <option value="Q425">Q425</option>
   </select>
+</div>
+
+<!-- National Pay Summary -->
+<div class="nps-wrap" id="npsSection" style="display:none">
+  <h3>National Pay Summary — <span id="npsQuarter"></span></h3>
+  <div style="overflow-x:auto"><table id="npsTable"></table></div>
 </div>
 
 <div class="main">
@@ -669,6 +691,112 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
+// ── National Pay Summary ──
+let npsAttainments = [80, 90, 95, 100, 105, 110, 120];
+
+function addNpsColumn() {
+  npsAttainments.push(100);
+  renderNPS();
+}
+
+function removeNpsColumn(idx) {
+  if (npsAttainments.length <= 1) return;
+  npsAttainments.splice(idx, 1);
+  renderNPS();
+}
+
+function updateNpsAttainment(idx, val) {
+  const v = parseInt(val);
+  if (!isNaN(v) && v >= 0 && v <= 300) npsAttainments[idx] = v;
+  renderNPS();
+}
+
+function renderNPS() {
+  const quarter = document.getElementById('quarterSelect').value;
+  document.getElementById('npsQuarter').textContent = quarter;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) { document.getElementById('npsSection').style.display = 'none'; return; }
+  document.getElementById('npsSection').style.display = '';
+
+  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
+  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
+  const BASE_Q = getEffectiveBasePay();
+  const headcount = qData.length;
+  const budget = BASE_Q * headcount;
+
+  function payoutPct(att) {
+    if (componentMode === 'nrx') return nrxPct(att);
+    if (componentMode === 'combined') return trxPct(att)*trxW + nrxPct(att)*nrxW;
+    return trxPct(att);
+  }
+
+  const scenarios = npsAttainments.map(a => {
+    const pp = payoutPct(a);
+    const totalPay = BASE_Q * (pp/100) * headcount;
+    return { label: a+'%', totalPay, budgetUtil: totalPay/budget*100, avgPay: BASE_Q*(pp/100), minPay: BASE_Q*(pp/100), maxPay: BASE_Q*(pp/100), engaged: pp>0?headcount:0, meaningful: pp>75?100:0 };
+  });
+
+  // Current actuals
+  const actuals = qData.map(d => {
+    const ta = d.trxGoal ? d.trxActual/d.trxGoal*100 : 0;
+    const na = d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0;
+    const tp = trxPct(ta), np = nrxPct(na);
+    let pp, att;
+    if (componentMode === 'nrx') { pp = np; att = na; }
+    else if (componentMode === 'combined') { pp = tp*trxW + np*nrxW; att = (ta+na)/2; }
+    else { pp = tp; att = ta; }
+    return { pp, att, payout: BASE_Q*(pp/100) };
+  });
+  const currTotal = actuals.reduce((s,r)=>s+r.payout,0);
+  const currAvgAtt = actuals.reduce((s,r)=>s+r.att,0)/headcount;
+  const currPcts = actuals.map(r=>r.pp);
+  const curr = {
+    label: 'Current',
+    totalPay: currTotal,
+    budgetUtil: currTotal/budget*100,
+    avgPay: currTotal/headcount,
+    minPay: Math.min(...actuals.map(r=>r.payout)),
+    maxPay: Math.max(...actuals.map(r=>r.payout)),
+    engaged: currPcts.filter(p=>p>0).length,
+    meaningful: (currPcts.filter(p=>p>75).length/headcount*100)
+  };
+
+  const rows = [
+    { label: 'Total Payout', vals: scenarios.map(s=>s.totalPay), fmt: v=>'$'+Math.round(v).toLocaleString() },
+    { label: 'Budget Util%', vals: scenarios.map(s=>s.budgetUtil), fmt: v=>v.toFixed(1)+'%', cls: v=>v>100?'warn':(v>95?'good':'') },
+    { label: 'Avg Payout', vals: scenarios.map(s=>s.avgPay), fmt: v=>'$'+Math.round(v).toLocaleString() },
+    { label: 'Min Payout', vals: scenarios.map(s=>s.minPay), fmt: v=>'$'+Math.round(v).toLocaleString() },
+    { label: 'Max Payout', vals: scenarios.map(s=>s.maxPay), fmt: v=>'$'+Math.round(v).toLocaleString() },
+    { label: 'Engaged (>0%)', vals: scenarios.map(s=>s.engaged), fmt: v=>v.toFixed(0) },
+    { label: 'Meaningful (>75%)', vals: scenarios.map(s=>s.meaningful), fmt: v=>v.toFixed(1)+'%' }
+  ];
+  const currVals = [curr.totalPay, curr.budgetUtil, curr.avgPay, curr.minPay, curr.maxPay, curr.engaged, curr.meaningful];
+
+  let html = '<thead><tr><th>Metric</th>';
+  scenarios.forEach((s,i) => {
+    html += `<th><input type="number" class="nps-attainment-val" value="${npsAttainments[i]}" min="0" max="300" onchange="updateNpsAttainment(${i},this.value)">%`;
+    if (npsAttainments.length > 1) html += ` <button class="nps-remove" onclick="removeNpsColumn(${i})" title="Remove">×</button>`;
+    html += '</th>';
+  });
+  html += `<th>${curr.label}</th>`;
+  html += `<th><button class="nps-add" onclick="addNpsColumn()">+ Add</button></th>`;
+  html += '</tr></thead><tbody>';
+  rows.forEach(r => {
+    html += '<tr><td>'+r.label+'</td>';
+    r.vals.forEach(v => {
+      const cls = r.cls ? r.cls(v) : '';
+      html += '<td class="'+cls+'">'+r.fmt(v)+'</td>';
+    });
+    const cv = currVals[rows.indexOf(r)];
+    const cls2 = r.cls ? r.cls(cv) : '';
+    html += '<td class="'+cls2+'">'+r.fmt(cv)+'</td>';
+    html += '<td></td>';
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('npsTable').innerHTML = html;
+}
+
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -793,6 +921,7 @@ function renderAll() {
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
+  renderNPS();
   drawHistogram();
 }
 
