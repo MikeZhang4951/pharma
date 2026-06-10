@@ -73,18 +73,6 @@
   .histo-header { display:flex; align-items:center; gap:clamp(6px,1vw,10px); margin-bottom:clamp(2px,0.4vw,4px); font-size:clamp(0.55rem,0.7vw,0.65rem); color:#64748b; }
   .histo-header input { width:45px; background:#fff; color:#1a1a2e; border:1px solid #d1d5db; border-radius:3px; padding:2px 4px; font-size:clamp(0.55rem,0.7vw,0.65rem); text-align:center; }
   #histoTip { position:absolute; background:rgba(30,41,59,0.94); color:#f1f5f9; font-size:clamp(0.5rem,0.65vw,0.6rem); padding:clamp(5px,0.7vw,7px) clamp(8px,1vw,12px); border-radius:5px; pointer-events:none; display:none; border:1px solid #6366f1; max-width:240px; z-index:10; line-height:1.5; }
-
-  /* National Pay Summary */
-  .nps-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:clamp(10px,1.2vw,14px); max-width:1500px; margin:0 auto clamp(8px,1vw,14px); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-  .nps-wrap h3 { font-size:clamp(0.7rem,0.9vw,0.8rem); margin-bottom:clamp(5px,0.7vw,8px); color:#6366f1; }
-  .nps-table { width:100%; border-collapse:collapse; font-size:clamp(0.55rem,0.7vw,0.65rem); }
-  .nps-table th { background:#f8f9fb; padding:clamp(4px,0.5vw,6px) clamp(6px,0.8vw,10px); color:#6366f1; font-weight:600; font-size:clamp(0.6rem,0.75vw,0.7rem); border-bottom:2px solid #e5e7eb; text-align:right; }
-  .nps-table th:first-child { text-align:left; }
-  .nps-table td { padding:clamp(3px,0.4vw,5px) clamp(6px,0.8vw,10px); border-bottom:1px solid #f1f5f9; text-align:right; font-weight:700; }
-  .nps-table td:first-child { text-align:left; font-weight:600; color:#64748b; }
-  .nps-table tr:hover td { background:#f8f9fb; }
-  .nps-table .good { color:#059669; } .nps-table .warn { color:#d97706; } .nps-table .bad { color:#dc2626; }
-
   @media (max-width:768px) { .main { flex-direction:column; } .right { max-width:100%; flex:1 1 100%; } .left { min-width:0; } }
 </style>
 </head>
@@ -112,12 +100,6 @@
     <option value="Q325">Q325</option>
     <option value="Q425">Q425</option>
   </select>
-</div>
-
-<!-- National Pay Summary -->
-<div class="nps-wrap" id="npsSection" style="display:none">
-  <h3>National Pay Summary — <span id="npsQuarter"></span></h3>
-  <div style="overflow-x:auto"><table class="nps-table" id="npsTable"></table></div>
 </div>
 
 <div class="main">
@@ -687,99 +669,6 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
-// ── National Pay Summary ──
-const NPS_ATTAINMENTS = [80, 90, 95, 100, 105, 110, 120];
-
-function renderNPS() {
-  const quarter = document.getElementById('quarterSelect').value;
-  document.getElementById('npsQuarter').textContent = quarter;
-  const qData = quarterlyData.filter(d => d.quarter === quarter);
-  if (!qData.length) { document.getElementById('npsSection').style.display = 'none'; return; }
-  document.getElementById('npsSection').style.display = '';
-
-  const trxW = parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW = parseInt(document.getElementById('nrxWeight').value)/100||0.5;
-  const BASE_Q = getEffectiveBasePay();
-  const headcount = qData.length;
-  const budget = BASE_Q * headcount;
-
-  function payoutPct(attainment) {
-    if (componentMode === 'nrx') return nrxPct(attainment);
-    if (componentMode === 'combined') return trxPct(attainment)*trxW + nrxPct(attainment)*nrxW;
-    return trxPct(attainment);
-  }
-
-  // Compute uniform-attainment scenarios
-  const scenarios = NPS_ATTAINMENTS.map(a => {
-    const pp = payoutPct(a);
-    const totalPay = BASE_Q * (pp/100) * headcount;
-    return {
-      label: a+'%',
-      totalPay,
-      budgetUtil: totalPay/budget*100,
-      avgPay: BASE_Q*(pp/100),
-      minPay: BASE_Q*(pp/100),
-      maxPay: BASE_Q*(pp/100),
-      engaged: pp>0?headcount:0,
-      meaningful: pp>75?100:0,
-      payoutPct: pp
-    };
-  });
-
-  // Current actuals
-  const actuals = qData.map(d => {
-    const ta = d.trxGoal ? d.trxActual/d.trxGoal*100 : 0;
-    const na = d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0;
-    const tp = trxPct(ta), np = nrxPct(na);
-    let pp, att;
-    if (componentMode === 'nrx') { pp = np; att = na; }
-    else if (componentMode === 'combined') { pp = tp*trxW + np*nrxW; att = (ta+na)/2; }
-    else { pp = tp; att = ta; }
-    return { pp, att, payout: BASE_Q*(pp/100) };
-  });
-  const currTotal = actuals.reduce((s,r)=>s+r.payout,0);
-  const currAvgAtt = actuals.reduce((s,r)=>s+r.att,0)/headcount;
-  const currPayPcts = actuals.map(r=>r.pp);
-  scenarios.push({
-    label: Math.round(currAvgAtt)+'%',
-    totalPay: currTotal,
-    budgetUtil: currTotal/budget*100,
-    avgPay: currTotal/headcount,
-    minPay: Math.min(...actuals.map(r=>r.payout)),
-    maxPay: Math.max(...actuals.map(r=>r.payout)),
-    engaged: currPayPcts.filter(p=>p>0).length,
-    meaningful: (currPayPcts.filter(p=>p>75).length/headcount*100),
-    payoutPct: currTotal/budget*100
-  });
-
-  // Build table: rows = metrics, cols = scenarios
-  const headers = ['Metric', ...scenarios.map(s => s.label)];
-  const rows = [
-    { label: 'Total Payout', vals: scenarios.map(s => s.totalPay), fmt: v => '$'+Math.round(v).toLocaleString() },
-    { label: 'Budget Util%', vals: scenarios.map(s => s.budgetUtil), fmt: v => v.toFixed(1)+'%', cls: v => v>100?'warn':(v>95?'good':'') },
-    { label: 'Avg Payout', vals: scenarios.map(s => s.avgPay), fmt: v => '$'+Math.round(v).toLocaleString() },
-    { label: 'Min Payout', vals: scenarios.map(s => s.minPay), fmt: v => '$'+Math.round(v).toLocaleString() },
-    { label: 'Max Payout', vals: scenarios.map(s => s.maxPay), fmt: v => '$'+Math.round(v).toLocaleString() },
-    { label: 'Engaged (>0%)', vals: scenarios.map(s => s.engaged), fmt: v => v.toFixed(0) },
-    { label: 'Meaningful (>75%)', vals: scenarios.map(s => s.meaningful), fmt: v => v.toFixed(1)+'%' }
-  ];
-
-  let html = '<thead><tr>';
-  headers.forEach(h => html += `<th>${h}</th>`);
-  html += '</tr></thead><tbody>';
-  rows.forEach(r => {
-    html += '<tr>';
-    html += `<td>${r.label}</td>`;
-    r.vals.forEach(v => {
-      const cls = r.cls ? r.cls(v) : '';
-      html += `<td class="${cls}">${r.fmt(v)}</td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody>';
-  document.getElementById('npsTable').innerHTML = html;
-}
-
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -802,18 +691,21 @@ function renderAll() {
 
     let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
     if (isCombined) {
+      // Combined: split BASE_Q by weight
       trxPayoutAmount = BASE_Q * trxW * (trxPayPct/100);
       nrxPayoutAmount = BASE_Q * nrxW * (nrxPayPct/100);
       combinedPayout = trxPayoutAmount + nrxPayoutAmount;
       displayPct = combinedPct;
       displayPayout = combinedPayout;
     } else if (componentMode === 'nrx') {
+      // NRx only: BASE_Q is already the NRx budget
       displayPct = nrxPayPct;
       displayPayout = BASE_Q * (displayPct/100);
       nrxPayoutAmount = displayPayout;
       trxPayoutAmount = 0;
       combinedPayout = displayPayout;
     } else {
+      // TRx only: BASE_Q is already the TRx budget
       displayPct = trxPayPct;
       displayPayout = BASE_Q * (displayPct/100);
       trxPayoutAmount = displayPayout;
@@ -901,7 +793,6 @@ function renderAll() {
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
-  renderNPS();
   drawHistogram();
 }
 
