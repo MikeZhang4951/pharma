@@ -77,6 +77,29 @@
   .fixed-pay-note span { font-size:.85rem; }
 
   .lower-grid { display:grid; grid-template-columns:1fr; gap:18px; margin-top:18px; }
+  .national-section { margin-top:18px; }
+  .normalization-controls { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding:16px 18px; border-bottom:1px solid var(--border); background:var(--surface-soft); }
+  .normalization-copy { max-width:760px; color:var(--muted); font-size:.72rem; line-height:1.55; }
+  .normalization-copy strong { color:#334155; }
+  .level-editor { display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap; }
+  .level-editor .field { width:120px; }
+  .level-editor button { min-height:39px; }
+  .level-chips { display:flex; flex-wrap:wrap; gap:7px; padding:12px 18px 0; }
+  .level-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid #c7d2fe; border-radius:999px; background:var(--primary-soft); color:#4338ca; padding:5px 8px 5px 10px; font-size:.7rem; font-weight:800; }
+  .level-chip button { width:18px; height:18px; border:0; border-radius:50%; background:#c7d2fe; color:#4338ca; cursor:pointer; font-size:.72rem; line-height:1; }
+  .national-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:14px 18px 18px; }
+  .national-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:11px; background:#fff; }
+  .national-card.combined-card { grid-column:1/-1; }
+  .national-card-header { padding:12px 14px; border-bottom:1px solid var(--border); background:#fafbff; }
+  .national-card-header h3 { color:#172033; font-size:.82rem; }
+  .national-card-header p { color:var(--muted); font-size:.67rem; line-height:1.45; margin-top:4px; }
+  .national-table-wrap { overflow:auto; }
+  .national-table { min-width:520px; }
+  .national-table th, .national-table td { text-align:right; }
+  .national-table th:first-child, .national-table td:first-child { text-align:left; }
+  .national-table .matrix-cell { font-weight:800; color:#172033; }
+  .national-table .matrix-cell small { display:block; color:var(--muted); font-size:.58rem; font-weight:600; margin-top:2px; }
+  .empty-levels { padding:20px; color:var(--muted); font-size:.72rem; text-align:center; }
   .histo-section { padding:14px 16px 16px; }
   .histo-header { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; color:var(--muted); font-size:.68rem; }
   .histo-header input { width:52px; border:1px solid #cfd8e5; border-radius:6px; background:#fff; color:#172033; padding:4px; text-align:center; font-size:.68rem; }
@@ -105,6 +128,9 @@
     .summary-panel .panel-header { grid-column:1/-1; }
     .fixed-pay-note { margin-top:16px; }
     .lower-grid { grid-template-columns:1fr; }
+    .normalization-controls { align-items:flex-start; flex-direction:column; }
+    .national-grid { grid-template-columns:1fr; }
+    .national-card.combined-card { grid-column:auto; }
   }
   @media (max-width:700px) {
     .app-shell { padding:14px; }
@@ -116,6 +142,9 @@
     .panel-header { padding:14px; }
     .curve-body { padding:10px; }
     .table-header-row { align-items:flex-start; flex-direction:column; }
+    .normalization-controls, .national-grid { padding-left:14px; padding-right:14px; }
+    .level-editor { width:100%; }
+    .level-editor .field { flex:1; }
   }
 </style>
 <link rel="stylesheet" href="./national-summary.css">
@@ -226,6 +255,7 @@
 let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
 let payoutSortState = '';
 let componentMode = 'trx';
+let normalizationLevels = [80, 90, 100, 110];
 
 const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
@@ -870,10 +900,86 @@ function renderAll() {
     <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
   `;
 
+  renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   drawHistogram();
   if (typeof renderNationalSummaries === 'function') {
     renderNationalSummaries(qData, BASE_Q, trxW, nrxW);
   }
+}
+
+// ── National normalization summaries ──
+function formatMoney(value) {
+  return '$' + Math.round(value).toLocaleString();
+}
+
+function addNormalizationLevel() {
+  const input = document.getElementById('normalizationLevel');
+  if (input.value.trim() === '') return;
+  const level = Number(input.value);
+  if (!Number.isFinite(level) || level < 0 || level > MAX_X) return;
+  const rounded = Math.round(level * 10) / 10;
+  if (!normalizationLevels.includes(rounded)) normalizationLevels.push(rounded);
+  normalizationLevels.sort((a,b) => a-b);
+  input.value = '';
+  renderAll();
+}
+
+function removeNormalizationLevel(level) {
+  normalizationLevels = normalizationLevels.filter(value => value !== level);
+  renderAll();
+}
+
+function getNationalMetrics(qData, component, targetLevel, basePay, weight) {
+  const goalKey = component + 'Goal';
+  const actualKey = component + 'Actual';
+  const totalGoal = qData.reduce((sum, row) => sum + (Number(row[goalKey]) || 0), 0);
+  const totalActual = qData.reduce((sum, row) => sum + (Number(row[actualKey]) || 0), 0);
+  const currentAttainment = totalGoal ? totalActual / totalGoal * 100 : 0;
+  const scaleFactor = currentAttainment ? targetLevel / currentAttainment : 0;
+  const curve = component === 'trx' ? trxPct : nrxPct;
+  const payouts = qData.map(row => {
+    const territoryAttainment = Number(row[goalKey]) ? Number(row[actualKey]) / Number(row[goalKey]) * 100 : 0;
+    return basePay * weight * curve(territoryAttainment * scaleFactor) / 100;
+  });
+  const totalPayout = payouts.reduce((sum, payout) => sum + payout, 0);
+  const budget = basePay * weight * qData.length;
+  return {
+    targetLevel, currentAttainment, scaleFactor, totalGoal, totalActual, totalPayout, budget,
+    averagePayout: qData.length ? totalPayout / qData.length : 0,
+    utilization: budget ? totalPayout / budget * 100 : 0
+  };
+}
+
+function renderComponentNationalTable(metrics) {
+  if (!metrics.length) return '<div class="empty-levels">Add a normalization level to model payout.</div>';
+  return `<table class="national-table"><thead><tr><th>Normalized attainment</th><th>Scale factor</th><th>Total payout</th><th>Avg / territory</th><th>Utilization</th></tr></thead><tbody>${metrics.map(metric => `
+    <tr><td><strong>${metric.targetLevel.toFixed(1)}%</strong></td><td>${metric.scaleFactor.toFixed(3)}×</td><td>${formatMoney(metric.totalPayout)}</td><td>${formatMoney(metric.averagePayout)}</td><td>${metric.utilization.toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderNationalSummaries(qData, basePay, trxWeight, nrxWeight) {
+  const chips = document.getElementById('normalizationChips');
+  chips.innerHTML = normalizationLevels.map(level => `<span class="level-chip">${level.toFixed(1)}%<button type="button" aria-label="Remove ${level.toFixed(1)}% normalization level" onclick="removeNormalizationLevel(${level})">×</button></span>`).join('');
+
+  const trxMetrics = normalizationLevels.map(level => getNationalMetrics(qData, 'trx', level, basePay, trxWeight));
+  const nrxMetrics = normalizationLevels.map(level => getNationalMetrics(qData, 'nrx', level, basePay, nrxWeight));
+  const trxCurrent = getNationalMetrics(qData, 'trx', 0, basePay, trxWeight);
+  const nrxCurrent = getNationalMetrics(qData, 'nrx', 0, basePay, nrxWeight);
+  document.getElementById('trxNationalContext').textContent = `Current national attainment: ${trxCurrent.currentAttainment.toFixed(1)}% (${trxCurrent.totalActual.toLocaleString()} actual / ${trxCurrent.totalGoal.toLocaleString()} goal).`;
+  document.getElementById('nrxNationalContext').textContent = `Current national attainment: ${nrxCurrent.currentAttainment.toFixed(1)}% (${nrxCurrent.totalActual.toLocaleString()} actual / ${nrxCurrent.totalGoal.toLocaleString()} goal).`;
+  document.getElementById('trxNationalSummary').innerHTML = renderComponentNationalTable(trxMetrics);
+  document.getElementById('nrxNationalSummary').innerHTML = renderComponentNationalTable(nrxMetrics);
+
+  const combined = document.getElementById('combinedNationalSummary');
+  if (!normalizationLevels.length) {
+    combined.innerHTML = '<div class="empty-levels">Add a normalization level to build the combined summary.</div>';
+    return;
+  }
+  const fullBudget = basePay * qData.length;
+  combined.innerHTML = `<table class="national-table"><thead><tr><th>TRx ↓ / NRx →</th>${nrxMetrics.map(metric => `<th>${metric.targetLevel.toFixed(1)}%</th>`).join('')}</tr></thead><tbody>${trxMetrics.map(trxMetric => `<tr><td><strong>${trxMetric.targetLevel.toFixed(1)}%</strong></td>${nrxMetrics.map(nrxMetric => {
+    const total = trxMetric.totalPayout + nrxMetric.totalPayout;
+    const utilization = fullBudget ? total / fullBudget * 100 : 0;
+    return `<td class="matrix-cell">${formatMoney(total)}<small>${utilization.toFixed(1)}% utilization</small></td>`;
+  }).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
 // ── Import/Export ──
