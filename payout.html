@@ -162,9 +162,15 @@
 
   /* Compare mode */
   body.compare-mode .dot-controls,
-  body.compare-mode .dot-inputs,
-  body.compare-mode #npsSection { display:none !important; }
+  body.compare-mode .dot-inputs { display:none !important; }
   body.compare-mode #curve { cursor:default; }
+
+  /* Per-plan NPS blocks (compare mode) */
+  .nps-plan-block { margin-top:14px; padding-top:14px; border-top:1px dashed #e5e7eb; }
+  .nps-plan-block:first-child { margin-top:4px; padding-top:4px; border-top:0; }
+  .nps-plan-title { display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:800; color:#172033; margin-bottom:8px; padding:0 2px; }
+  .nps-plan-title .nps-plan-color { width:11px; height:11px; border-radius:50%; }
+  .nps-plan-title .nps-plan-baseline { color:#f59e0b; font-size:.85rem; }
 
   .summary-multi { display:grid; gap:14px; padding:16px 18px; }
   .summary-multi.cols-2 { grid-template-columns:1fr 1fr; }
@@ -210,11 +216,13 @@
       <p class="sub">Shape incentive curves, compare components, and review territory-level impact in real time.</p>
     </div>
     <div class="data-actions" aria-label="Data actions">
-      <button class="btn" onclick="document.getElementById('uploadInput').click()">Upload data</button>
+      <button class="btn" onclick="document.getElementById('uploadInput').click()" title="REPLACE all current rows with the file's rows">Replace data</button>
+      <button class="btn" onclick="document.getElementById('appendInput').click()" title="APPEND new rows; duplicates by territory+quarter overwrite existing">Append data</button>
       <button class="btn" onclick="downloadSample()">Download sample</button>
       <button class="btn" onclick="exportAllPlans()" title="Download all plans as JSON">Export plans</button>
       <button class="btn" onclick="document.getElementById('plansImportInput').click()" title="Replace plans from a JSON file">Import plans</button>
       <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
+      <input type="file" id="appendInput" accept=".txt,.csv,.json" onchange="uploadData(event, true)" style="display:none">
       <input type="file" id="plansImportInput" accept=".json" onchange="importAllPlans(event)" style="display:none">
     </div>
   </header>
@@ -319,6 +327,7 @@
   <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
     <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios. In Combined mode, set TRx and NRx attainment separately per column.</p></div></div>
     <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
+    <div id="npsMulti" style="padding:0 18px 18px"></div>
   </section>
 </div>
 
@@ -1146,7 +1155,7 @@ function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
   }
   // X labels
   const labelAngle = numBuckets > 8 ? -Math.PI/3 : -0.5;
-  const labelFont = numBuckets > 12 ? '7px system-ui' : (opts.compact ? '7px system-ui' : '8px system-ui');
+  const labelFont = numBuckets > 12 ? '7px system-ui' : '8px system-ui';
   ctx2.fillStyle = '#334155'; ctx2.font = labelFont; ctx2.textAlign = 'right';
   const bars = [];
   for (let i = 0; i < numBuckets; i++) {
@@ -1232,12 +1241,16 @@ function drawHistogram() {
         <div class="histo-multiple-title"><span class="mini-dot" style="background:${p.color}"></span><span>${escapeHtml(p.name)}</span>${p.id===baselinePlanId?'<span class="baseline-mark" title="Baseline">★</span>':''}</div>
         <canvas data-plan-id="${p.id}"></canvas>
       </div>`).join('')}</div>`;
-    const cWidth = Math.max(220, Math.floor(700 / target.length) - 20);
-    const cHeight = 220;
+    // Match each canvas's internal resolution to its on-screen size so fonts render at
+    // native size (no downscale-blurring of labels). getBoundingClientRect forces layout.
+    const cssH = 220;
     container.querySelectorAll('canvas').forEach((c, idx) => {
       const plan = target[idx];
+      const rect = c.getBoundingClientRect();
+      const cssW = Math.max(240, Math.round(rect.width || 300));
+      c.style.height = cssH + 'px';
       const buckets = bucketize(entriesPerPlan[idx], range);
-      const bars = drawHistogramCanvas(c, cWidth, cHeight, buckets, range, { compact: true, color: plan.color });
+      const bars = drawHistogramCanvas(c, cssW, cssH, buckets, range, { compact: true, color: plan.color });
       histoBars.push(...bars.map(b => ({...b, planName: plan.name})));
       attachHistoMouseHandler(c);
     });
@@ -1269,37 +1282,97 @@ function attachHistoMouseHandler(c) {
 }
 
 let npsAttainments = [{trx:80,nrx:80},{trx:90,nrx:90},{trx:95,nrx:95},{trx:100,nrx:100},{trx:105,nrx:105},{trx:110,nrx:110},{trx:120,nrx:120}];
-function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});renderNPS();}
-function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);renderNPS();}}
-function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;renderNPS();}
-function renderNPS(){
-  const q=document.getElementById('quarterSelect').value;document.getElementById('npsQuarter').textContent=q;
-  const qData=quarterlyData.filter(d=>d.quarter===q);
-  if(!qData.length){document.getElementById('npsSection').style.display='none';return;}
-  document.getElementById('npsSection').style.display='';
-  const trxW=parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW=parseInt(document.getElementById('nrxWeight').value)/100||0.5;
-  const B=getEffectiveBasePay(),N=qData.length,budget=B*N;
-  const isComb=componentMode==='combined';
-  const payout=(a)=>{if(componentMode==='nrx')return nrxPct(a.nrx);if(isComb)return trxPct(a.trx)*trxW+nrxPct(a.nrx)*nrxW;return trxPct(a.trx);};
-  const sc=npsAttainments.map(a=>{const p=payout(a),t=B*(p/100)*N;return{t,budgetUtil:t/budget*100,avg:B*(p/100),min:B*(p/100),max:B*(p/100),eng:p>0?N:0,mean:p>75?100:0};});
-  const ac=qData.map(d=>{const ta=d.trxGoal?d.trxActual/d.trxGoal*100:0,na=d.nrxGoal?d.nrxActual/d.nrxGoal*100:0,tp=trxPct(ta),np=nrxPct(na);let p,att;if(componentMode==='nrx'){p=np;att=na;}else if(isComb){p=tp*trxW+np*nrxW;att=(ta+na)/2;}else{p=tp;att=ta;}return{p,att,pay:B*(p/100),ta,na};});
-  const ct=ac.reduce((s,r)=>s+r.pay,0),cps=ac.map(r=>r.p);
-  const avgAttain=ac.reduce((s,r)=>s+r.att,0)/N;
-  const avgTrxAtt=ac.reduce((s,r)=>s+r.ta,0)/N;
-  const avgNrxAtt=ac.reduce((s,r)=>s+r.na,0)/N;
-  const cur={t:ct,bu:ct/budget*100,avg:ct/N,min:Math.min(...ac.map(r=>r.pay)),max:Math.max(...ac.map(r=>r.pay)),eng:cps.filter(p=>p>0).length,mean:(cps.filter(p=>p>75).length/N*100)};
-  const rs=[{l:'Total Payout',v:sc.map(s=>s.t),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Budget Util%',v:sc.map(s=>s.budgetUtil),f:v=>v.toFixed(1)+'%',c:v=>v>100?'warn':(v>95?'good':'')},{l:'Avg Payout',v:sc.map(s=>s.avg),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Min Payout',v:sc.map(s=>s.min),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Max Payout',v:sc.map(s=>s.max),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Engaged (>0%)',v:sc.map(s=>s.eng),f:v=>v.toFixed(0)},{l:'Meaningful (>75%)',v:sc.map(s=>s.mean),f:v=>v.toFixed(1)+'%'}];
-  const cv=[cur.t,cur.bu,cur.avg,cur.min,cur.max,cur.eng,cur.mean];
-  let h='<thead><tr><th>Metric</th>';
-  sc.forEach((s,i)=>{const a=npsAttainments[i];
-    if(isComb)h+=`<th><input type=number class=nps-attainment-val value=${a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'trx',this.value)"> T / <input type=number class=nps-attainment-val value=${a.nrx} min=0 max=300 onchange="updateNpsAttainment(${i},'nrx',this.value)"> N%`;
-    else h+=`<th><input type=number class=nps-attainment-val value=${componentMode==='nrx'?a.nrx:a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'${componentMode==='nrx'?'nrx':'trx'}',this.value)">%`;
-    if(npsAttainments.length>1)h+=` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;h+='</th>';});
-  h+=isComb?`<th>Current (T:${Math.round(avgTrxAtt)}% N:${Math.round(avgNrxAtt)}%)</th>`:`<th>Current (${Math.round(avgAttain)}%)</th>`;
-  h+=`<th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
-  rs.forEach(r=>{h+='<tr><td>'+r.l+'</td>';r.v.forEach(v=>{const cl=r.c?r.c(v):'';h+='<td class='+cl+'>'+r.f(v)+'</td>';});const cv2=cv[rs.indexOf(r)],cl2=r.c?r.c(cv2):'';h+='<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';});
-  h+='</tbody>';document.getElementById('npsTable').innerHTML=h;
+function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});savePlans();renderNPS();}
+function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);savePlans();renderNPS();}}
+function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;savePlans();renderNPS();}
+
+function buildNPSTableInnerHTML(plan, qData) {
+  const isComb = componentMode === 'combined';
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  const B = plan.basePay;
+  const N = qData.length;
+  const budget = B * N;
+  const payout = (a) => {
+    if (componentMode === 'nrx') return planNrxPct(plan, a.nrx);
+    if (isComb) return planTrxPct(plan, a.trx) * trxW + planNrxPct(plan, a.nrx) * nrxW;
+    return planTrxPct(plan, a.trx);
+  };
+  const sc = npsAttainments.map(a => {
+    const p = payout(a), t = B * (p/100) * N;
+    return { t, budgetUtil: t/budget*100, avg: B*(p/100), min: B*(p/100), max: B*(p/100), eng: p>0?N:0, mean: p>75?100:0 };
+  });
+  const ac = qData.map(d => {
+    const ta = d.trxGoal ? d.trxActual/d.trxGoal*100 : 0;
+    const na = d.nrxGoal ? d.nrxActual/d.nrxGoal*100 : 0;
+    const tp = planTrxPct(plan, ta), np = planNrxPct(plan, na);
+    let p, att;
+    if (componentMode === 'nrx') { p = np; att = na; }
+    else if (isComb) { p = tp*trxW + np*nrxW; att = (ta+na)/2; }
+    else { p = tp; att = ta; }
+    return { p, att, pay: B*(p/100), ta, na };
+  });
+  const ct = ac.reduce((s,r)=>s+r.pay, 0);
+  const cps = ac.map(r=>r.p);
+  const avgAttain = ac.reduce((s,r)=>s+r.att, 0) / N;
+  const avgTrxAtt = ac.reduce((s,r)=>s+r.ta, 0) / N;
+  const avgNrxAtt = ac.reduce((s,r)=>s+r.na, 0) / N;
+  const cur = { t: ct, bu: ct/budget*100, avg: ct/N, min: Math.min(...ac.map(r=>r.pay)), max: Math.max(...ac.map(r=>r.pay)), eng: cps.filter(p=>p>0).length, mean: (cps.filter(p=>p>75).length/N*100) };
+  const rs = [
+    {l:'Total Payout', v:sc.map(s=>s.t), f:v=>'$'+Math.round(v).toLocaleString()},
+    {l:'Budget Util%', v:sc.map(s=>s.budgetUtil), f:v=>v.toFixed(1)+'%', c:v=>v>100?'warn':(v>95?'good':'')},
+    {l:'Avg Payout', v:sc.map(s=>s.avg), f:v=>'$'+Math.round(v).toLocaleString()},
+    {l:'Min Payout', v:sc.map(s=>s.min), f:v=>'$'+Math.round(v).toLocaleString()},
+    {l:'Max Payout', v:sc.map(s=>s.max), f:v=>'$'+Math.round(v).toLocaleString()},
+    {l:'Engaged (>0%)', v:sc.map(s=>s.eng), f:v=>v.toFixed(0)},
+    {l:'Meaningful (>75%)', v:sc.map(s=>s.mean), f:v=>v.toFixed(1)+'%'}
+  ];
+  const cv = [cur.t, cur.bu, cur.avg, cur.min, cur.max, cur.eng, cur.mean];
+  let h = '<thead><tr><th>Metric</th>';
+  sc.forEach((s,i) => {
+    const a = npsAttainments[i];
+    if (isComb) h += `<th><input type=number class=nps-attainment-val value=${a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'trx',this.value)"> T / <input type=number class=nps-attainment-val value=${a.nrx} min=0 max=300 onchange="updateNpsAttainment(${i},'nrx',this.value)"> N%`;
+    else h += `<th><input type=number class=nps-attainment-val value=${componentMode==='nrx'?a.nrx:a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'${componentMode==='nrx'?'nrx':'trx'}',this.value)">%`;
+    if (npsAttainments.length > 1) h += ` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;
+    h += '</th>';
+  });
+  h += isComb ? `<th>Current (T:${Math.round(avgTrxAtt)}% N:${Math.round(avgNrxAtt)}%)</th>` : `<th>Current (${Math.round(avgAttain)}%)</th>`;
+  h += `<th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
+  rs.forEach(r => {
+    h += '<tr><td>'+r.l+'</td>';
+    r.v.forEach(v => { const cl = r.c ? r.c(v) : ''; h += '<td class='+cl+'>'+r.f(v)+'</td>'; });
+    const cv2 = cv[rs.indexOf(r)], cl2 = r.c ? r.c(cv2) : '';
+    h += '<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';
+  });
+  h += '</tbody>';
+  return h;
+}
+
+function renderNPS() {
+  const q = document.getElementById('quarterSelect').value;
+  document.getElementById('npsQuarter').textContent = q;
+  const qData = quarterlyData.filter(d => d.quarter === q);
+  const section = document.getElementById('npsSection');
+  if (!qData.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const singleTable = document.getElementById('npsTable');
+  const multiContainer = document.getElementById('npsMulti');
+
+  if (!compareMode) {
+    singleTable.style.display = '';
+    if (multiContainer) multiContainer.innerHTML = '';
+    singleTable.innerHTML = buildNPSTableInnerHTML(getActivePlan(), qData);
+  } else {
+    singleTable.style.display = 'none';
+    if (!multiContainer) return;
+    multiContainer.innerHTML = plans.map(p => `
+      <div class="nps-plan-block">
+        <div class="nps-plan-title"><span class="nps-plan-color" style="background:${p.color}"></span><span>${escapeHtml(p.name)}</span>${p.id===baselinePlanId?'<span class="nps-plan-baseline" title="Baseline">★</span>':''}</div>
+        <div style="overflow-x:auto"><table class="nps-table">${buildNPSTableInnerHTML(p, qData)}</table></div>
+      </div>
+    `).join('');
+  }
 }
 
 // ── Compute per-plan stats for a given quarter ──
@@ -1527,7 +1600,7 @@ function renderCompareMode(qData, quarter) {
     return html;
   }).join('');
 
-  // NPS panel hidden in compare mode (handled by CSS)
+  renderNPS();
 }
 
 // ── Import/Export ──
@@ -1562,27 +1635,65 @@ function parseCSV(text) {
   return result;
 }
 
-function uploadData(event) {
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    try{
-      if(text.trim().startsWith('{')){
-        const d=JSON.parse(text);
-        if(d.quarterlyData&&Array.isArray(d.quarterlyData)){quarterlyData=d.quarterlyData;}
-        else throw new Error('JSON needs quarterlyData array');
-        // Backwards-compat: legacy uploads with single curve write into the active plan
-        if (d.points && Array.isArray(d.points)) getActivePlan().trxPoints = clonePoints(d.points);
-        if (d.nrxPoints && Array.isArray(d.nrxPoints)) getActivePlan().nrxPoints = clonePoints(d.nrxPoints);
-        savePlans();
+// Merge new rows into the existing quarterlyData. Rows with the same
+// (territory, quarter) key are replaced; new combinations are added.
+function mergeQuarterlyData(newRows) {
+  const key = r => r.territory + '|' + r.quarter;
+  const map = new Map();
+  quarterlyData.forEach(r => map.set(key(r), r));
+  let added = 0, updated = 0;
+  newRows.forEach(r => {
+    const k = key(r);
+    if (map.has(k)) updated++;
+    else added++;
+    map.set(k, r);
+  });
+  quarterlyData = Array.from(map.values());
+  return { added, updated };
+}
+
+function uploadData(event, append) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    try {
+      let parsed;
+      let extraPoints = null;
+      if (text.trim().startsWith('{')) {
+        const d = JSON.parse(text);
+        if (!d.quarterlyData || !Array.isArray(d.quarterlyData)) throw new Error('JSON needs a quarterlyData array');
+        parsed = d.quarterlyData;
+        if (d.points || d.nrxPoints) extraPoints = { points: d.points, nrxPoints: d.nrxPoints };
       } else {
-        quarterlyData = parseCSV(text);
+        parsed = parseCSV(text);
+      }
+      if (!parsed.length) throw new Error('No valid rows found');
+      if (append) {
+        const { added, updated } = mergeQuarterlyData(parsed);
+        // Only restore curves on a non-append load; appending data shouldn't change curves.
+        alert('Appended ' + added + ' new row(s); ' + updated + ' existing row(s) were updated.');
+      } else {
+        // Replace mode — confirm first if the user has existing data.
+        if (quarterlyData.length && !confirm('Replace ALL ' + quarterlyData.length + ' existing rows with ' + parsed.length + ' new row(s)? This cannot be undone.')) {
+          event.target.value = '';
+          return;
+        }
+        quarterlyData = parsed;
+        if (extraPoints) {
+          if (extraPoints.points && Array.isArray(extraPoints.points)) getActivePlan().trxPoints = clonePoints(extraPoints.points);
+          if (extraPoints.nrxPoints && Array.isArray(extraPoints.nrxPoints)) getActivePlan().nrxPoints = clonePoints(extraPoints.nrxPoints);
+          savePlans();
+        }
       }
       updateUI();
-    }catch(err){alert('Upload failed: '+err.message);}
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      event.target.value = '';
+    }
   };
-  reader.readAsText(file); event.target.value='';
+  reader.readAsText(file);
 }
 
 // ── Export / import all plans ──
