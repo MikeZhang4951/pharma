@@ -18,7 +18,9 @@ A dependency-free, browser-based sales incentive modeling tool. The application 
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | Complete user interface, styles, payout calculations, charts, and import/export logic. |
+| `index.html` | Core user interface, payout calculations, charts, and import/export logic. |
+| `national-summary.css` | Styles for the normalized national summary extension. |
+| `national-summary.js` | National normalization controls, calculations, and summary rendering. |
 | `territories.json` | Seed territory data used to generate deterministic quarterly demo data. |
 | `.github/workflows/deploy-pages.yml` | Validates and deploys the static files to GitHub Pages. |
 
@@ -48,7 +50,7 @@ After a successful deployment, the site is available at:
 
 <https://mikezhang4951.github.io/pharma/>
 
-Future pushes to `master` redeploy automatically. The workflow publishes only `index.html` and `territories.json`, and includes `.nojekyll` in the Pages artifact.
+Future pushes to `master` redeploy automatically. The workflow publishes `index.html`, the national summary CSS/JavaScript assets, and `territories.json`, and includes `.nojekyll` in the Pages artifact.
 
 ## Input formats
 
