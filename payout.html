@@ -132,6 +132,73 @@
   .nps-panel .nps-table td:first-child { text-align:left; font-weight:700; color:var(--muted); }
   .nps-panel .nps-table tr:hover td { background:var(--surface-soft); }
   .nps-panel .nps-table .good { color:var(--green); } .nps-panel .nps-table .warn { color:var(--amber); } .nps-panel .nps-table .bad { color:var(--red); }
+
+  /* Plans bar */
+  .plans-bar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); flex-wrap:wrap; }
+  .plans-tabs-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
+  .plans-tabs-wrap > .section-label { margin:0 4px 0 0; }
+  .plan-tabs { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .plan-tab { display:inline-flex; align-items:center; gap:7px; padding:7px 11px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); cursor:pointer; transition:.15s ease; font-size:.78rem; font-weight:700; color:#475569; position:relative; }
+  .plan-tab:hover { border-color:#b8c2d1; background:var(--surface-soft); }
+  .plan-tab.active { border-color:var(--plan-color, var(--primary)); color:var(--plan-color, var(--primary)); background:#fff; box-shadow:0 0 0 3px rgba(79,70,229,.12); }
+  .plan-tab .plan-color-dot { display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--plan-color, var(--primary)); flex-shrink:0; }
+  .plan-tab .plan-baseline-badge { color:#f59e0b; font-size:.85rem; line-height:1; margin-right:1px; }
+  .plan-tab .plan-menu-btn { border:0; background:transparent; color:#94a3b8; cursor:pointer; padding:1px 4px; font-size:.85rem; line-height:1; border-radius:4px; }
+  .plan-tab .plan-menu-btn:hover { color:#334155; background:rgba(0,0,0,0.06); }
+  .btn-add-plan { padding:7px 11px; border:1.5px dashed #cbd5e1; background:transparent; color:#64748b; border-radius:9px; cursor:pointer; font-size:.76rem; font-weight:700; transition:.15s ease; }
+  .btn-add-plan:hover:not(:disabled) { border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+  .btn-add-plan:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-compare { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); color:#334155; cursor:pointer; font-size:.78rem; font-weight:800; transition:.15s ease; }
+  .btn-compare:hover { border-color:#b8c2d1; }
+  .btn-compare.active { border-color:var(--primary); color:#fff; background:var(--primary); }
+  .btn-compare.active:hover { background:var(--primary-dark); }
+
+  /* Plan menu popup */
+  .plan-menu { position:absolute; min-width:180px; background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 12px 32px rgba(15,23,42,.18); padding:5px; z-index:200; }
+  .plan-menu button { display:block; width:100%; text-align:left; border:0; background:transparent; padding:8px 11px; border-radius:6px; cursor:pointer; font-size:.76rem; font-weight:600; color:#334155; }
+  .plan-menu button:hover:not(:disabled) { background:var(--primary-soft); color:var(--primary); }
+  .plan-menu button:disabled { opacity:.4; cursor:not-allowed; }
+  .plan-menu button.danger:hover:not(:disabled) { background:#fee2e2; color:var(--red); }
+
+  /* Compare mode */
+  body.compare-mode .dot-controls,
+  body.compare-mode .dot-inputs,
+  body.compare-mode #npsSection { display:none !important; }
+  body.compare-mode #curve { cursor:default; }
+
+  .summary-multi { display:grid; gap:14px; padding:16px 18px; }
+  .summary-multi.cols-2 { grid-template-columns:1fr 1fr; }
+  .summary-multi.cols-3 { grid-template-columns:repeat(3,1fr); }
+  .summary-card { border:1px solid var(--border); border-radius:9px; padding:12px 13px; background:var(--surface-soft); }
+  .summary-card.baseline { background:#fffbeb; border-color:#fde68a; }
+  .summary-card h4 { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:800; margin-bottom:9px; color:#172033; }
+  .summary-card .card-color-dot { display:inline-block; width:9px; height:9px; border-radius:50%; }
+  .summary-card .baseline-mark { color:#f59e0b; font-size:.7rem; }
+  .summary-card .stat-row { padding:5px 0; font-size:.66rem; gap:10px; }
+  .summary-card .stat-row .val { font-size:.7rem; }
+  .summary-card .delta-line { margin-top:8px; padding-top:7px; border-top:1px dashed #e5e7eb; font-size:.65rem; color:#64748b; }
+  .summary-card .delta-line .delta-val { font-weight:800; }
+  .summary-card .delta-line .delta-val.up { color:var(--red); }
+  .summary-card .delta-line .delta-val.down { color:var(--green); }
+
+  .histo-multiples { display:grid; gap:14px; }
+  .histo-multiples.cols-2 { grid-template-columns:1fr 1fr; }
+  .histo-multiples.cols-3 { grid-template-columns:repeat(3,1fr); }
+  .histo-multiple { display:flex; flex-direction:column; gap:6px; }
+  .histo-multiple-title { display:flex; align-items:center; gap:6px; font-size:.7rem; font-weight:800; color:#334155; }
+  .histo-multiple-title .mini-dot { width:8px; height:8px; border-radius:50%; }
+  .histo-multiple-title .baseline-mark { color:#f59e0b; }
+  .histo-multiple canvas { width:100%; border:1px solid #d9e0ea; border-radius:8px; background:#fff; display:block; }
+
+  .delta-cell { font-weight:800; }
+  .delta-cell.up { color:var(--red); }
+  .delta-cell.down { color:var(--green); }
+  .delta-cell.zero { color:#94a3b8; }
+
+  @media (max-width:900px) {
+    .summary-multi.cols-3, .summary-multi.cols-2 { grid-template-columns:1fr; }
+    .histo-multiples.cols-3, .histo-multiples.cols-2 { grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
@@ -145,9 +212,23 @@
     <div class="data-actions" aria-label="Data actions">
       <button class="btn" onclick="document.getElementById('uploadInput').click()">Upload data</button>
       <button class="btn" onclick="downloadSample()">Download sample</button>
+      <button class="btn" onclick="exportAllPlans()" title="Download all plans as JSON">Export plans</button>
+      <button class="btn" onclick="document.getElementById('plansImportInput').click()" title="Replace plans from a JSON file">Import plans</button>
       <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
+      <input type="file" id="plansImportInput" accept=".json" onchange="importAllPlans(event)" style="display:none">
     </div>
   </header>
+
+  <section class="plans-bar" aria-label="Plans">
+    <div class="plans-tabs-wrap">
+      <span class="section-label">Plans</span>
+      <div class="plan-tabs" id="planTabs" role="tablist"></div>
+      <button id="addPlanBtn" class="btn-add-plan" onclick="addPlan()">+ New plan</button>
+    </div>
+    <div class="plans-actions">
+      <button id="compareBtn" class="btn-compare" onclick="toggleCompare()" aria-pressed="false">⚖ Compare plans</button>
+    </div>
+  </section>
 
   <section class="setup-card" aria-labelledby="setupHeading">
     <span class="section-label" id="setupHeading">Plan setup</span>
@@ -170,7 +251,7 @@
       </div>
       <div class="field base-field">
         <label for="basePay">Quarterly base pay</label>
-        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="renderAll()"></div>
+        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="onBasePayChange()"></div>
       </div>
       <div class="field">
         <label for="quarterSelect">Quarter</label>
@@ -216,7 +297,10 @@
             <span>Min</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
             <span>Max</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
           </div>
-          <div style="position:relative"><canvas id="histoCanvas" width="700" height="260"></canvas><div id="histoTip"></div></div>
+          <div class="histo-canvas-area" style="position:relative">
+            <div id="histoContainer"><canvas id="histoCanvas" width="700" height="260"></canvas></div>
+            <div id="histoTip"></div>
+          </div>
         </div>
       </section>
 
@@ -243,10 +327,230 @@
 let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
 let payoutSortState = '';
 let componentMode = 'trx';
+let compareMode = false;
 
 const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
 const DEFAULT_BASE_PAY_Q = BASE_ANNUAL / 4;
+const STORAGE_KEY = 'pharma-payout-plans-v1';
+const MAX_PLANS = 3;
+const PLAN_COLORS = ['#6366f1', '#0ea5e9', '#f59e0b'];
+
+// ── Plans data model ──
+// Each plan: { id, name, color, trxPoints, nrxPoints, trxWeight, nrxWeight, basePay }
+let plans = [];
+let activePlanId = null;
+let baselinePlanId = null;
+
+function uid() { return 'p_' + Math.random().toString(36).slice(2, 9); }
+
+function defaultTrxPoints() {
+  return [{x:0,y:0},{x:80,y:65},{x:100,y:100},{x:200,y:240},{x:300,y:300}];
+}
+function defaultNrxPoints() {
+  return [{x:0,y:0},{x:80,y:55},{x:100,y:100},{x:200,y:250},{x:300,y:300}];
+}
+function clonePoints(pts) { return pts.map(p => ({x:p.x, y:p.y})); }
+
+function createPlan(name, colorIdx, template) {
+  return {
+    id: uid(),
+    name,
+    color: PLAN_COLORS[colorIdx % PLAN_COLORS.length],
+    trxPoints: template ? clonePoints(template.trxPoints) : defaultTrxPoints(),
+    nrxPoints: template ? clonePoints(template.nrxPoints) : defaultNrxPoints(),
+    trxWeight: template ? template.trxWeight : 50,
+    nrxWeight: template ? template.nrxWeight : 50,
+    basePay:   template ? template.basePay   : 3375
+  };
+}
+
+function getActivePlan() { return plans.find(p => p.id === activePlanId) || plans[0]; }
+function getPlanById(id) { return plans.find(p => p.id === id); }
+function getBaselinePlan() { return plans.find(p => p.id === baselinePlanId) || plans[0]; }
+function getDisplayPlans() { return compareMode ? plans : [getActivePlan()]; }
+
+// ── Persistence ──
+function savePlans() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: 1,
+      plans, activePlanId, baselinePlanId, compareMode, componentMode
+    }));
+  } catch (e) { /* localStorage may be disabled or full — ignore */ }
+}
+function loadPlans() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.plans || !Array.isArray(data.plans) || !data.plans.length) return false;
+    plans = data.plans.slice(0, MAX_PLANS).map((p, i) => ({
+      id: p.id || uid(),
+      name: typeof p.name === 'string' ? p.name : 'Plan ' + String.fromCharCode(65 + i),
+      color: p.color || PLAN_COLORS[i % PLAN_COLORS.length],
+      trxPoints: Array.isArray(p.trxPoints) && p.trxPoints.length >= 2 ? clonePoints(p.trxPoints) : defaultTrxPoints(),
+      nrxPoints: Array.isArray(p.nrxPoints) && p.nrxPoints.length >= 2 ? clonePoints(p.nrxPoints) : defaultNrxPoints(),
+      trxWeight: Number.isFinite(p.trxWeight) ? p.trxWeight : 50,
+      nrxWeight: Number.isFinite(p.nrxWeight) ? p.nrxWeight : 50,
+      basePay:   Number.isFinite(p.basePay)   ? p.basePay   : 3375
+    }));
+    activePlanId = getPlanById(data.activePlanId) ? data.activePlanId : plans[0].id;
+    baselinePlanId = getPlanById(data.baselinePlanId) ? data.baselinePlanId : plans[0].id;
+    compareMode = !!data.compareMode;
+    if (typeof data.componentMode === 'string' && ['trx','nrx','combined'].includes(data.componentMode)) {
+      componentMode = data.componentMode;
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+// ── Plan operations ──
+function addPlan() {
+  if (plans.length >= MAX_PLANS) return;
+  const next = String.fromCharCode(65 + plans.length);
+  const newPlan = createPlan('Plan ' + next, plans.length, getActivePlan());
+  plans.push(newPlan);
+  activePlanId = newPlan.id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  applyComponentTabState();
+  updateUI();
+  savePlans();
+}
+
+function deletePlan(id) {
+  if (plans.length <= 1) return;
+  const plan = getPlanById(id);
+  if (!plan) return;
+  if (!confirm('Delete "' + plan.name + '"? This cannot be undone.')) return;
+  plans = plans.filter(p => p.id !== id);
+  if (activePlanId === id) activePlanId = plans[0].id;
+  if (baselinePlanId === id) baselinePlanId = plans[0].id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function renamePlan(id) {
+  const plan = getPlanById(id);
+  if (!plan) return;
+  const name = prompt('Rename plan', plan.name);
+  if (!name || !name.trim()) return;
+  plan.name = name.trim().slice(0, 30);
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function setBaselinePlan(id) {
+  if (!getPlanById(id)) return;
+  baselinePlanId = id;
+  renderPlanTabs();
+  if (compareMode) updateUI();
+  savePlans();
+}
+
+function setActivePlan(id) {
+  if (!getPlanById(id) || id === activePlanId) {
+    if (id === activePlanId) renderPlanTabs();
+    return;
+  }
+  activePlanId = id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function toggleCompare() {
+  if (plans.length < 2 && !compareMode) {
+    alert('Add at least 2 plans to compare.');
+    return;
+  }
+  compareMode = !compareMode;
+  document.body.classList.toggle('compare-mode', compareMode);
+  const btn = document.getElementById('compareBtn');
+  btn.classList.toggle('active', compareMode);
+  btn.setAttribute('aria-pressed', String(compareMode));
+  btn.textContent = compareMode ? '⚖ Exit compare' : '⚖ Compare plans';
+  updateUI();
+  savePlans();
+}
+
+function syncInputsFromActivePlan() {
+  const p = getActivePlan();
+  document.getElementById('trxWeight').value = p.trxWeight;
+  document.getElementById('nrxWeight').value = p.nrxWeight;
+  document.getElementById('basePay').value = p.basePay;
+  document.getElementById('setupHeading').textContent = p.name + ' setup';
+}
+
+function persistInputsToActivePlan() {
+  const p = getActivePlan();
+  const t = Number(document.getElementById('trxWeight').value);
+  const n = Number(document.getElementById('nrxWeight').value);
+  const b = Number(document.getElementById('basePay').value);
+  if (Number.isFinite(t)) p.trxWeight = Math.min(100, Math.max(0, t));
+  if (Number.isFinite(n)) p.nrxWeight = Math.min(100, Math.max(0, n));
+  if (Number.isFinite(b) && b >= 0) p.basePay = b;
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function renderPlanTabs() {
+  const wrap = document.getElementById('planTabs');
+  if (!wrap) return;
+  wrap.innerHTML = plans.map(p => `
+    <div class="plan-tab ${p.id === activePlanId ? 'active' : ''}" 
+         style="--plan-color:${p.color}"
+         role="tab" aria-selected="${p.id === activePlanId}"
+         onclick="setActivePlan('${p.id}')">
+      <span class="plan-color-dot"></span>
+      <span class="plan-name">${escapeHtml(p.name)}</span>
+      ${p.id === baselinePlanId ? '<span class="plan-baseline-badge" title="Baseline plan">★</span>' : ''}
+      <button class="plan-menu-btn" aria-label="Plan options" onclick="event.stopPropagation();showPlanMenu('${p.id}', this)">▾</button>
+    </div>
+  `).join('');
+  document.getElementById('addPlanBtn').disabled = plans.length >= MAX_PLANS;
+  const compareBtn = document.getElementById('compareBtn');
+  if (compareBtn) compareBtn.disabled = plans.length < 2 && !compareMode;
+}
+
+function showPlanMenu(planId, btn) {
+  closePlanMenu();
+  const plan = getPlanById(planId);
+  if (!plan) return;
+  const menu = document.createElement('div');
+  menu.className = 'plan-menu';
+  const isBaseline = planId === baselinePlanId;
+  const canDelete = plans.length > 1;
+  menu.innerHTML = `
+    <button onclick="renamePlan('${planId}');closePlanMenu()">Rename…</button>
+    <button onclick="setBaselinePlan('${planId}');closePlanMenu()" ${isBaseline ? 'disabled' : ''}>${isBaseline ? '★ Baseline' : 'Set as baseline'}</button>
+    <button onclick="deletePlan('${planId}');closePlanMenu()" class="danger" ${canDelete ? '' : 'disabled'}>Delete plan</button>
+  `;
+  document.body.appendChild(menu);
+  const rect = btn.getBoundingClientRect();
+  menu.style.left = (rect.left + window.scrollX - 120) + 'px';
+  menu.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
+  setTimeout(() => document.addEventListener('click', closePlanMenu, { once: true }), 0);
+}
+
+function closePlanMenu() {
+  document.querySelectorAll('.plan-menu').forEach(m => m.remove());
+}
+
+function applyComponentTabState() {
+  document.getElementById('btnTRx').className = componentMode === 'trx' ? 'active' : '';
+  document.getElementById('btnNRx').className = componentMode === 'nrx' ? 'active' : '';
+  document.getElementById('btnCombined').className = componentMode === 'combined' ? 'active' : '';
+  const ids = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
+  Object.entries(ids).forEach(([m, id]) => {
+    document.getElementById(id).setAttribute('aria-selected', String(m === componentMode));
+  });
+}
 
 function getEffectiveBasePay() {
   const value = Number(document.getElementById('basePay').value);
@@ -258,6 +562,12 @@ function getComponentWeight(id) {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) / 100 : 0.5;
 }
 
+function onBasePayChange() {
+  persistInputsToActivePlan();
+  savePlans();
+  renderAll();
+}
+
 function syncComponentWeights(changedComponent) {
   const changedInput = document.getElementById(changedComponent + 'Weight');
   if (changedInput.value === '') return;
@@ -266,6 +576,8 @@ function syncComponentWeights(changedComponent) {
   const otherInput = document.getElementById(changedComponent === 'trx' ? 'nrxWeight' : 'trxWeight');
   changedInput.value = changedWeight;
   otherInput.value = 100 - changedWeight;
+  persistInputsToActivePlan();
+  savePlans();
   renderAll();
 }
 function seededRandom(seed) {
@@ -273,7 +585,26 @@ function seededRandom(seed) {
   return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-// Load & generate quarterly data from territories.json
+function generateFallbackData() {
+  const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
+  const quarters = ['Q125','Q225','Q325','Q425'];
+  const out = [];
+  names.forEach((name,i) => {
+    const rng = seededRandom(i * 137 + 500);
+    const baseGoal = 800 + rng() * 800;
+    quarters.forEach((q,qIdx) => {
+      const qw = [0.22,0.24,0.27,0.27][qIdx];
+      const trxGoal = Math.round(baseGoal * qw);
+      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
+      const nrxGoal = Math.round(baseGoal * qw * (0.7 + rng() * 0.5));
+      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
+      out.push({ territory:name, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
+    });
+  });
+  return out;
+}
+
+// Load territory data; render once data is in.
 fetch('./territories.json').then(r=>r.json()).then(territories=>{
   quarterlyData = [];
   const quarters = ['Q125','Q225','Q325','Q425'];
@@ -288,44 +619,32 @@ fetch('./territories.json').then(r=>r.json()).then(territories=>{
       quarterlyData.push({ territory:t.territory, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
     });
   });
-  renderAll();
-  updateQuarterOptions();
+  updateUI();
 }).catch(() => {
-  // Generate fallback data
-  const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
-  const quarters = ['Q125','Q225','Q325','Q425'];
-  quarterlyData = [];
-  names.forEach((name,i) => {
-    const rng = seededRandom(i * 137 + 500);
-    const baseGoal = 800 + rng() * 800;
-    quarters.forEach((q,qIdx) => {
-      const qw = [0.22,0.24,0.27,0.27][qIdx];
-      const trxGoal = Math.round(baseGoal * qw);
-      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
-      const nrxGoal = Math.round(baseGoal * qw * (0.7 + rng() * 0.5));
-      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
-      quarterlyData.push({ territory:name, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
-    });
-  });
-  renderAll();
-  updateQuarterOptions();
+  quarterlyData = generateFallbackData();
+  updateUI();
 });
 
-// ── Curve control points ──
-let points = [ // TRx
-  {x:0, y:0},
-  {x:80, y:65},
-  {x:100, y:100},
-  {x:200, y:240},
-  {x:300, y:300},
-];
-let nrxPoints = [ // NRx
-  {x:0, y:0},
-  {x:80, y:55},
-  {x:100, y:100},
-  {x:200, y:250},
-  {x:300, y:300},
-];
+function bootApp() {
+  const restored = loadPlans();
+  if (!restored) {
+    plans = [createPlan('Plan A', 0)];
+    activePlanId = plans[0].id;
+    baselinePlanId = plans[0].id;
+  }
+  if (compareMode) {
+    document.body.classList.add('compare-mode');
+    const btn = document.getElementById('compareBtn');
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.textContent = '⚖ Exit compare';
+  }
+  syncInputsFromActivePlan();
+  applyComponentTabState();
+  renderPlanTabs();
+  drawCurve();
+  buildInputs();
+}
 
 // ── Canvas ──
 const canvas = document.getElementById('curve');
@@ -343,11 +662,12 @@ function toScreen(p) { return {x:PAD.l+(p.x/MAX_X)*PW, y:PAD.t+PH-(p.y/MAX_Y)*PH
 function toWorld(s) { return {x:((s.x-PAD.l)/PW)*MAX_X, y:(1-(s.y-PAD.t)/PH)*MAX_Y}; }
 
 function activePoints() {
-  if (componentMode === 'nrx') return nrxPoints;
-  return points;
+  const p = getActivePlan();
+  return componentMode === 'nrx' ? p.nrxPoints : p.trxPoints;
 }
 
 function addDot() {
+  if (compareMode) return;
   const pts = activePoints();
   let maxGap = 0, bestIdx = 0;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -357,14 +677,17 @@ function addDot() {
   const newX = Math.round((pts[bestIdx].x + pts[bestIdx+1].x) / 2);
   const newY = Math.round((pts[bestIdx].y + pts[bestIdx+1].y) / 2);
   pts.splice(bestIdx + 1, 0, {x: newX, y: newY});
+  savePlans();
   updateUI();
 }
 
 function removeDot() {
+  if (compareMode) return;
   const pts = activePoints();
   if (pts.length <= 2) return;
   const mid = Math.floor((pts.length - 1) / 2);
   pts.splice(mid, 1);
+  savePlans();
   updateUI();
 }
 
@@ -382,6 +705,7 @@ function updateDotFromInput(idx, field, value) {
     clamped = Math.max(0, Math.min(MAX_Y, clamped));
     pts[idx].y = clamped;
   }
+  savePlans();
   drawCurve(); renderAll(); buildInputs();
 }
 
@@ -404,7 +728,8 @@ function buildInputs() {
 function updateUI() {
   const pts = activePoints();
   document.getElementById('dotCount').textContent = pts.length + ' points';
-  document.getElementById('btnRemove').disabled = pts.length <= 2;
+  document.getElementById('btnRemove').disabled = pts.length <= 2 || compareMode;
+  document.getElementById('btnAdd').disabled = compareMode;
   buildInputs();
   drawCurve(); renderAll();
   updateQuarterOptions();
@@ -421,13 +746,8 @@ function updateQuarterOptions() {
 
 function setComponent(mode) {
   componentMode = mode;
-  document.getElementById('btnTRx').className = mode === 'trx' ? 'active' : '';
-  document.getElementById('btnNRx').className = mode === 'nrx' ? 'active' : '';
-  document.getElementById('btnCombined').className = mode === 'combined' ? 'active' : '';
-  const componentButtons = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
-  Object.entries(componentButtons).forEach(([name, id]) => {
-    document.getElementById(id).setAttribute('aria-selected', String(name === mode));
-  });
+  applyComponentTabState();
+  savePlans();
   updateUI();
 }
 
@@ -448,13 +768,45 @@ function interpolatePts(pts, x) {
   }
   return 0;
 }
-function trxPct(x) { return interpolatePts(points, x); }
-function nrxPct(x) { return interpolatePts(nrxPoints, x); }
+function trxPct(x) { return interpolatePts(getActivePlan().trxPoints, x); }
+function nrxPct(x) { return interpolatePts(getActivePlan().nrxPoints, x); }
+function planTrxPct(plan, x) { return interpolatePts(plan.trxPoints, x); }
+function planNrxPct(plan, x) { return interpolatePts(plan.nrxPoints, x); }
 
 function getCombinedPayout(attainment) {
   const trxW = getComponentWeight('trxWeight');
   const nrxW = getComponentWeight('nrxWeight');
   return { trx:trxPct(attainment), nrx:nrxPct(attainment), combined: trxPct(attainment)*trxW + nrxPct(attainment)*nrxW };
+}
+
+// Returns the per-plan effective payout fraction (0..n) for a given territory row.
+// Uses the plan's own trx/nrx weights and curves.
+function payoutFractionForPlan(plan, row, mode) {
+  const trxAttain = row.trxGoal ? row.trxActual / row.trxGoal * 100 : 0;
+  const nrxAttain = row.nrxGoal ? row.nrxActual / row.nrxGoal * 100 : 0;
+  const trxP = planTrxPct(plan, trxAttain);
+  const nrxP = planNrxPct(plan, nrxAttain);
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  if (mode === 'nrx') return { pct: nrxP, attain: nrxAttain, trxP, nrxP, trxAttain, nrxAttain };
+  if (mode === 'combined') return { pct: trxP*trxW + nrxP*nrxW, attain: (trxAttain+nrxAttain)/2, trxP, nrxP, trxAttain, nrxAttain };
+  return { pct: trxP, attain: trxAttain, trxP, nrxP, trxAttain, nrxAttain };
+}
+
+function payoutAmountForPlan(plan, row, mode) {
+  const f = payoutFractionForPlan(plan, row, mode);
+  if (mode === 'combined') {
+    return plan.basePay * (f.pct / 100);
+  }
+  // Component view: weighted share of base pay, like the original logic.
+  const w = (mode === 'nrx' ? plan.nrxWeight : plan.trxWeight) / 100;
+  return plan.basePay * w * (f.pct / 100);
+}
+
+function displayBasePayForPlan(plan, mode) {
+  if (mode === 'combined') return plan.basePay;
+  const w = (mode === 'nrx' ? plan.nrxWeight : plan.trxWeight) / 100;
+  return plan.basePay * w;
 }
 
 // ── Draw Curve ──
@@ -509,30 +861,73 @@ function drawCurve() {
   const showTRx = componentMode === 'trx' || componentMode === 'combined';
   const showNRx = componentMode === 'nrx' || componentMode === 'combined';
 
-  if (showTRx) drawCurveLine(points, '#6366f1', componentMode==='combined'?0.85:1);
-  if (showNRx) drawCurveLine(nrxPoints, '#059669', componentMode==='combined'?0.85:1);
-
-  // Slopes
-  if (showTRx) drawSlopes(points, '#6366f1');
-  if (showNRx) drawSlopes(nrxPoints, '#059669');
-
-  // Dots (always interactive now)
-  if (showTRx) drawDots(points, '#6366f1', 'TRx');
-  if (showNRx) drawDots(nrxPoints, '#059669', 'NRx');
+  if (compareMode) {
+    // Overlay every plan's curve(s); no interactive dots.
+    plans.forEach(plan => {
+      const isBaseline = plan.id === baselinePlanId;
+      const lineW = isBaseline ? 3.8 : 2.6;
+      const dashed = !isBaseline; // make non-baseline plans dashed in combined view to disambiguate
+      if (showTRx) drawCurveLine(plan.trxPoints, plan.color, 0.9, lineW, false);
+      if (showNRx) drawCurveLine(plan.nrxPoints, plan.color, 0.55, lineW, dashed && componentMode === 'combined');
+      // Tiny non-interactive markers
+      const drawMini = (pts) => pts.forEach(p => {
+        const s = toScreen(p);
+        ctx.fillStyle = plan.color;
+        ctx.beginPath(); ctx.arc(s.x, s.y, isBaseline ? 4.5 : 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+      if (showTRx) drawMini(plan.trxPoints);
+      if (showNRx) drawMini(plan.nrxPoints);
+    });
+    drawCompareLegend();
+  } else {
+    const ap = getActivePlan();
+    if (showTRx) drawCurveLine(ap.trxPoints, '#6366f1', componentMode==='combined'?0.85:1);
+    if (showNRx) drawCurveLine(ap.nrxPoints, '#059669', componentMode==='combined'?0.85:1);
+    if (showTRx) drawSlopes(ap.trxPoints, '#6366f1');
+    if (showNRx) drawSlopes(ap.nrxPoints, '#059669');
+    if (showTRx) drawDots(ap.trxPoints, '#6366f1', 'TRx');
+    if (showNRx) drawDots(ap.nrxPoints, '#059669', 'NRx');
+  }
 }
 
-function drawCurveLine(pts, color, alpha) {
+function drawCompareLegend() {
+  const padX = 12, padY = 10, lineH = 16;
+  const items = plans.map(p => ({label: p.name + (p.id === baselinePlanId ? ' ★' : ''), color: p.color}));
+  ctx.font = 'bold 11px system-ui';
+  const widths = items.map(it => ctx.measureText(it.label).width);
+  const boxW = Math.max(...widths) + 30;
+  const boxH = padY * 2 + items.length * lineH;
+  const x = PAD.l + 8, y = PAD.t + 8;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.strokeStyle = 'rgba(15,23,42,0.12)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.rect(x, y, boxW, boxH); ctx.fill(); ctx.stroke();
+  items.forEach((it, i) => {
+    const ly = y + padY + i * lineH + 8;
+    ctx.fillStyle = it.color;
+    ctx.beginPath(); ctx.arc(x + padX, ly - 3, 4.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#172033'; ctx.textAlign = 'left';
+    ctx.fillText(it.label, x + padX + 11, ly);
+  });
+}
+
+function drawCurveLine(pts, color, alpha, lineWidth, dashed) {
   ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color; ctx.lineWidth = 3.5; ctx.beginPath();
+  ctx.strokeStyle = color; ctx.lineWidth = lineWidth || 3.5;
+  if (dashed) ctx.setLineDash([8, 5]);
+  ctx.beginPath();
   for(let i=0;i<=MAX_X;i+=0.5) {
     const p = interpolatePts(pts, i);
     const s = toScreen({x:i, y:Math.min(MAX_Y,p)});
     if(i===0) ctx.moveTo(s.x,s.y); else ctx.lineTo(s.x,s.y);
   }
   ctx.stroke();
-  ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.lineTo(PAD.l, PAD.t+PH); ctx.closePath();
-  const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
-  ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+  if (dashed) ctx.setLineDash([]);
+  if (!compareMode) {
+    ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.lineTo(PAD.l, PAD.t+PH); ctx.closePath();
+    const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
+    ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -569,16 +964,17 @@ function drawDots(pts, color, label) {
 
 // ── Mouse / Touch ──
 function findDot(sx, sy) {
-  // Check TRx dots
+  if (compareMode) return null;
+  const ap = getActivePlan();
   if (componentMode === 'trx' || componentMode === 'combined') {
-    for(let i=0;i<points.length;i++) {
-      const s=toScreen(points[i]);
+    for(let i=0;i<ap.trxPoints.length;i++) {
+      const s=toScreen(ap.trxPoints[i]);
       if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'trx', idx:i};
     }
   }
   if (componentMode === 'nrx' || componentMode === 'combined') {
-    for(let i=0;i<nrxPoints.length;i++) {
-      const s=toScreen(nrxPoints[i]);
+    for(let i=0;i<ap.nrxPoints.length;i++) {
+      const s=toScreen(ap.nrxPoints[i]);
       if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'nrx', idx:i};
     }
   }
@@ -586,6 +982,7 @@ function findDot(sx, sy) {
 }
 
 canvas.addEventListener('mousedown', e=>{
+  if (compareMode) return;
   const rect=canvas.getBoundingClientRect();
   const sx=(e.clientX-rect.left)*(W/rect.width), sy=(e.clientY-rect.top)*(H/rect.height);
   const hit = findDot(sx, sy);
@@ -600,32 +997,54 @@ canvas.addEventListener('mousemove', e=>{
     hoverInfo.style.display = 'block';
     hoverInfo.style.left = (e.clientX - rect.left + 18) + 'px';
     hoverInfo.style.top = (e.clientY - rect.top - 40) + 'px';
-    const trx = trxPct(w.x), nrx = nrxPct(w.x);
-    const trxW = getComponentWeight('trxWeight');
-    const nrxW = getComponentWeight('nrxWeight');
-    if (componentMode === 'combined') {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
-    } else if (componentMode === 'nrx') {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${nrx.toFixed(1)}%</b>`;
+    if (compareMode) {
+      // Show every plan's payout at this attainment.
+      const lines = plans.map(p => {
+        const tp = planTrxPct(p, w.x), np = planNrxPct(p, w.x);
+        const tw = (p.trxWeight||0)/100, nw = (p.nrxWeight||0)/100;
+        let v;
+        if (componentMode === 'nrx') v = np.toFixed(1) + '%';
+        else if (componentMode === 'combined') v = (tp*tw + np*nw).toFixed(1) + '%';
+        else v = tp.toFixed(1) + '%';
+        return `<span style="color:${p.color}">●</span> ${escapeHtml(p.name)}: <b>${v}</b>`;
+      }).join('<br>');
+      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b><br>${lines}`;
     } else {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${trx.toFixed(1)}%</b>`;
+      const trx = trxPct(w.x), nrx = nrxPct(w.x);
+      const trxW = getComponentWeight('trxWeight');
+      const nrxW = getComponentWeight('nrxWeight');
+      if (componentMode === 'combined') {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
+      } else if (componentMode === 'nrx') {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${nrx.toFixed(1)}%</b>`;
+      } else {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${trx.toFixed(1)}%</b>`;
+      }
     }
   } else {
     hoverInfo.style.display = 'none';
   }
 
-  if (dragging < 0 || !draggingSet) return;
-  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  if (compareMode || dragging < 0 || !draggingSet) return;
+  const ap = getActivePlan();
+  const pts = draggingSet === 'nrx' ? ap.nrxPoints : ap.trxPoints;
   if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
   if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
   w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
   pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
   drawCurve(); renderAll();
 });
-canvas.addEventListener('mouseup',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
-canvas.addEventListener('mouseleave',()=>{dragging=-1;draggingSet=null;hoverInfo.style.display='none';drawCurve();});
+canvas.addEventListener('mouseup',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;drawCurve();buildInputs();
+});
+canvas.addEventListener('mouseleave',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;hoverInfo.style.display='none';drawCurve();
+});
 
 canvas.addEventListener('touchstart', e=>{
+  if (compareMode) return;
   e.preventDefault();
   const rect=canvas.getBoundingClientRect();
   const t=e.touches[0];
@@ -634,142 +1053,220 @@ canvas.addEventListener('touchstart', e=>{
   if (hit) { dragging = hit.idx; draggingSet = hit.set; drawCurve(); renderAll(); }
 });
 canvas.addEventListener('touchmove', e=>{
+  if (compareMode) return;
   e.preventDefault();
   if(dragging<0||!draggingSet)return;
   const rect=canvas.getBoundingClientRect();
   const t=e.touches[0];
   const sx=(t.clientX-rect.left)*(W/rect.width), sy=(t.clientY-rect.top)*(H/rect.height);
   const w=toWorld({x:sx,y:sy});
-  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  const ap = getActivePlan();
+  const pts = draggingSet === 'nrx' ? ap.nrxPoints : ap.trxPoints;
   if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
   if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
   w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
   pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
   drawCurve(); renderAll();
 });
-canvas.addEventListener('touchend',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
+canvas.addEventListener('touchend',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;drawCurve();buildInputs();
+});
 
 // ── Histogram ──
-const histoCanvas = document.getElementById('histoCanvas');
-const hctx = histoCanvas.getContext('2d');
 const histoTip = document.getElementById('histoTip');
-const HW=700, HH=260;
-const hdpr = Math.min(window.devicePixelRatio||1,2);
-histoCanvas.width=HW*hdpr; histoCanvas.height=HH*hdpr; hctx.scale(hdpr,hdpr);
-const HPAD={l:60,r:15,t:14,b:52};
-const HPW2=HW-HPAD.l-HPAD.r, HPH2=HH-HPAD.t-HPAD.b;
-let histoBars = [];
+const HPAD = {l:60, r:15, t:14, b:52};
+const HPAD_MULTI = {l:42, r:10, t:10, b:46}; // tighter padding for small multiples
+let histoBars = []; // accumulated bars from all canvases for tooltips
 
-function drawHistogram() {
-  hctx.clearRect(0,0,HW,HH); hctx.fillStyle='#fff'; hctx.fillRect(0,0,HW,HH);
-  const bucketSize = parseInt(document.getElementById('bucketSize').value) || 10;
-  const quarter = document.getElementById('quarterSelect').value;
-  const qData = quarterlyData.filter(d => d.quarter === quarter);
-  if (!qData.length) return;
-
-  let entries = [];
-  qData.forEach(d => {
-    const trxAttain = d.trxGoal ? (d.trxActual/d.trxGoal*100) : 0;
-    const nrxAttain = d.nrxGoal ? (d.nrxActual/d.nrxGoal*100) : 0;
-    const pay = getCombinedPayout(componentMode==='nrx'?nrxAttain:trxAttain);
-    entries.push({name:d.territory, pct:componentMode==='combined'?pay.combined:(componentMode==='nrx'?pay.nrx:pay.trx)});
+function buildEntriesForPlan(plan, qData) {
+  return qData.map(d => {
+    const f = payoutFractionForPlan(plan, d, componentMode);
+    return { name: d.territory, pct: f.pct };
   });
+}
 
-  // Auto min/max from data, overridden by user inputs
-  const allPcts = entries.map(e=>e.pct);
+function computeHistoRange(entriesPerPlan, bucketSize, hMinVal, hMaxVal) {
+  let allPcts = [];
+  entriesPerPlan.forEach(es => es.forEach(e => allPcts.push(e.pct)));
+  if (!allPcts.length) allPcts = [0, 100];
   const dataMin = Math.floor(Math.min(...allPcts) / bucketSize) * bucketSize;
   const dataMax = Math.ceil(Math.max(...allPcts) / bucketSize) * bucketSize;
-  const hMinVal = parseInt(document.getElementById('hMin').value);
-  const hMaxVal = parseInt(document.getElementById('hMax').value);
   const rangeMin = isNaN(hMinVal) ? dataMin : hMinVal;
   const rangeMax = isNaN(hMaxVal) ? dataMax : hMaxVal;
   const numBuckets = Math.max(1, Math.round((rangeMax - rangeMin) / bucketSize));
   const actualBW = (rangeMax - rangeMin) / numBuckets;
+  return { rangeMin, rangeMax, numBuckets, actualBW };
+}
 
+function bucketize(entries, range) {
   const buckets = [];
-  for (let i = 0; i < numBuckets; i++) {
-    const lo = rangeMin + i * actualBW, hi = rangeMin + (i + 1) * actualBW;
+  for (let i = 0; i < range.numBuckets; i++) {
+    const lo = range.rangeMin + i * range.actualBW;
+    const hi = range.rangeMin + (i + 1) * range.actualBW;
     const inB = entries.filter(e => e.pct >= lo && e.pct < hi);
-    buckets.push({lo,hi,count:inB.length,territories:inB.map(e=>e.name)});
+    buckets.push({lo, hi, count: inB.length, territories: inB.map(e => e.name)});
   }
+  return buckets;
+}
 
-  const maxCount = Math.max(1,...buckets.map(b=>b.count));
-  histoBars = [];
+// Renders one histogram into the given canvas with given dimensions.
+// Returns the bars (with screen coordinates) for tooltip lookup.
+function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
+  const ctx2 = canvasEl.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvasEl.width = width * dpr; canvasEl.height = height * dpr;
+  canvasEl.style.height = height + 'px';
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx2.clearRect(0,0,width,height);
+  ctx2.fillStyle = '#fff'; ctx2.fillRect(0,0,width,height);
+
+  const PAD = opts.compact ? HPAD_MULTI : HPAD;
+  const PW2 = width - PAD.l - PAD.r;
+  const PH2 = height - PAD.t - PAD.b;
+
+  const maxCount = Math.max(1, ...buckets.map(b => b.count));
+  const yTicks = Math.max(1, Math.ceil(maxCount / 5));
+  const numBuckets = range.numBuckets;
 
   // Grid
-  const yTicks = Math.max(1, Math.ceil(maxCount/5));
-  hctx.strokeStyle='rgba(0,0,0,0.06)'; hctx.lineWidth=0.5;
-  for(let i=0;i<=maxCount;i+=yTicks) {
-    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2;
-    hctx.beginPath(); hctx.moveTo(HPAD.l,sy); hctx.lineTo(HPAD.l+HPW2,sy); hctx.stroke();
+  ctx2.strokeStyle = 'rgba(0,0,0,0.06)'; ctx2.lineWidth = 0.5;
+  for (let i = 0; i <= maxCount; i += yTicks) {
+    const sy = PAD.t + PH2 - (i / maxCount) * PH2;
+    ctx2.beginPath(); ctx2.moveTo(PAD.l, sy); ctx2.lineTo(PAD.l + PW2, sy); ctx2.stroke();
   }
-
   // Axes
-  hctx.strokeStyle='#64748b'; hctx.lineWidth=1.5;
-  hctx.beginPath(); hctx.moveTo(HPAD.l,HPAD.t); hctx.lineTo(HPAD.l,HPAD.t+HPH2); hctx.lineTo(HPAD.l+HPW2,HPAD.t+HPH2); hctx.stroke();
-
-  // Y-axis labels
-  hctx.fillStyle='#334155'; hctx.font='bold 10px system-ui'; hctx.textAlign='right';
-  for(let i=0;i<=maxCount;i+=yTicks) {
-    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2; hctx.fillText(i,HPAD.l-8,sy+5);
+  ctx2.strokeStyle = '#64748b'; ctx2.lineWidth = 1.5;
+  ctx2.beginPath(); ctx2.moveTo(PAD.l, PAD.t); ctx2.lineTo(PAD.l, PAD.t + PH2); ctx2.lineTo(PAD.l + PW2, PAD.t + PH2); ctx2.stroke();
+  // Y labels
+  ctx2.fillStyle = '#334155'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'right';
+  for (let i = 0; i <= maxCount; i += yTicks) {
+    const sy = PAD.t + PH2 - (i / maxCount) * PH2;
+    ctx2.fillText(i, PAD.l - 8, sy + 5);
   }
-
-  // X-axis labels — show every bucket, angled to fit
+  // X labels
   const labelAngle = numBuckets > 8 ? -Math.PI/3 : -0.5;
-  const labelFont = numBuckets > 12 ? '7px system-ui' : '8px system-ui';
-  hctx.fillStyle='#334155'; hctx.font=labelFont; hctx.textAlign='right';
-  for(let i=0;i<numBuckets;i++) {
-    const b=buckets[i], barW=HPW2/numBuckets, sx=HPAD.l+i*barW;
-    const barH=(b.count/maxCount)*HPH2, sy=HPAD.t+HPH2-barH;
-    const hue=240-((b.lo-rangeMin)/(rangeMax-rangeMin||1))*120;
-    hctx.fillStyle=b.count>0?`hsla(${hue},70%,55%,0.75)`:'rgba(0,0,0,0.02)';
-    hctx.fillRect(sx+1,sy,barW-2,barH);
-    if(b.count>0){hctx.strokeStyle=`hsla(${hue},70%,45%,0.8)`;hctx.lineWidth=1;hctx.strokeRect(sx+1,sy,barW-2,barH);}
-    histoBars.push({...b,screenX:sx,screenW:barW});
-    // Show every bucket label, angled
-    hctx.save();
-    hctx.translate(sx+barW/2, HPAD.t+HPH2+20);
-    hctx.rotate(labelAngle);
-    hctx.fillStyle='#334155'; hctx.textAlign='right';
+  const labelFont = numBuckets > 12 ? '7px system-ui' : (opts.compact ? '7px system-ui' : '8px system-ui');
+  ctx2.fillStyle = '#334155'; ctx2.font = labelFont; ctx2.textAlign = 'right';
+  const bars = [];
+  for (let i = 0; i < numBuckets; i++) {
+    const b = buckets[i], barW = PW2 / numBuckets, sx = PAD.l + i * barW;
+    const barH = (b.count / maxCount) * PH2, sy = PAD.t + PH2 - barH;
+    const hue = opts.color ? null : (240 - ((b.lo - range.rangeMin) / (range.rangeMax - range.rangeMin || 1)) * 120);
+    if (opts.color) {
+      ctx2.fillStyle = b.count > 0 ? hexToRgba(opts.color, 0.7) : 'rgba(0,0,0,0.02)';
+    } else {
+      ctx2.fillStyle = b.count > 0 ? `hsla(${hue},70%,55%,0.75)` : 'rgba(0,0,0,0.02)';
+    }
+    ctx2.fillRect(sx + 1, sy, barW - 2, barH);
+    if (b.count > 0) {
+      ctx2.strokeStyle = opts.color ? hexToRgba(opts.color, 0.9) : `hsla(${hue},70%,45%,0.8)`;
+      ctx2.lineWidth = 1;
+      ctx2.strokeRect(sx + 1, sy, barW - 2, barH);
+    }
+    bars.push({...b, screenX: sx, screenW: barW, canvas: canvasEl});
+    ctx2.save();
+    ctx2.translate(sx + barW/2, PAD.t + PH2 + (opts.compact ? 14 : 20));
+    ctx2.rotate(labelAngle);
+    ctx2.fillStyle = '#334155'; ctx2.textAlign = 'right';
     const loLabel = numBuckets <= 10 ? Math.round(b.lo) : b.lo.toFixed(1);
     const hiLabel = numBuckets <= 10 ? Math.round(b.hi) : b.hi.toFixed(1);
-    hctx.fillText(loLabel+'-'+hiLabel+'%', 0, 0);
-    hctx.restore();
+    ctx2.fillText(loLabel + '-' + hiLabel + '%', 0, 0);
+    ctx2.restore();
   }
-
-  // X-axis title
-  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  hctx.fillText('% Payout', HPAD.l+HPW2/2, HPAD.t+HPH2+36);
-
-  // Y-axis title
-  hctx.save();
-  hctx.translate(8, HPAD.t+HPH2/2);
-  hctx.rotate(-Math.PI/2);
-  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  hctx.fillText('# Territories', 0, 0);
-  hctx.restore();
-
+  // Axis titles (skip in compact mode to save space)
+  if (!opts.compact) {
+    ctx2.fillStyle = '#475569'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillText('% Payout', PAD.l + PW2/2, PAD.t + PH2 + 36);
+    ctx2.save();
+    ctx2.translate(8, PAD.t + PH2/2);
+    ctx2.rotate(-Math.PI/2);
+    ctx2.fillStyle = '#475569'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillText('# Territories', 0, 0);
+    ctx2.restore();
+  }
   // Count labels
-  hctx.fillStyle='#1e293b'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  for(let i=0;i<numBuckets;i++) {
-    const b=buckets[i];
-    if(b.count>0){const barW=HPW2/numBuckets,sx=HPAD.l+i*barW,barH=(b.count/maxCount)*HPH2,sy=HPAD.t+HPH2-barH;hctx.fillText(b.count,sx+barW/2,sy-4);}
+  ctx2.fillStyle = '#1e293b'; ctx2.font = 'bold 10px system-ui'; ctx2.textAlign = 'center';
+  for (let i = 0; i < numBuckets; i++) {
+    const b = buckets[i];
+    if (b.count > 0) {
+      const barW = PW2/numBuckets, sx = PAD.l + i * barW, barH = (b.count/maxCount) * PH2, sy = PAD.t + PH2 - barH;
+      ctx2.fillText(b.count, sx + barW/2, sy - 4);
+    }
+  }
+  return bars;
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function drawHistogram() {
+  const container = document.getElementById('histoContainer');
+  if (!container) return;
+  const bucketSize = parseInt(document.getElementById('bucketSize').value) || 10;
+  const quarter = document.getElementById('quarterSelect').value;
+  const qData = quarterlyData.filter(d => d.quarter === quarter);
+  if (!qData.length) { container.innerHTML = ''; return; }
+
+  const hMinVal = parseInt(document.getElementById('hMin').value);
+  const hMaxVal = parseInt(document.getElementById('hMax').value);
+
+  const target = compareMode ? plans : [getActivePlan()];
+  const entriesPerPlan = target.map(p => buildEntriesForPlan(p, qData));
+  const range = computeHistoRange(entriesPerPlan, bucketSize, hMinVal, hMaxVal);
+  histoBars = [];
+
+  if (!compareMode) {
+    container.innerHTML = '<canvas id="histoCanvas"></canvas>';
+    const c = container.querySelector('canvas');
+    const buckets = bucketize(entriesPerPlan[0], range);
+    const bars = drawHistogramCanvas(c, 700, 260, buckets, range, { compact: false });
+    histoBars = bars;
+    attachHistoMouseHandler(c);
+  } else {
+    const cls = 'cols-' + Math.max(2, target.length);
+    container.innerHTML = `<div class="histo-multiples ${cls}">${target.map(p => `
+      <div class="histo-multiple">
+        <div class="histo-multiple-title"><span class="mini-dot" style="background:${p.color}"></span><span>${escapeHtml(p.name)}</span>${p.id===baselinePlanId?'<span class="baseline-mark" title="Baseline">★</span>':''}</div>
+        <canvas data-plan-id="${p.id}"></canvas>
+      </div>`).join('')}</div>`;
+    const cWidth = Math.max(220, Math.floor(700 / target.length) - 20);
+    const cHeight = 220;
+    container.querySelectorAll('canvas').forEach((c, idx) => {
+      const plan = target[idx];
+      const buckets = bucketize(entriesPerPlan[idx], range);
+      const bars = drawHistogramCanvas(c, cWidth, cHeight, buckets, range, { compact: true, color: plan.color });
+      histoBars.push(...bars.map(b => ({...b, planName: plan.name})));
+      attachHistoMouseHandler(c);
+    });
   }
 }
 
-histoCanvas.addEventListener('mousemove', e => {
-  const rect=histoCanvas.getBoundingClientRect();
-  const sx=(e.clientX-rect.left)*(HW/rect.width);
-  const hit=histoBars.find(b=>sx>=b.screenX&&sx<=b.screenX+b.screenW);
-  if(hit&&hit.count>0){
-    histoTip.style.display='block';
-    histoTip.style.left=(e.clientX-rect.left+12)+'px';
-    histoTip.style.top=(e.clientY-rect.top-10)+'px';
-    const names=hit.territories.length>12?hit.territories.slice(0,12).join(', ')+'...':hit.territories.join(', ');
-    histoTip.innerHTML=`<b>${hit.lo}-${hit.hi}%</b> (${hit.count})<br>${names}`;
-  } else { histoTip.style.display='none'; }
-});
-histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
+function attachHistoMouseHandler(c) {
+  c.addEventListener('mousemove', e => {
+    const rect = c.getBoundingClientRect();
+    // Convert mouse X to canvas-internal X (factor in CSS scaling and dpr)
+    const dpr = window.devicePixelRatio || 1;
+    const internalW = c.width / dpr;
+    const sx = (e.clientX - rect.left) * (internalW / rect.width);
+    const area = document.querySelector('.histo-canvas-area');
+    const areaRect = area.getBoundingClientRect();
+    const hit = histoBars.find(b => b.canvas === c && sx >= b.screenX && sx <= b.screenX + b.screenW);
+    if (hit && hit.count > 0) {
+      histoTip.style.display = 'block';
+      histoTip.style.left = (e.clientX - areaRect.left + 12) + 'px';
+      histoTip.style.top  = (e.clientY - areaRect.top - 10) + 'px';
+      const names = hit.territories.length > 12 ? hit.territories.slice(0,12).join(', ') + '...' : hit.territories.join(', ');
+      const planLabel = hit.planName ? `<b style="color:#475569">${escapeHtml(hit.planName)}</b><br>` : '';
+      histoTip.innerHTML = `${planLabel}<b>${Math.round(hit.lo)}-${Math.round(hit.hi)}%</b> (${hit.count})<br>${names}`;
+    } else {
+      histoTip.style.display = 'none';
+    }
+  });
+  c.addEventListener('mouseleave', () => { histoTip.style.display = 'none'; });
+}
 
 let npsAttainments = [{trx:80,nrx:80},{trx:90,nrx:90},{trx:95,nrx:95},{trx:100,nrx:100},{trx:105,nrx:105},{trx:110,nrx:110},{trx:120,nrx:120}];
 function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});renderNPS();}
@@ -805,6 +1302,60 @@ function renderNPS(){
   h+='</tbody>';document.getElementById('npsTable').innerHTML=h;
 }
 
+// ── Compute per-plan stats for a given quarter ──
+function computePlanStats(plan, qData, mode) {
+  const isCombined = mode === 'combined';
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  const activeWeight = mode === 'nrx' ? nrxW : trxW;
+  const displayBasePay = isCombined ? plan.basePay : plan.basePay * activeWeight;
+  const headcount = new Set(qData.map(d => d.territory)).size;
+  const rows = qData.map(d => {
+    const trxAttain = d.trxGoal ? parseFloat((d.trxActual/d.trxGoal*100).toFixed(1)) : 0;
+    const nrxAttain = d.nrxGoal ? parseFloat((d.nrxActual/d.nrxGoal*100).toFixed(1)) : 0;
+    const trxPayPct = planTrxPct(plan, trxAttain);
+    const nrxPayPct = planNrxPct(plan, nrxAttain);
+    const combinedPct = trxPayPct*trxW + nrxPayPct*nrxW;
+    let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
+    if (isCombined) {
+      trxPayoutAmount = plan.basePay * trxW * (trxPayPct/100);
+      nrxPayoutAmount = plan.basePay * nrxW * (nrxPayPct/100);
+      combinedPayout = trxPayoutAmount + nrxPayoutAmount;
+      displayPct = combinedPct;
+      displayPayout = combinedPayout;
+    } else if (mode === 'nrx') {
+      displayPct = nrxPayPct;
+      displayPayout = displayBasePay * (displayPct/100);
+      nrxPayoutAmount = displayPayout; trxPayoutAmount = 0; combinedPayout = displayPayout;
+    } else {
+      displayPct = trxPayPct;
+      displayPayout = displayBasePay * (displayPct/100);
+      trxPayoutAmount = displayPayout; nrxPayoutAmount = 0; combinedPayout = displayPayout;
+    }
+    const activeAttainment = mode === 'nrx' ? nrxAttain : trxAttain;
+    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
+    return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
+      trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
+      displayPct, displayPayout, attClass};
+  });
+  const totalPayout = rows.reduce((s,r)=>s+r.combinedPayout,0);
+  const totalBudget = displayBasePay * headcount;
+  const payouts = rows.map(r=>r.displayPayout);
+  const displayPcts = rows.map(r=>r.displayPct);
+  const attainmentValues = rows.map(r => mode === 'nrx' ? r.nrxAttain : mode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
+  return {
+    plan, mode, rows, headcount, trxW, nrxW, activeWeight, displayBasePay,
+    totalPayout, totalBudget, totalOver: totalPayout - totalBudget,
+    avgPay: totalPayout / headcount,
+    maxPay: Math.max(...payouts), minPay: Math.min(...payouts),
+    minAttain: Math.min(...attainmentValues), maxAttain: Math.max(...attainmentValues),
+    minPct: Math.min(...displayPcts), maxPct: Math.max(...displayPcts),
+    engaged: displayPcts.filter(p=>p>0).length,
+    meaningfulPct: (displayPcts.filter(p=>p>75).length / headcount) * 100,
+    utilization: totalBudget > 0 ? (totalPayout / totalBudget) * 100 : 0
+  };
+}
+
 // ── Render Table ──
 function renderAll() {
   if (!quarterlyData.length) return;
@@ -812,69 +1363,28 @@ function renderAll() {
   const qData = quarterlyData.filter(d => d.quarter === quarter);
   if (!qData.length) return;
 
-  const trxW = getComponentWeight('trxWeight');
-  const nrxW = getComponentWeight('nrxWeight');
-  const BASE_Q = getEffectiveBasePay();
+  if (compareMode) {
+    renderCompareMode(qData, quarter);
+  } else {
+    renderSingleMode(qData, quarter);
+  }
+  drawHistogram();
+}
+
+function renderSingleMode(qData, quarter) {
+  const plan = getActivePlan();
+  // Reset multi-plan classes if switching back from compare mode
+  const summaryEl = document.getElementById('summary');
+  summaryEl.classList.remove('summary-multi', 'cols-2', 'cols-3');
+  // Keep DOM inputs in sync with active plan in case plan was loaded from storage
+  if (Number(document.getElementById('basePay').value) !== plan.basePay) {
+    document.getElementById('basePay').value = plan.basePay;
+  }
+  const stats = computePlanStats(plan, qData, componentMode);
   const isCombined = componentMode === 'combined';
-  const activeWeight = componentMode === 'nrx' ? nrxW : trxW;
-  const displayBasePay = isCombined ? BASE_Q : BASE_Q * activeWeight;
+  const { rows, headcount, trxW, nrxW, displayBasePay, totalBudget, totalPayout, totalOver,
+          avgPay, maxPay, minPay, minAttain, maxAttain, minPct, maxPct, engaged, meaningfulPct } = stats;
 
-  // Build rows
-  const rows = qData.map(d => {
-    const trxAttain = d.trxGoal ? parseFloat((d.trxActual/d.trxGoal*100).toFixed(1)) : 0;
-    const nrxAttain = d.nrxGoal ? parseFloat((d.nrxActual/d.nrxGoal*100).toFixed(1)) : 0;
-    const trxPayPct = trxPct(trxAttain);
-    const nrxPayPct = nrxPct(nrxAttain);
-    const combinedPct = trxPayPct*trxW + nrxPayPct*nrxW;
-
-    let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
-    if (isCombined) {
-      // Combined: split BASE_Q by weight
-      trxPayoutAmount = BASE_Q * trxW * (trxPayPct/100);
-      nrxPayoutAmount = BASE_Q * nrxW * (nrxPayPct/100);
-      combinedPayout = trxPayoutAmount + nrxPayoutAmount;
-      displayPct = combinedPct;
-      displayPayout = combinedPayout;
-    } else if (componentMode === 'nrx') {
-      // Component views use their weighted share of the quarterly base pay.
-      displayPct = nrxPayPct;
-      displayPayout = displayBasePay * (displayPct/100);
-      nrxPayoutAmount = displayPayout;
-      trxPayoutAmount = 0;
-      combinedPayout = displayPayout;
-    } else {
-      // Component views use their weighted share of the quarterly base pay.
-      displayPct = trxPayPct;
-      displayPayout = displayBasePay * (displayPct/100);
-      trxPayoutAmount = displayPayout;
-      nrxPayoutAmount = 0;
-      combinedPayout = displayPayout;
-    }
-
-    const activeAttainment = componentMode === 'nrx' ? nrxAttain : trxAttain;
-    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
-    return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
-      trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
-      displayPct, displayPayout, attClass};
-  });
-
-  // Summary stats
-  const headcount = new Set(qData.map(d=>d.territory)).size;
-  const totalCombined = rows.reduce((s,r)=>s+r.combinedPayout,0);
-  const totalBudget = displayBasePay * headcount;
-  const totalOver = totalCombined - totalBudget;
-  const payouts = rows.map(r=>r.displayPayout);
-  const maxPay = Math.max(...payouts), minPay = Math.min(...payouts);
-  const avgPay = totalCombined/headcount;
-  const displayPcts = rows.map(r=>r.displayPct);
-  const attainmentValues = rows.map(r => componentMode === 'nrx' ? r.nrxAttain : componentMode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
-  const minAttain = Math.min(...attainmentValues);
-  const maxAttain = Math.max(...attainmentValues);
-  const minPct = Math.min(...displayPcts), maxPct = Math.max(...displayPcts);
-  const engaged = displayPcts.filter(p=>p>0).length;
-  const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
-
-  // Table header
   let theadHTML;
   if (isCombined) {
     theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>NRx Goal</th><th>NRx Act</th><th>TRx%</th><th>NRx%</th><th>%Payout</th><th>Payout</th></tr>`;
@@ -883,10 +1393,12 @@ function renderAll() {
   }
   document.getElementById('thead').innerHTML = theadHTML;
 
-  if (payoutSortState==='asc') rows.sort((a,b)=>a.displayPct-b.displayPct);
-  else if (payoutSortState==='desc') rows.sort((a,b)=>b.displayPct-a.displayPct);
+  const sorted = rows.slice();
+  if (payoutSortState==='asc') sorted.sort((a,b)=>a.displayPct-b.displayPct);
+  else if (payoutSortState==='desc') sorted.sort((a,b)=>b.displayPct-a.displayPct);
 
-  document.getElementById('tbody').innerHTML = rows.map(r => {
+  const BASE_Q = plan.basePay;
+  document.getElementById('tbody').innerHTML = sorted.map(r => {
     if (isCombined) {
       return `<tr>
         <td>${r.territory}</td>
@@ -910,10 +1422,9 @@ function renderAll() {
     </tr>`;
   }).join('');
 
-  // Summary
   document.getElementById('summary').innerHTML = `
     <h3>${isCombined?'Combined':componentMode==='nrx'?'NRx':'TRx'} ${quarter} Summary</h3>
-    <div class="stat-row"><span>${isCombined ? 'Total quarterly base / person' : `${componentMode === 'nrx' ? 'NRx' : 'TRx'} base / person (${(activeWeight*100).toFixed(0)}%)`}</span><span class="val">$${displayBasePay.toLocaleString()}</span></div>
+    <div class="stat-row"><span>${isCombined ? 'Total quarterly base / person' : `${componentMode === 'nrx' ? 'NRx' : 'TRx'} base / person (${(stats.activeWeight*100).toFixed(0)}%)`}</span><span class="val">$${displayBasePay.toLocaleString()}</span></div>
     <div class="stat-row"><span>Headcount</span><span class="val">${headcount}</span></div>
     <div class="stat-row"><span>Base budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
     ${isCombined ? `
@@ -922,19 +1433,101 @@ function renderAll() {
     <div class="stat-row"><span>TRx payout</span><span class="val" style="color:#6366f1">$${rows.reduce((s,r)=>s+r.trxPayout,0).toLocaleString()}</span></div>
     <div class="stat-row"><span>NRx payout</span><span class="val" style="color:#059669">$${rows.reduce((s,r)=>s+r.nrxPayout,0).toLocaleString()}</span></div>
     ` : ''}
-    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalCombined.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalPayout.toLocaleString()}</span></div>
     <div class="stat-row"><span>Over/Under</span><span class="val ${totalOver>0?'bad':'good'}">${totalOver>=0?'+':''}$${totalOver.toLocaleString()}</span></div>
-    <div class="stat-row"><span>Utilization</span><span class="val">${((totalCombined/totalBudget)*100).toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Utilization</span><span class="val">${stats.utilization.toFixed(1)}%</span></div>
     <div class="stat-row"><span>Avg payout</span><span class="val">$${avgPay.toFixed(0)}</span></div>
     <div class="stat-row"><span>Max / Min</span><span class="val">$${maxPay.toFixed(0)} / $${minPay.toFixed(0)}</span></div>
     <div class="stat-row"><span>Attain range</span><span class="val">${minAttain}% – ${maxAttain}%</span></div>
     <div class="stat-row"><span>Payout% range</span><span class="val">${minPct.toFixed(1)}% – ${maxPct.toFixed(1)}%</span></div>
     <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${engaged}/${headcount} (${((engaged/headcount)*100).toFixed(1)}%)</span></div>
-    <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
+    <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningfulPct.toFixed(1)}%</span></div>
   `;
 
   renderNPS();
-  drawHistogram();
+}
+
+function renderCompareMode(qData, quarter) {
+  const isCombined = componentMode === 'combined';
+  const planStats = plans.map(p => computePlanStats(p, qData, componentMode));
+  const baseline = getBaselinePlan();
+  const baselineStats = planStats.find(s => s.plan.id === baseline.id) || planStats[0];
+
+  // ── Multi-plan summary cards ──
+  const summaryEl = document.getElementById('summary');
+  summaryEl.classList.add('summary-multi', 'cols-' + plans.length);
+  summaryEl.innerHTML = planStats.map(s => {
+    const p = s.plan;
+    const isBaseline = p.id === baseline.id;
+    const deltaTotal = s.totalPayout - baselineStats.totalPayout;
+    const deltaUtil = s.utilization - baselineStats.utilization;
+    const deltaCls = (v) => v > 0 ? 'up' : v < 0 ? 'down' : '';
+    return `
+    <div class="summary-card ${isBaseline ? 'baseline' : ''}">
+      <h4><span class="card-color-dot" style="background:${p.color}"></span>${escapeHtml(p.name)}${isBaseline?' <span class="baseline-mark" title="Baseline">★</span>':''}</h4>
+      <div class="stat-row"><span>Base / person</span><span class="val">$${s.displayBasePay.toLocaleString()}</span></div>
+      <div class="stat-row"><span>Headcount</span><span class="val">${s.headcount}</span></div>
+      <div class="stat-row"><span>Total payout</span><span class="val ${s.totalOver>0?'warn':''}">$${Math.round(s.totalPayout).toLocaleString()}</span></div>
+      <div class="stat-row"><span>Over/Under</span><span class="val ${s.totalOver>0?'bad':'good'}">${s.totalOver>=0?'+':''}$${Math.round(s.totalOver).toLocaleString()}</span></div>
+      <div class="stat-row"><span>Utilization</span><span class="val">${s.utilization.toFixed(1)}%</span></div>
+      <div class="stat-row"><span>Avg / Max / Min</span><span class="val">$${s.avgPay.toFixed(0)} / $${s.maxPay.toFixed(0)} / $${s.minPay.toFixed(0)}</span></div>
+      <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${s.engaged}/${s.headcount}</span></div>
+      <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${s.meaningfulPct.toFixed(1)}%</span></div>
+      ${!isBaseline ? `
+      <div class="delta-line">
+        vs baseline (${escapeHtml(baseline.name)}):
+        <span class="delta-val ${deltaCls(deltaTotal)}">${deltaTotal>=0?'+':''}$${Math.round(deltaTotal).toLocaleString()}</span> total &nbsp;
+        <span class="delta-val ${deltaCls(deltaUtil)}">${deltaUtil>=0?'+':''}${deltaUtil.toFixed(1)}pp</span> util
+      </div>` : `<div class="delta-line">Baseline plan</div>`}
+    </div>`;
+  }).join('');
+
+  // ── Multi-plan territory table ──
+  // Columns: Territory | Att% | (per-plan) %Payout, Pay | Δ vs baseline (per non-baseline plan)
+  const orderedPlanStats = [baselineStats, ...planStats.filter(s => s.plan.id !== baseline.id)];
+  const territories = qData.map(d => d.territory);
+  const rowMap = new Map();
+  orderedPlanStats.forEach(ps => {
+    ps.rows.forEach(r => {
+      if (!rowMap.has(r.territory)) rowMap.set(r.territory, { territory: r.territory, trxAttain: r.trxAttain, nrxAttain: r.nrxAttain, plansData: {} });
+      rowMap.get(r.territory).plansData[ps.plan.id] = r;
+    });
+  });
+  const compareRows = territories.map(t => rowMap.get(t)).filter(Boolean);
+
+  // Sort by baseline's payout if requested
+  if (payoutSortState === 'asc') compareRows.sort((a,b)=>a.plansData[baseline.id].displayPct - b.plansData[baseline.id].displayPct);
+  else if (payoutSortState === 'desc') compareRows.sort((a,b)=>b.plansData[baseline.id].displayPct - a.plansData[baseline.id].displayPct);
+
+  let theadHTML = `<tr><th>Territory</th><th>${isCombined ? 'Att (T/N)%' : (componentMode==='nrx'?'NRx Att%':'TRx Att%')}</th>`;
+  orderedPlanStats.forEach(ps => {
+    const isBl = ps.plan.id === baseline.id;
+    const star = isBl ? ' ★' : '';
+    theadHTML += `<th style="color:${ps.plan.color}">${escapeHtml(ps.plan.name)}${star}<br><span style="font-size:.6rem;font-weight:600;color:#94a3b8">%Pay / Pay</span></th>`;
+    if (!isBl) theadHTML += `<th style="color:#64748b">Δ vs ${escapeHtml(baseline.name)}</th>`;
+  });
+  theadHTML += `</tr>`;
+  document.getElementById('thead').innerHTML = theadHTML;
+
+  document.getElementById('tbody').innerHTML = compareRows.map(cr => {
+    const attCell = isCombined ? `${cr.trxAttain}/${cr.nrxAttain}%` : (componentMode==='nrx' ? `${cr.nrxAttain}%` : `${cr.trxAttain}%`);
+    let html = `<tr><td>${cr.territory}</td><td>${attCell}</td>`;
+    orderedPlanStats.forEach(ps => {
+      const r = cr.plansData[ps.plan.id];
+      const blR = cr.plansData[baseline.id];
+      const isBl = ps.plan.id === baseline.id;
+      html += `<td><div style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</div><div style="font-size:.66rem;color:#475569">$${r.displayPayout.toFixed(0)}</div></td>`;
+      if (!isBl) {
+        const dPay = r.displayPayout - blR.displayPayout;
+        const cls = dPay > 0.5 ? 'up' : dPay < -0.5 ? 'down' : 'zero';
+        html += `<td class="delta-cell ${cls}">${dPay>=0?'+':''}$${dPay.toFixed(0)}</td>`;
+      }
+    });
+    html += '</tr>';
+    return html;
+  }).join('');
+
+  // NPS panel hidden in compare mode (handled by CSS)
 }
 
 // ── Import/Export ──
@@ -979,8 +1572,10 @@ function uploadData(event) {
         const d=JSON.parse(text);
         if(d.quarterlyData&&Array.isArray(d.quarterlyData)){quarterlyData=d.quarterlyData;}
         else throw new Error('JSON needs quarterlyData array');
-        if(d.points&&Array.isArray(d.points)) points=d.points;
-        if(d.nrxPoints&&Array.isArray(d.nrxPoints)) nrxPoints=d.nrxPoints;
+        // Backwards-compat: legacy uploads with single curve write into the active plan
+        if (d.points && Array.isArray(d.points)) getActivePlan().trxPoints = clonePoints(d.points);
+        if (d.nrxPoints && Array.isArray(d.nrxPoints)) getActivePlan().nrxPoints = clonePoints(d.nrxPoints);
+        savePlans();
       } else {
         quarterlyData = parseCSV(text);
       }
@@ -990,7 +1585,64 @@ function uploadData(event) {
   reader.readAsText(file); event.target.value='';
 }
 
-drawCurve(); buildInputs();
+// ── Export / import all plans ──
+function exportAllPlans() {
+  const payload = {
+    schema: 'pharma-payout-plans',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    activePlanId, baselinePlanId, componentMode, compareMode,
+    plans
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'payout-plans-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importAllPlans(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d || !Array.isArray(d.plans) || !d.plans.length) throw new Error('No plans found in file');
+      if (!confirm('Replace current plans with ' + d.plans.length + ' plan(s) from file?')) {
+        event.target.value = '';
+        return;
+      }
+      plans = d.plans.slice(0, MAX_PLANS).map((p, i) => ({
+        id: p.id || uid(),
+        name: typeof p.name === 'string' ? p.name : 'Plan ' + String.fromCharCode(65 + i),
+        color: p.color || PLAN_COLORS[i % PLAN_COLORS.length],
+        trxPoints: Array.isArray(p.trxPoints) && p.trxPoints.length >= 2 ? clonePoints(p.trxPoints) : defaultTrxPoints(),
+        nrxPoints: Array.isArray(p.nrxPoints) && p.nrxPoints.length >= 2 ? clonePoints(p.nrxPoints) : defaultNrxPoints(),
+        trxWeight: Number.isFinite(p.trxWeight) ? p.trxWeight : 50,
+        nrxWeight: Number.isFinite(p.nrxWeight) ? p.nrxWeight : 50,
+        basePay:   Number.isFinite(p.basePay)   ? p.basePay   : 3375
+      }));
+      activePlanId = getPlanById(d.activePlanId) ? d.activePlanId : plans[0].id;
+      baselinePlanId = getPlanById(d.baselinePlanId) ? d.baselinePlanId : plans[0].id;
+      if (typeof d.componentMode === 'string' && ['trx','nrx','combined'].includes(d.componentMode)) componentMode = d.componentMode;
+      syncInputsFromActivePlan();
+      applyComponentTabState();
+      renderPlanTabs();
+      updateUI();
+      savePlans();
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Initial sync setup (runs before fetch resolves) ──
+bootApp();
 </script>
 </body>
 </html>
