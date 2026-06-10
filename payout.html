@@ -149,11 +149,6 @@
     </div>
   </header>
 
-  <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
-    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios: every territory hits the same attainment. Edit % directly, remove columns, or add new ones.</p></div></div>
-    <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
-  </section>
-
   <section class="setup-card" aria-labelledby="setupHeading">
     <span class="section-label" id="setupHeading">Plan setup</span>
     <div class="setup-grid">
@@ -236,6 +231,11 @@
       </section>
     </div>
   </main>
+
+  <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
+    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios. In Combined mode, set TRx and NRx attainment separately per column.</p></div></div>
+    <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
+  </section>
 </div>
 
 <script>
@@ -289,6 +289,7 @@ fetch('./territories.json').then(r=>r.json()).then(territories=>{
     });
   });
   renderAll();
+  updateQuarterOptions();
 }).catch(() => {
   // Generate fallback data
   const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
@@ -307,6 +308,7 @@ fetch('./territories.json').then(r=>r.json()).then(territories=>{
     });
   });
   renderAll();
+  updateQuarterOptions();
 });
 
 // ── Curve control points ──
@@ -405,6 +407,16 @@ function updateUI() {
   document.getElementById('btnRemove').disabled = pts.length <= 2;
   buildInputs();
   drawCurve(); renderAll();
+  updateQuarterOptions();
+}
+
+function updateQuarterOptions() {
+  const sel = document.getElementById('quarterSelect');
+  const cur = sel.value;
+  const quarters = [...new Set(quarterlyData.map(d=>d.quarter))].sort();
+  if (!quarters.length) return;
+  sel.innerHTML = quarters.map(q=>`<option value="${q}">${q}</option>`).join('');
+  if (quarters.includes(cur)) sel.value = cur;
 }
 
 function setComponent(mode) {
@@ -759,28 +771,31 @@ histoCanvas.addEventListener('mousemove', e => {
 });
 histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
 
-let npsAttainments = [80, 90, 95, 100, 105, 110, 120];
-function addNpsColumn(){npsAttainments.push(100);renderNPS();}
+let npsAttainments = [{trx:80,nrx:80},{trx:90,nrx:90},{trx:95,nrx:95},{trx:100,nrx:100},{trx:105,nrx:105},{trx:110,nrx:110},{trx:120,nrx:120}];
+function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});renderNPS();}
 function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);renderNPS();}}
-function updateNpsAttainment(i,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i]=n;renderNPS();}
+function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;renderNPS();}
 function renderNPS(){
-  const q=document.getElementById('quarterSelect').value;
-  document.getElementById('npsQuarter').textContent=q;
+  const q=document.getElementById('quarterSelect').value;document.getElementById('npsQuarter').textContent=q;
   const qData=quarterlyData.filter(d=>d.quarter===q);
   if(!qData.length){document.getElementById('npsSection').style.display='none';return;}
   document.getElementById('npsSection').style.display='';
   const trxW=parseInt(document.getElementById('trxWeight').value)/100||0.5;
   const nrxW=parseInt(document.getElementById('nrxWeight').value)/100||0.5;
   const B=getEffectiveBasePay(),N=qData.length,budget=B*N;
-  const pp=(a)=>{if(componentMode==='nrx')return nrxPct(a);if(componentMode==='combined')return trxPct(a)*trxW+nrxPct(a)*nrxW;return trxPct(a);};
-  const sc=npsAttainments.map(a=>{const p=pp(a),t=B*(p/100)*N;return{t,budgetUtil:t/budget*100,avg:B*(p/100),min:B*(p/100),max:B*(p/100),eng:p>0?N:0,mean:p>75?100:0};});
-  const ac=qData.map(d=>{const ta=d.trxGoal?d.trxActual/d.trxGoal*100:0,na=d.nrxGoal?d.nrxActual/d.nrxGoal*100:0,tp=trxPct(ta),np=nrxPct(na);let p,at;if(componentMode==='nrx'){p=np;at=na;}else if(componentMode==='combined'){p=tp*trxW+np*nrxW;at=(ta+na)/2;}else{p=tp;at=ta;}return{p,at,pay:B*(p/100)};});
+  const isComb=componentMode==='combined';
+  const payout=(a)=>{if(componentMode==='nrx')return nrxPct(a.nrx);if(isComb)return trxPct(a.trx)*trxW+nrxPct(a.nrx)*nrxW;return trxPct(a.trx);};
+  const sc=npsAttainments.map(a=>{const p=payout(a),t=B*(p/100)*N;return{t,budgetUtil:t/budget*100,avg:B*(p/100),min:B*(p/100),max:B*(p/100),eng:p>0?N:0,mean:p>75?100:0};});
+  const ac=qData.map(d=>{const ta=d.trxGoal?d.trxActual/d.trxGoal*100:0,na=d.nrxGoal?d.nrxActual/d.nrxGoal*100:0,tp=trxPct(ta),np=nrxPct(na);let p;if(componentMode==='nrx')p=np;else if(isComb)p=tp*trxW+np*nrxW;else p=tp;return{p,pay:B*(p/100)};});
   const ct=ac.reduce((s,r)=>s+r.pay,0),cps=ac.map(r=>r.p);
   const cur={t:ct,bu:ct/budget*100,avg:ct/N,min:Math.min(...ac.map(r=>r.pay)),max:Math.max(...ac.map(r=>r.pay)),eng:cps.filter(p=>p>0).length,mean:(cps.filter(p=>p>75).length/N*100)};
   const rs=[{l:'Total Payout',v:sc.map(s=>s.t),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Budget Util%',v:sc.map(s=>s.budgetUtil),f:v=>v.toFixed(1)+'%',c:v=>v>100?'warn':(v>95?'good':'')},{l:'Avg Payout',v:sc.map(s=>s.avg),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Min Payout',v:sc.map(s=>s.min),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Max Payout',v:sc.map(s=>s.max),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Engaged (>0%)',v:sc.map(s=>s.eng),f:v=>v.toFixed(0)},{l:'Meaningful (>75%)',v:sc.map(s=>s.mean),f:v=>v.toFixed(1)+'%'}];
   const cv=[cur.t,cur.bu,cur.avg,cur.min,cur.max,cur.eng,cur.mean];
   let h='<thead><tr><th>Metric</th>';
-  sc.forEach((s,i)=>{h+=`<th><input type=number class=nps-attainment-val value=${npsAttainments[i]} min=0 max=300 onchange="updateNpsAttainment(${i},this.value)">%`;if(npsAttainments.length>1)h+=` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;h+='</th>';});
+  sc.forEach((s,i)=>{const a=npsAttainments[i];
+    if(isComb)h+=`<th><input type=number class=nps-attainment-val value=${a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'trx',this.value)" style=width:42px> T / <input type=number class=nps-attainment-val value=${a.nrx} min=0 max=300 onchange="updateNpsAttainment(${i},'nrx',this.value)" style=width:42px> N%`;
+    else h+=`<th><input type=number class=nps-attainment-val value=${componentMode==='nrx'?a.nrx:a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'${componentMode==='nrx'?'nrx':'trx'}',this.value)">%`;
+    if(npsAttainments.length>1)h+=` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;h+='</th>';});
   h+=`<th>Current</th><th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
   rs.forEach(r=>{h+='<tr><td>'+r.l+'</td>';r.v.forEach(v=>{const cl=r.c?r.c(v):'';h+='<td class='+cl+'>'+r.f(v)+'</td>';});const cv2=cv[rs.indexOf(r)],cl2=r.c?r.c(cv2):'';h+='<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';});
   h+='</tbody>';document.getElementById('npsTable').innerHTML=h;
