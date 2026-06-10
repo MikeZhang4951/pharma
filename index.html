@@ -192,7 +192,7 @@ function seededRandom(seed) {
 }
 
 // Load & generate quarterly data from territories.json
-fetch('/territories.json').then(r=>r.json()).then(territories=>{
+fetch('./territories.json').then(r=>r.json()).then(territories=>{
   quarterlyData = [];
   const quarters = ['Q125','Q225','Q325','Q425'];
   territories.forEach((t,i) => {
