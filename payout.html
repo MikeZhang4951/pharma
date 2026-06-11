@@ -132,6 +132,284 @@
   .nps-panel .nps-table td:first-child { text-align:left; font-weight:700; color:var(--muted); }
   .nps-panel .nps-table tr:hover td { background:var(--surface-soft); }
   .nps-panel .nps-table .good { color:var(--green); } .nps-panel .nps-table .warn { color:var(--amber); } .nps-panel .nps-table .bad { color:var(--red); }
+  .nps-toolbar { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .nps-toolbar .ghost-btn { border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 12px; border-radius:8px; font-size:.72rem; font-weight:700; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .nps-toolbar .ghost-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+  .nps-toolbar .ghost-btn:focus-visible { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,70,229,.18); }
+  body.dark-theme .nps-toolbar .ghost-btn { background:#1c2542; border-color:#334466; color:#e2e8f0; }
+  body.dark-theme .nps-toolbar .ghost-btn:hover { border-color:var(--primary); background:rgba(79,70,229,.18); }
+
+  /* Plans bar */
+  .plans-bar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; padding:11px 14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); flex-wrap:wrap; }
+  .plans-tabs-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
+  .plans-tabs-wrap > .section-label { margin:0 4px 0 0; }
+  .plan-tabs { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .plan-tab { display:inline-flex; align-items:center; gap:7px; padding:7px 11px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); cursor:pointer; transition:.15s ease; font-size:.78rem; font-weight:700; color:#475569; position:relative; }
+  .plan-tab:hover { border-color:#b8c2d1; background:var(--surface-soft); }
+  .plan-tab.active { border-color:var(--plan-color, var(--primary)); color:var(--plan-color, var(--primary)); background:#fff; box-shadow:0 0 0 3px rgba(79,70,229,.12); }
+  .plan-tab .plan-color-dot { display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--plan-color, var(--primary)); flex-shrink:0; }
+  .plan-tab .plan-baseline-badge { color:#f59e0b; font-size:.85rem; line-height:1; margin-right:1px; }
+  .plan-tab .plan-menu-btn { border:0; background:transparent; color:#94a3b8; cursor:pointer; padding:1px 4px; font-size:.85rem; line-height:1; border-radius:4px; }
+  .plan-tab .plan-menu-btn:hover { color:#334155; background:rgba(0,0,0,0.06); }
+  .btn-add-plan { padding:7px 11px; border:1.5px dashed #cbd5e1; background:transparent; color:#64748b; border-radius:9px; cursor:pointer; font-size:.76rem; font-weight:700; transition:.15s ease; }
+  .btn-add-plan:hover:not(:disabled) { border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+  .btn-add-plan:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-compare { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); color:#334155; cursor:pointer; font-size:.78rem; font-weight:800; transition:.15s ease; }
+  .btn-compare:hover { border-color:#b8c2d1; }
+  .btn-compare.active { border-color:var(--primary); color:#fff; background:var(--primary); }
+  .btn-compare.active:hover { background:var(--primary-dark); }
+
+  /* Plan menu popup */
+  .plan-menu { position:absolute; min-width:180px; background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 12px 32px rgba(15,23,42,.18); padding:5px; z-index:200; }
+  .plan-menu button { display:block; width:100%; text-align:left; border:0; background:transparent; padding:8px 11px; border-radius:6px; cursor:pointer; font-size:.76rem; font-weight:600; color:#334155; }
+  .plan-menu button:hover:not(:disabled) { background:var(--primary-soft); color:var(--primary); }
+  .plan-menu button:disabled { opacity:.4; cursor:not-allowed; }
+  .plan-menu button.danger:hover:not(:disabled) { background:#fee2e2; color:var(--red); }
+
+  /* Compare mode */
+  body.compare-mode .dot-controls,
+  body.compare-mode .dot-inputs { display:none !important; }
+  body.compare-mode #curve { cursor:default; }
+  /* In compare mode the summary panel needs more room for multiple plan cards,
+     so stack chart on top and summary below at full width. */
+  body.compare-mode .workspace { grid-template-columns:1fr; }
+  body.compare-mode .summary-panel .summary-multi { overflow-x:auto; }
+
+  /* Per-plan NPS blocks (compare mode) */
+  .nps-plan-block { margin-top:14px; padding-top:14px; border-top:1px dashed #e5e7eb; }
+  .nps-plan-block:first-child { margin-top:4px; padding-top:4px; border-top:0; }
+  .nps-plan-title { display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:800; color:#172033; margin-bottom:8px; padding:0 2px; }
+  .nps-plan-title .nps-plan-color { width:11px; height:11px; border-radius:50%; }
+  .nps-plan-title .nps-plan-baseline { color:#f59e0b; font-size:.85rem; }
+
+  /* Compare-mode summary: one table, labels on left, one column per plan */
+  .summary.compare-summary { padding:14px 18px 16px; }
+  .compare-summary-table-wrap { overflow-x:auto; }
+  .compare-summary-table { width:100%; border-collapse:collapse; font-size:.72rem; }
+  .compare-summary-table thead th { background:#f8fafc; color:#4f46e5; font-size:.66rem; font-weight:800; text-align:right; padding:9px 10px; border-bottom:2px solid #e6ebf2; white-space:nowrap; }
+  .compare-summary-table thead th.metric-col { text-align:left; color:#475569; }
+  .compare-summary-table tbody th { background:#fff; text-align:left; color:#475569; font-weight:700; padding:7px 10px; border-bottom:1px solid #f0f3f7; white-space:nowrap; font-size:.7rem; position:sticky; left:0; z-index:1; }
+  .compare-summary-table tbody td { text-align:right; color:#172033; font-weight:700; padding:7px 10px; border-bottom:1px solid #f0f3f7; white-space:nowrap; font-size:.72rem; }
+  .compare-summary-table tbody tr:last-child th, .compare-summary-table tbody tr:last-child td { border-bottom:0; }
+  .compare-summary-table thead th.baseline-col { background:#fef3c7; }
+  .compare-summary-table tbody td.baseline-col { background:#fffbeb; }
+  .compare-summary-table .delta-row th { font-weight:600; font-style:italic; color:#94a3b8; font-size:.65rem; padding-left:22px; padding-top:3px; padding-bottom:7px; }
+  .compare-summary-table .delta-row td { font-size:.66rem; color:#64748b; font-weight:700; padding-top:3px; padding-bottom:7px; }
+  .compare-summary-table .delta-row td.up { color:var(--red); }
+  .compare-summary-table .delta-row td.down { color:var(--green); }
+  .compare-summary-table .delta-row td.zero { color:#94a3b8; }
+  .compare-summary-table .plan-col-header { display:inline-flex; align-items:center; gap:6px; }
+  .compare-summary-table .plan-col-header .card-color-dot { width:9px; height:9px; border-radius:50%; }
+  .compare-summary-table .baseline-mark { color:#f59e0b; }
+  .compare-summary-table .val-warn { color:#d97706; }
+  .compare-summary-table .val-bad { color:var(--red); }
+  .compare-summary-table .val-good { color:var(--green); }
+
+  .summary-multi { display:grid; gap:14px; padding:16px 18px; }
+  .summary-multi.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .summary-multi.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .summary-multi.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .summary-multi.cols-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .summary-card { min-width:0; border:1px solid var(--border); border-radius:9px; padding:12px 13px; background:var(--surface-soft); }
+  .summary-card.baseline { background:#fffbeb; border-color:#fde68a; }
+  .summary-card h4 { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:800; margin-bottom:9px; color:#172033; }
+  .summary-card .card-color-dot { display:inline-block; width:9px; height:9px; border-radius:50%; }
+  .summary-card .baseline-mark { color:#f59e0b; font-size:.7rem; }
+  .summary-card .stat-row { padding:5px 0; font-size:.66rem; gap:10px; }
+  .summary-card .stat-row .val { font-size:.7rem; }
+  .summary-card .delta-line { margin-top:8px; padding-top:7px; border-top:1px dashed #e5e7eb; font-size:.65rem; color:#64748b; }
+  .summary-card .delta-line .delta-val { font-weight:800; }
+  .summary-card .delta-line .delta-val.up { color:var(--red); }
+  .summary-card .delta-line .delta-val.down { color:var(--green); }
+
+  /* Single-plan histogram: cap width and center, otherwise the global
+     `canvas { width:100% }` rule stretches it across the whole panel
+     and the bars look distorted on wide screens. */
+  .histo-single-wrap { display:flex; justify-content:center; align-items:flex-start; width:100%; }
+  .histo-single-wrap canvas { width:auto; max-width:100%; }
+  .histo-multiples { display:grid; gap:14px; }
+  .histo-multiples.cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .histo-multiples.cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .histo-multiples.cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .histo-multiples.cols-5 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .histo-multiple { min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .histo-multiple-title { display:flex; align-items:center; gap:6px; font-size:.7rem; font-weight:800; color:#334155; }
+  .histo-multiple-title .mini-dot { width:8px; height:8px; border-radius:50%; }
+  .histo-multiple-title .baseline-mark { color:#f59e0b; }
+  .histo-multiple canvas { width:100%; border:1px solid #d9e0ea; border-radius:8px; background:#fff; display:block; }
+
+  .delta-cell { font-weight:800; }
+  .delta-cell.up { color:var(--red); }
+  .delta-cell.down { color:var(--green); }
+  .delta-cell.zero { color:#94a3b8; }
+
+  @media (max-width:900px) {
+    .summary-multi.cols-2, .summary-multi.cols-3,
+    .summary-multi.cols-4, .summary-multi.cols-5 { grid-template-columns:1fr; }
+    .histo-multiples.cols-2, .histo-multiples.cols-3,
+    .histo-multiples.cols-4, .histo-multiples.cols-5 { grid-template-columns:1fr; }
+  }
+
+  /* ───────────────────────── Toolbar additions: Print, Dark mode, Help ───────────────────────── */
+  .btn-icon { min-width:36px; text-align:center; }
+  .btn-print { background:var(--primary-soft); color:var(--primary); border-color:#c7d2fe; font-weight:800; }
+  .btn-print:hover { background:#e0e7ff; }
+
+  /* ───────────────────────── Keyboard shortcuts overlay ───────────────────────── */
+  .shortcuts-overlay { position:fixed; inset:0; background:rgba(15,23,42,.55); display:flex; align-items:center; justify-content:center; z-index:1000; padding:24px; }
+  .shortcuts-overlay[hidden] { display:none; }
+  .shortcuts-modal { background:var(--surface); color:var(--text); border-radius:14px; padding:22px 24px 20px; max-width:680px; width:100%; box-shadow:0 30px 60px rgba(15,23,42,.45); border:1px solid var(--border); }
+  .shortcuts-modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .shortcuts-modal h3 { font-size:1.05rem; }
+  .shortcuts-close { border:0; background:transparent; color:var(--muted); cursor:pointer; font-size:1.8rem; line-height:1; padding:0 6px; border-radius:6px; }
+  .shortcuts-close:hover { background:var(--surface-soft); color:var(--text); }
+  .shortcuts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .kbd-group h4 { font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  .kbd-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:5px 0; font-size:.78rem; color:var(--text); }
+  .kbd-row span:last-child { color:var(--muted); font-weight:600; text-align:right; }
+  kbd { display:inline-block; min-width:22px; padding:2px 6px; border:1px solid var(--border); border-bottom-width:2px; border-radius:5px; background:var(--surface-soft); color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.72rem; font-weight:700; text-align:center; }
+  .shortcuts-hint { color:var(--muted); font-size:.7rem; margin-top:14px; padding-top:12px; border-top:1px dashed var(--border); }
+  @media (max-width:680px) { .shortcuts-grid { grid-template-columns:1fr; } }
+
+  /* ───────────────────────── Dark mode ───────────────────────── */
+  /* Color palette swap. Canvases keep their light backgrounds for chart legibility;
+     the chart drawing code reads getChartColors() so axis/text/grid adapt. */
+  body.dark-theme {
+    --bg:#0b1220;
+    --surface:#151c2c;
+    --surface-soft:#1d2638;
+    --border:#2a3550;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --primary:#a5b4fc;
+    --primary-dark:#818cf8;
+    --primary-soft:#1e1b4b;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --red:#f87171;
+    --shadow:0 10px 30px rgba(0,0,0,0.4);
+    color-scheme:dark;
+  }
+  body.dark-theme h1 { color:#f1f5f9; }
+  body.dark-theme .panel-header { border-bottom-color:#243049; }
+  body.dark-theme .panel-header h2 { color:#f1f5f9; }
+  body.dark-theme .setup-card { background:#111827; }
+  body.dark-theme .input-shell { border-color:#374151; background:#1e2638; }
+  body.dark-theme .input-shell input { color:#e5e7eb; }
+  body.dark-theme .field select,
+  body.dark-theme .points-table input,
+  body.dark-theme .nps-attainment-val,
+  body.dark-theme .table-header-row select,
+  body.dark-theme .histo-header input { background:#1e2638 !important; color:#e5e7eb !important; border-color:#374151 !important; }
+  body.dark-theme .view-tabs { background:#0f172a; }
+  body.dark-theme .view-tabs button { color:#94a3b8; }
+  body.dark-theme .view-tabs button.active { background:#1e2638; color:var(--primary); }
+  body.dark-theme .points-table th,
+  body.dark-theme th,
+  body.dark-theme .nps-panel .nps-table th,
+  body.dark-theme .compare-summary-table thead th { background:#1a2235; color:var(--primary); border-bottom-color:#2a3550; }
+  body.dark-theme .compare-summary-table thead th.metric-col { color:var(--muted); }
+  body.dark-theme .compare-summary-table tbody th { background:var(--surface); color:var(--muted); border-bottom-color:#243049; }
+  body.dark-theme .compare-summary-table tbody td { color:#e2e8f0; border-bottom-color:#243049; }
+  body.dark-theme .compare-summary-table thead th.baseline-col { background:#3b2c08; }
+  body.dark-theme .compare-summary-table tbody td.baseline-col { background:#2a2008; }
+  body.dark-theme td { color:#cbd5e1; border-bottom-color:#243049; }
+  body.dark-theme tr:hover td { background:#1a2235; }
+  body.dark-theme .points-table td { border-bottom-color:#243049; }
+  body.dark-theme .points-table tbody tr:hover td { background:#1a2235; }
+  body.dark-theme .stat-row { color:#cbd5e1; border-bottom-color:#243049; }
+  body.dark-theme .stat-row .val { color:#f1f5f9; }
+  body.dark-theme .summary-card { background:var(--surface-soft); border-color:var(--border); }
+  body.dark-theme .summary-card h4 { color:#f1f5f9; }
+  body.dark-theme .summary-card.baseline { background:#2a2008; border-color:#3b2c08; }
+  body.dark-theme .fixed-pay-note { background:#1e1b4b; border-color:#3730a3; color:#c7d2fe; }
+  body.dark-theme .field-hint { color:var(--muted); }
+  body.dark-theme .field-hint strong { color:#cbd5e1; }
+  body.dark-theme .attainment-bar { background:#243049; }
+  body.dark-theme #hoverInfo, body.dark-theme #histoTip { background:rgba(15,23,42,.96); border-color:var(--primary); color:#f1f5f9; }
+  body.dark-theme canvas { border-color:#243049; background:#0f172a; }
+  body.dark-theme .plan-tab { background:var(--surface-soft); border-color:var(--border); color:#cbd5e1; }
+  body.dark-theme .plan-tab.active { background:var(--primary-soft); border-color:var(--primary); color:#e0e7ff; box-shadow:0 0 0 3px rgba(165,180,252,.18); }
+  body.dark-theme .plan-menu { background:var(--surface); border-color:var(--border); box-shadow:0 12px 32px rgba(0,0,0,.55); }
+  body.dark-theme .plan-menu button { color:#cbd5e1; }
+  body.dark-theme .plan-menu button:hover { background:var(--surface-soft); }
+  /* Make sure inner panel containers, table wrappers, and form controls don't
+     leak their light backgrounds. */
+  body.dark-theme .table-wrap { background:var(--surface); }
+  body.dark-theme tbody tr:hover td { background:#1d2638; }
+  body.dark-theme .dot-controls button { background:var(--surface-soft); color:#cbd5e1; border-color:var(--border); }
+  body.dark-theme .dot-controls button:hover:not(:disabled) { background:#1f2a40; border-color:#475569; }
+  body.dark-theme .dot-inputs { border-color:var(--border); }
+  body.dark-theme .points-table th { background:var(--surface-soft); color:#94a3b8; border-bottom-color:var(--border); }
+  body.dark-theme .nps-plan-block { border-top-color:#243049; }
+  body.dark-theme .nps-plan-title { color:#f1f5f9; }
+  body.dark-theme .delta-row td.zero { color:#64748b; }
+  body.dark-theme .section-label { color:#cbd5e1; }
+  body.dark-theme .btn { color:#cbd5e1; }
+  body.dark-theme .btn:hover { background:var(--surface-soft); border-color:#475569; }
+  body.dark-theme .btn-compare { color:#e2e8f0; }
+  body.dark-theme .btn-compare:hover { border-color:#475569; }
+  body.dark-theme .btn-compare.active { background:var(--primary); border-color:var(--primary); color:#0b1220; }
+  body.dark-theme .btn-add-plan { border-color:#374151; color:#cbd5e1; }
+  body.dark-theme .btn-add-plan:hover:not(:disabled) { background:var(--primary-soft); color:var(--primary); border-color:var(--primary); }
+  body.dark-theme .btn-print { background:var(--primary-soft); color:#c7d2fe; border-color:#3730a3; }
+  body.dark-theme .btn-print:hover { background:#312e81; }
+  body.dark-theme .field label { color:#cbd5e1; }
+  body.dark-theme .input-shell .prefix, body.dark-theme .input-shell .suffix { color:#94a3b8; }
+  body.dark-theme .panel-header p { color:var(--muted); }
+  body.dark-theme .nps-panel .nps-table td:first-child { color:#94a3b8; }
+  body.dark-theme .points-table .idx { color:var(--primary); }
+  body.dark-theme .nps-panel .nps-table th .nps-attainment-val { background:#1e2638; color:#e5e7eb; border-color:#374151; }
+  body.dark-theme .shortcuts-overlay { background:rgba(0,0,0,.65); }
+  body.dark-theme kbd { background:#0f172a; border-color:#2a3550; color:#e5e7eb; }
+
+  /* ───────────────────────── Print / PDF view ───────────────────────── */
+  @media print {
+    /* Force printable colors regardless of dark mode */
+    body, body.dark-theme {
+      background:#fff !important; color:#000 !important;
+      --bg:#fff; --surface:#fff; --surface-soft:#f8fafc; --border:#cbd5e1;
+      --text:#0f172a; --muted:#475569; --primary:#4f46e5; --primary-soft:#eef2ff;
+    }
+    .app-shell { max-width:none !important; padding:0 !important; }
+    .app-header { margin-bottom:6mm !important; }
+    .app-header .sub { display:none !important; }
+    /* Hide interactive controls that don't make sense in print */
+    .data-actions,
+    .plans-actions,
+    .plan-tab .plan-menu-btn,
+    #addPlanBtn,
+    .dot-controls, .dot-inputs,
+    .setup-card,
+    .nps-add, .nps-remove,
+    .nps-toolbar,
+    .histo-header,
+    .table-header-row select,
+    .panel-header p,
+    .field-hint,
+    .fixed-pay-note,
+    .shortcuts-overlay { display:none !important; }
+    /* NPS attainment numbers as plain text */
+    .nps-attainment-val { border:0 !important; background:transparent !important; padding:0 !important; width:auto !important; appearance:none; -webkit-appearance:none; -moz-appearance:textfield; }
+    /* Soft shadows / tall borders look bad on paper */
+    .panel, .setup-card { box-shadow:none !important; border-color:#cbd5e1 !important; }
+    /* Single-column workspace so the chart doesn't squeeze the summary */
+    .workspace { grid-template-columns:1fr !important; gap:6mm !important; }
+    .lower-grid { gap:6mm !important; }
+    /* Avoid section page-breaks where possible */
+    .panel { break-inside:avoid; page-break-inside:avoid; margin-bottom:6mm; }
+    /* Tables: drop sticky/scroll containers that don't translate to paper */
+    .table-wrap { max-height:none !important; overflow:visible !important; }
+    th { position:static !important; }
+    /* Constrain canvas heights so a single quarter fits roughly on a page */
+    #curve { max-height:90mm !important; }
+    #histoCanvas { max-height:55mm !important; }
+    /* Keep tabs visible for context but compact */
+    .plan-tabs-wrap { gap:6px; }
+    .plan-tab { padding:4px 8px; font-size:.7rem; }
+    /* Keep colored plan dots visible (browsers usually strip backgrounds when printing) */
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
 </style>
 </head>
 <body>
@@ -143,11 +421,31 @@
       <p class="sub">Shape incentive curves, compare components, and review territory-level impact in real time.</p>
     </div>
     <div class="data-actions" aria-label="Data actions">
-      <button class="btn" onclick="document.getElementById('uploadInput').click()">Upload data</button>
+      <button class="btn" onclick="document.getElementById('uploadInput').click()" title="REPLACE all current rows with the file's rows">Replace data</button>
+      <button class="btn" onclick="document.getElementById('appendInput').click()" title="APPEND new rows; duplicates by territory+quarter overwrite existing">Append data</button>
+      <button class="btn" onclick="downloadData()" title="Download the currently loaded territory data as TSV">Download data</button>
       <button class="btn" onclick="downloadSample()">Download sample</button>
+      <button class="btn" onclick="exportAllPlans()" title="Download all plans as JSON">Export plans</button>
+      <button class="btn" onclick="document.getElementById('plansImportInput').click()" title="Replace plans from a JSON file">Import plans</button>
+      <button class="btn btn-print" onclick="printView()" title="Open a clean print / save-as-PDF view (Shortcut: P)">Print / PDF</button>
+      <button id="themeToggleBtn" class="btn btn-icon" onclick="toggleTheme()" title="Toggle dark mode (Shortcut: D)" aria-label="Toggle dark mode">Dark</button>
+      <button class="btn btn-icon" onclick="showShortcutsHelp()" title="Keyboard shortcuts (Shortcut: ?)" aria-label="Show keyboard shortcuts">?</button>
       <input type="file" id="uploadInput" accept=".txt,.csv,.json" onchange="uploadData(event)">
+      <input type="file" id="appendInput" accept=".txt,.csv,.json" onchange="uploadData(event, true)" style="display:none">
+      <input type="file" id="plansImportInput" accept=".json" onchange="importAllPlans(event)" style="display:none">
     </div>
   </header>
+
+  <section class="plans-bar" aria-label="Plans">
+    <div class="plans-tabs-wrap">
+      <span class="section-label">Plans</span>
+      <div class="plan-tabs" id="planTabs" role="tablist"></div>
+      <button id="addPlanBtn" class="btn-add-plan" onclick="addPlan()">+ New plan</button>
+    </div>
+    <div class="plans-actions">
+      <button id="compareBtn" class="btn-compare" onclick="toggleCompare()" aria-pressed="false">⚖ Compare plans</button>
+    </div>
+  </section>
 
   <section class="setup-card" aria-labelledby="setupHeading">
     <span class="section-label" id="setupHeading">Plan setup</span>
@@ -170,7 +468,7 @@
       </div>
       <div class="field base-field">
         <label for="basePay">Quarterly base pay</label>
-        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="renderAll()"></div>
+        <div class="input-shell"><span class="prefix">$</span><input type="number" id="basePay" value="3375" min="0" step="100" onchange="onBasePayChange()"></div>
       </div>
       <div class="field">
         <label for="quarterSelect">Quarter</label>
@@ -216,7 +514,10 @@
             <span>Min</span><input type="number" id="hMin" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
             <span>Max</span><input type="number" id="hMax" value="" min="0" max="300" step="5" onchange="drawHistogram()" placeholder="auto">
           </div>
-          <div style="position:relative"><canvas id="histoCanvas" width="700" height="260"></canvas><div id="histoTip"></div></div>
+          <div class="histo-canvas-area" style="position:relative">
+            <div id="histoContainer"><canvas id="histoCanvas" width="700" height="260"></canvas></div>
+            <div id="histoTip"></div>
+          </div>
         </div>
       </section>
 
@@ -233,8 +534,17 @@
   </main>
 
   <section class="panel nps-panel" id="npsSection" style="display:none" aria-labelledby="npsHeading">
-    <div class="panel-header"><div><h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2><p>What-if scenarios. In Combined mode, set TRx and NRx attainment separately per column.</p></div></div>
+    <div class="panel-header">
+      <div>
+        <h2 id="npsHeading">National Pay Summary — <span id="npsQuarter"></span></h2>
+        <p>What-if scenarios. Each column scales the actual per-territory attainments to the entered national average and runs them through the curve, so Min / Max / Avg reflect real spread.</p>
+      </div>
+      <div class="nps-toolbar" role="group" aria-label="National Pay Summary display options">
+        <button id="npsValueModeBtn" class="ghost-btn" type="button" onclick="toggleNpsValueMode()" title="Switch payout rows between dollars and curve %">$ values</button>
+      </div>
+    </div>
     <div style="overflow-x:auto;padding:0 18px 18px"><table class="nps-table" id="npsTable"></table></div>
+    <div id="npsMulti" style="padding:0 18px 18px"></div>
   </section>
 </div>
 
@@ -243,10 +553,230 @@
 let quarterlyData = []; // [{territory, quarter, trxGoal, trxActual, nrxGoal, nrxActual}]
 let payoutSortState = '';
 let componentMode = 'trx';
+let compareMode = false;
 
 const MAX_X = 300, MAX_Y = 300;
 const BASE_ANNUAL = 13500;
 const DEFAULT_BASE_PAY_Q = BASE_ANNUAL / 4;
+const STORAGE_KEY = 'pharma-payout-plans-v1';
+const MAX_PLANS = 5;
+const PLAN_COLORS = ['#6366f1', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899'];
+
+// ── Plans data model ──
+// Each plan: { id, name, color, trxPoints, nrxPoints, trxWeight, nrxWeight, basePay }
+let plans = [];
+let activePlanId = null;
+let baselinePlanId = null;
+
+function uid() { return 'p_' + Math.random().toString(36).slice(2, 9); }
+
+function defaultTrxPoints() {
+  return [{x:0,y:0},{x:80,y:65},{x:100,y:100},{x:200,y:240},{x:300,y:300}];
+}
+function defaultNrxPoints() {
+  return [{x:0,y:0},{x:80,y:55},{x:100,y:100},{x:200,y:250},{x:300,y:300}];
+}
+function clonePoints(pts) { return pts.map(p => ({x:p.x, y:p.y})); }
+
+function createPlan(name, colorIdx, template) {
+  return {
+    id: uid(),
+    name,
+    color: PLAN_COLORS[colorIdx % PLAN_COLORS.length],
+    trxPoints: template ? clonePoints(template.trxPoints) : defaultTrxPoints(),
+    nrxPoints: template ? clonePoints(template.nrxPoints) : defaultNrxPoints(),
+    trxWeight: template ? template.trxWeight : 50,
+    nrxWeight: template ? template.nrxWeight : 50,
+    basePay:   template ? template.basePay   : 3375
+  };
+}
+
+function getActivePlan() { return plans.find(p => p.id === activePlanId) || plans[0]; }
+function getPlanById(id) { return plans.find(p => p.id === id); }
+function getBaselinePlan() { return plans.find(p => p.id === baselinePlanId) || plans[0]; }
+function getDisplayPlans() { return compareMode ? plans : [getActivePlan()]; }
+
+// ── Persistence ──
+function savePlans() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: 1,
+      plans, activePlanId, baselinePlanId, compareMode, componentMode
+    }));
+  } catch (e) { /* localStorage may be disabled or full — ignore */ }
+}
+function loadPlans() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.plans || !Array.isArray(data.plans) || !data.plans.length) return false;
+    plans = data.plans.slice(0, MAX_PLANS).map((p, i) => ({
+      id: p.id || uid(),
+      name: typeof p.name === 'string' ? p.name : 'Plan ' + String.fromCharCode(65 + i),
+      color: p.color || PLAN_COLORS[i % PLAN_COLORS.length],
+      trxPoints: Array.isArray(p.trxPoints) && p.trxPoints.length >= 2 ? clonePoints(p.trxPoints) : defaultTrxPoints(),
+      nrxPoints: Array.isArray(p.nrxPoints) && p.nrxPoints.length >= 2 ? clonePoints(p.nrxPoints) : defaultNrxPoints(),
+      trxWeight: Number.isFinite(p.trxWeight) ? p.trxWeight : 50,
+      nrxWeight: Number.isFinite(p.nrxWeight) ? p.nrxWeight : 50,
+      basePay:   Number.isFinite(p.basePay)   ? p.basePay   : 3375
+    }));
+    activePlanId = getPlanById(data.activePlanId) ? data.activePlanId : plans[0].id;
+    baselinePlanId = getPlanById(data.baselinePlanId) ? data.baselinePlanId : plans[0].id;
+    compareMode = !!data.compareMode;
+    if (typeof data.componentMode === 'string' && ['trx','nrx','combined'].includes(data.componentMode)) {
+      componentMode = data.componentMode;
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+// ── Plan operations ──
+function addPlan() {
+  if (plans.length >= MAX_PLANS) return;
+  const next = String.fromCharCode(65 + plans.length);
+  const newPlan = createPlan('Plan ' + next, plans.length, getActivePlan());
+  plans.push(newPlan);
+  activePlanId = newPlan.id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  applyComponentTabState();
+  updateUI();
+  savePlans();
+}
+
+function deletePlan(id) {
+  if (plans.length <= 1) return;
+  const plan = getPlanById(id);
+  if (!plan) return;
+  if (!confirm('Delete "' + plan.name + '"? This cannot be undone.')) return;
+  plans = plans.filter(p => p.id !== id);
+  if (activePlanId === id) activePlanId = plans[0].id;
+  if (baselinePlanId === id) baselinePlanId = plans[0].id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function renamePlan(id) {
+  const plan = getPlanById(id);
+  if (!plan) return;
+  const name = prompt('Rename plan', plan.name);
+  if (!name || !name.trim()) return;
+  plan.name = name.trim().slice(0, 30);
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function setBaselinePlan(id) {
+  if (!getPlanById(id)) return;
+  baselinePlanId = id;
+  renderPlanTabs();
+  if (compareMode) updateUI();
+  savePlans();
+}
+
+function setActivePlan(id) {
+  if (!getPlanById(id) || id === activePlanId) {
+    if (id === activePlanId) renderPlanTabs();
+    return;
+  }
+  activePlanId = id;
+  syncInputsFromActivePlan();
+  renderPlanTabs();
+  updateUI();
+  savePlans();
+}
+
+function toggleCompare() {
+  if (plans.length < 2 && !compareMode) {
+    alert('Add at least 2 plans to compare.');
+    return;
+  }
+  compareMode = !compareMode;
+  document.body.classList.toggle('compare-mode', compareMode);
+  const btn = document.getElementById('compareBtn');
+  btn.classList.toggle('active', compareMode);
+  btn.setAttribute('aria-pressed', String(compareMode));
+  btn.textContent = compareMode ? '⚖ Exit compare' : '⚖ Compare plans';
+  updateUI();
+  savePlans();
+}
+
+function syncInputsFromActivePlan() {
+  const p = getActivePlan();
+  document.getElementById('trxWeight').value = p.trxWeight;
+  document.getElementById('nrxWeight').value = p.nrxWeight;
+  document.getElementById('basePay').value = p.basePay;
+  document.getElementById('setupHeading').textContent = p.name + ' setup';
+}
+
+function persistInputsToActivePlan() {
+  const p = getActivePlan();
+  const t = Number(document.getElementById('trxWeight').value);
+  const n = Number(document.getElementById('nrxWeight').value);
+  const b = Number(document.getElementById('basePay').value);
+  if (Number.isFinite(t)) p.trxWeight = Math.min(100, Math.max(0, t));
+  if (Number.isFinite(n)) p.nrxWeight = Math.min(100, Math.max(0, n));
+  if (Number.isFinite(b) && b >= 0) p.basePay = b;
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function renderPlanTabs() {
+  const wrap = document.getElementById('planTabs');
+  if (!wrap) return;
+  wrap.innerHTML = plans.map(p => `
+    <div class="plan-tab ${p.id === activePlanId ? 'active' : ''}" 
+         style="--plan-color:${p.color}"
+         role="tab" aria-selected="${p.id === activePlanId}"
+         onclick="setActivePlan('${p.id}')">
+      <span class="plan-color-dot"></span>
+      <span class="plan-name">${escapeHtml(p.name)}</span>
+      ${p.id === baselinePlanId ? '<span class="plan-baseline-badge" title="Baseline plan">★</span>' : ''}
+      <button class="plan-menu-btn" aria-label="Plan options" onclick="event.stopPropagation();showPlanMenu('${p.id}', this)">▾</button>
+    </div>
+  `).join('');
+  document.getElementById('addPlanBtn').disabled = plans.length >= MAX_PLANS;
+  const compareBtn = document.getElementById('compareBtn');
+  if (compareBtn) compareBtn.disabled = plans.length < 2 && !compareMode;
+}
+
+function showPlanMenu(planId, btn) {
+  closePlanMenu();
+  const plan = getPlanById(planId);
+  if (!plan) return;
+  const menu = document.createElement('div');
+  menu.className = 'plan-menu';
+  const isBaseline = planId === baselinePlanId;
+  const canDelete = plans.length > 1;
+  menu.innerHTML = `
+    <button onclick="renamePlan('${planId}');closePlanMenu()">Rename…</button>
+    <button onclick="setBaselinePlan('${planId}');closePlanMenu()" ${isBaseline ? 'disabled' : ''}>${isBaseline ? '★ Baseline' : 'Set as baseline'}</button>
+    <button onclick="deletePlan('${planId}');closePlanMenu()" class="danger" ${canDelete ? '' : 'disabled'}>Delete plan</button>
+  `;
+  document.body.appendChild(menu);
+  const rect = btn.getBoundingClientRect();
+  menu.style.left = (rect.left + window.scrollX - 120) + 'px';
+  menu.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
+  setTimeout(() => document.addEventListener('click', closePlanMenu, { once: true }), 0);
+}
+
+function closePlanMenu() {
+  document.querySelectorAll('.plan-menu').forEach(m => m.remove());
+}
+
+function applyComponentTabState() {
+  document.getElementById('btnTRx').className = componentMode === 'trx' ? 'active' : '';
+  document.getElementById('btnNRx').className = componentMode === 'nrx' ? 'active' : '';
+  document.getElementById('btnCombined').className = componentMode === 'combined' ? 'active' : '';
+  const ids = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
+  Object.entries(ids).forEach(([m, id]) => {
+    document.getElementById(id).setAttribute('aria-selected', String(m === componentMode));
+  });
+}
 
 function getEffectiveBasePay() {
   const value = Number(document.getElementById('basePay').value);
@@ -258,6 +788,12 @@ function getComponentWeight(id) {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) / 100 : 0.5;
 }
 
+function onBasePayChange() {
+  persistInputsToActivePlan();
+  savePlans();
+  renderAll();
+}
+
 function syncComponentWeights(changedComponent) {
   const changedInput = document.getElementById(changedComponent + 'Weight');
   if (changedInput.value === '') return;
@@ -266,6 +802,8 @@ function syncComponentWeights(changedComponent) {
   const otherInput = document.getElementById(changedComponent === 'trx' ? 'nrxWeight' : 'trxWeight');
   changedInput.value = changedWeight;
   otherInput.value = 100 - changedWeight;
+  persistInputsToActivePlan();
+  savePlans();
   renderAll();
 }
 function seededRandom(seed) {
@@ -273,7 +811,26 @@ function seededRandom(seed) {
   return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-// Load & generate quarterly data from territories.json
+function generateFallbackData() {
+  const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
+  const quarters = ['Q125','Q225','Q325','Q425'];
+  const out = [];
+  names.forEach((name,i) => {
+    const rng = seededRandom(i * 137 + 500);
+    const baseGoal = 800 + rng() * 800;
+    quarters.forEach((q,qIdx) => {
+      const qw = [0.22,0.24,0.27,0.27][qIdx];
+      const trxGoal = Math.round(baseGoal * qw);
+      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
+      const nrxGoal = Math.round(baseGoal * qw * (0.7 + rng() * 0.5));
+      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
+      out.push({ territory:name, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
+    });
+  });
+  return out;
+}
+
+// Load territory data; render once data is in.
 fetch('./territories.json').then(r=>r.json()).then(territories=>{
   quarterlyData = [];
   const quarters = ['Q125','Q225','Q325','Q425'];
@@ -288,51 +845,39 @@ fetch('./territories.json').then(r=>r.json()).then(territories=>{
       quarterlyData.push({ territory:t.territory, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
     });
   });
-  renderAll();
-  updateQuarterOptions();
+  updateUI();
 }).catch(() => {
-  // Generate fallback data
-  const names = ['Northwest','Pacific','Southwest','Mountain','Midwest','Great Lakes','Northeast','Mid-Atlantic','Southeast','South Central','Upper Midwest','New England','Plains','Rockies','Gulf Coast','Central Valley','Cascadia','Sunbelt','Rust Belt','Tidewater','Delta','Heartland','Coastal','Frontier','Bay Area','Capital','Lone Star','Bluegrass','Evergreen','Appalachia'];
-  const quarters = ['Q125','Q225','Q325','Q425'];
-  quarterlyData = [];
-  names.forEach((name,i) => {
-    const rng = seededRandom(i * 137 + 500);
-    const baseGoal = 800 + rng() * 800;
-    quarters.forEach((q,qIdx) => {
-      const qw = [0.22,0.24,0.27,0.27][qIdx];
-      const trxGoal = Math.round(baseGoal * qw);
-      const trxActual = Math.round(trxGoal * (0.8 + rng() * 0.4));
-      const nrxGoal = Math.round(baseGoal * qw * (0.7 + rng() * 0.5));
-      const nrxActual = Math.round(nrxGoal * (0.75 + rng() * 0.5));
-      quarterlyData.push({ territory:name, quarter:q, trxGoal, trxActual, nrxGoal, nrxActual });
-    });
-  });
-  renderAll();
-  updateQuarterOptions();
+  quarterlyData = generateFallbackData();
+  updateUI();
 });
 
-// ── Curve control points ──
-let points = [ // TRx
-  {x:0, y:0},
-  {x:80, y:65},
-  {x:100, y:100},
-  {x:200, y:240},
-  {x:300, y:300},
-];
-let nrxPoints = [ // NRx
-  {x:0, y:0},
-  {x:80, y:55},
-  {x:100, y:100},
-  {x:200, y:250},
-  {x:300, y:300},
-];
+function bootApp() {
+  const restored = loadPlans();
+  if (!restored) {
+    plans = [createPlan('Plan A', 0)];
+    activePlanId = plans[0].id;
+    baselinePlanId = plans[0].id;
+  }
+  if (compareMode) {
+    document.body.classList.add('compare-mode');
+    const btn = document.getElementById('compareBtn');
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.textContent = '⚖ Exit compare';
+  }
+  syncInputsFromActivePlan();
+  applyComponentTabState();
+  renderPlanTabs();
+  drawCurve();
+  buildInputs();
+}
 
 // ── Canvas ──
 const canvas = document.getElementById('curve');
 const ctx = canvas.getContext('2d');
 const hoverInfo = document.getElementById('hoverInfo');
 const W=700, H=400;
-const dpr = Math.min(window.devicePixelRatio || 1, 2);
+const dpr = Math.min(window.devicePixelRatio || 1, 3);
 canvas.width = W * dpr; canvas.height = H * dpr; ctx.scale(dpr, dpr);
 let dragging = -1;
 let draggingSet = null; // 'trx' | 'nrx'
@@ -343,11 +888,12 @@ function toScreen(p) { return {x:PAD.l+(p.x/MAX_X)*PW, y:PAD.t+PH-(p.y/MAX_Y)*PH
 function toWorld(s) { return {x:((s.x-PAD.l)/PW)*MAX_X, y:(1-(s.y-PAD.t)/PH)*MAX_Y}; }
 
 function activePoints() {
-  if (componentMode === 'nrx') return nrxPoints;
-  return points;
+  const p = getActivePlan();
+  return componentMode === 'nrx' ? p.nrxPoints : p.trxPoints;
 }
 
 function addDot() {
+  if (compareMode) return;
   const pts = activePoints();
   let maxGap = 0, bestIdx = 0;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -357,14 +903,17 @@ function addDot() {
   const newX = Math.round((pts[bestIdx].x + pts[bestIdx+1].x) / 2);
   const newY = Math.round((pts[bestIdx].y + pts[bestIdx+1].y) / 2);
   pts.splice(bestIdx + 1, 0, {x: newX, y: newY});
+  savePlans();
   updateUI();
 }
 
 function removeDot() {
+  if (compareMode) return;
   const pts = activePoints();
   if (pts.length <= 2) return;
   const mid = Math.floor((pts.length - 1) / 2);
   pts.splice(mid, 1);
+  savePlans();
   updateUI();
 }
 
@@ -382,6 +931,7 @@ function updateDotFromInput(idx, field, value) {
     clamped = Math.max(0, Math.min(MAX_Y, clamped));
     pts[idx].y = clamped;
   }
+  savePlans();
   drawCurve(); renderAll(); buildInputs();
 }
 
@@ -404,16 +954,43 @@ function buildInputs() {
 function updateUI() {
   const pts = activePoints();
   document.getElementById('dotCount').textContent = pts.length + ' points';
-  document.getElementById('btnRemove').disabled = pts.length <= 2;
+  document.getElementById('btnRemove').disabled = pts.length <= 2 || compareMode;
+  document.getElementById('btnAdd').disabled = compareMode;
   buildInputs();
   drawCurve(); renderAll();
   updateQuarterOptions();
 }
 
+// Parse common quarter labels into a [year, quarter] sort key.
+// Supported: "Q125", "Q12025", "Q1 2025", "Q1-FY26", "Q1-2026", "2026Q1", "2025-Q1".
+// Anything else falls back to the end of the list (sorted by string).
+function quarterSortKey(raw) {
+  const s = String(raw || '').trim();
+  let m;
+  if ((m = /^Q(\d)(\d{2})$/i.exec(s)))            { return [2000 + parseInt(m[2],10), parseInt(m[1],10), s]; }
+  if ((m = /^Q(\d)(\d{4})$/i.exec(s)))            { return [parseInt(m[2],10),         parseInt(m[1],10), s]; }
+  if ((m = /^Q(\d)[\s\-_]*(?:FY)?(\d{2,4})$/i.exec(s))) {
+    let y = parseInt(m[2],10); if (y < 100) y += 2000;
+    return [y, parseInt(m[1],10), s];
+  }
+  if ((m = /^(\d{2,4})[\s\-_]*Q(\d)$/i.exec(s)))  {
+    let y = parseInt(m[1],10); if (y < 100) y += 2000;
+    return [y, parseInt(m[2],10), s];
+  }
+  return [Number.MAX_SAFE_INTEGER, 0, s];
+}
+
+function compareQuarters(a, b) {
+  const ka = quarterSortKey(a), kb = quarterSortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  if (ka[1] !== kb[1]) return ka[1] - kb[1];
+  return ka[2].localeCompare(kb[2]);
+}
+
 function updateQuarterOptions() {
   const sel = document.getElementById('quarterSelect');
   const cur = sel.value;
-  const quarters = [...new Set(quarterlyData.map(d=>d.quarter))].sort();
+  const quarters = [...new Set(quarterlyData.map(d=>d.quarter))].sort(compareQuarters);
   if (!quarters.length) return;
   sel.innerHTML = quarters.map(q=>`<option value="${q}">${q}</option>`).join('');
   if (quarters.includes(cur)) sel.value = cur;
@@ -421,13 +998,8 @@ function updateQuarterOptions() {
 
 function setComponent(mode) {
   componentMode = mode;
-  document.getElementById('btnTRx').className = mode === 'trx' ? 'active' : '';
-  document.getElementById('btnNRx').className = mode === 'nrx' ? 'active' : '';
-  document.getElementById('btnCombined').className = mode === 'combined' ? 'active' : '';
-  const componentButtons = {trx:'btnTRx', nrx:'btnNRx', combined:'btnCombined'};
-  Object.entries(componentButtons).forEach(([name, id]) => {
-    document.getElementById(id).setAttribute('aria-selected', String(name === mode));
-  });
+  applyComponentTabState();
+  savePlans();
   updateUI();
 }
 
@@ -448,8 +1020,10 @@ function interpolatePts(pts, x) {
   }
   return 0;
 }
-function trxPct(x) { return interpolatePts(points, x); }
-function nrxPct(x) { return interpolatePts(nrxPoints, x); }
+function trxPct(x) { return interpolatePts(getActivePlan().trxPoints, x); }
+function nrxPct(x) { return interpolatePts(getActivePlan().nrxPoints, x); }
+function planTrxPct(plan, x) { return interpolatePts(plan.trxPoints, x); }
+function planNrxPct(plan, x) { return interpolatePts(plan.nrxPoints, x); }
 
 function getCombinedPayout(attainment) {
   const trxW = getComponentWeight('trxWeight');
@@ -457,50 +1031,120 @@ function getCombinedPayout(attainment) {
   return { trx:trxPct(attainment), nrx:nrxPct(attainment), combined: trxPct(attainment)*trxW + nrxPct(attainment)*nrxW };
 }
 
+// Returns the per-plan effective payout fraction (0..n) for a given territory row.
+// Uses the plan's own trx/nrx weights and curves.
+function payoutFractionForPlan(plan, row, mode) {
+  const trxAttain = row.trxGoal ? row.trxActual / row.trxGoal * 100 : 0;
+  const nrxAttain = row.nrxGoal ? row.nrxActual / row.nrxGoal * 100 : 0;
+  const trxP = planTrxPct(plan, trxAttain);
+  const nrxP = planNrxPct(plan, nrxAttain);
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  if (mode === 'nrx') return { pct: nrxP, attain: nrxAttain, trxP, nrxP, trxAttain, nrxAttain };
+  if (mode === 'combined') return { pct: trxP*trxW + nrxP*nrxW, attain: (trxAttain+nrxAttain)/2, trxP, nrxP, trxAttain, nrxAttain };
+  return { pct: trxP, attain: trxAttain, trxP, nrxP, trxAttain, nrxAttain };
+}
+
+function payoutAmountForPlan(plan, row, mode) {
+  const f = payoutFractionForPlan(plan, row, mode);
+  if (mode === 'combined') {
+    return plan.basePay * (f.pct / 100);
+  }
+  // Component view: weighted share of base pay, like the original logic.
+  const w = (mode === 'nrx' ? plan.nrxWeight : plan.trxWeight) / 100;
+  return plan.basePay * w * (f.pct / 100);
+}
+
+function displayBasePayForPlan(plan, mode) {
+  if (mode === 'combined') return plan.basePay;
+  const w = (mode === 'nrx' ? plan.nrxWeight : plan.trxWeight) / 100;
+  return plan.basePay * w;
+}
+
+// ── Theme-aware chart palette ──
+// Returns colors used by the canvas drawing code so it stays legible in dark mode.
+function chartColors() {
+  const dark = document.body.classList.contains('dark-theme');
+  return dark ? {
+    canvasBg:     '#0f172a',
+    gridMajor:    'rgba(255,255,255,0.10)',
+    gridMinor:    'rgba(255,255,255,0.04)',
+    gridSoft:     'rgba(255,255,255,0.06)',
+    axis:         '#94a3b8',
+    textStrong:   '#e2e8f0',
+    textMuted:    '#cbd5e1',
+    textOverlay:  '#f1f5f9',
+    pointOutline: '#0f172a',
+    tooltipBg:    'rgba(15,23,42,0.94)',
+    tooltipBd:    'rgba(165,180,252,0.45)',
+    legendBg:     'rgba(20,30,48,0.92)',
+    legendBd:     'rgba(255,255,255,0.14)',
+    refLine:      'rgba(165,180,252,0.55)',
+    barEmptyFill: 'rgba(255,255,255,0.04)',
+  } : {
+    canvasBg:     '#ffffff',
+    gridMajor:    'rgba(0,0,0,0.10)',
+    gridMinor:    'rgba(0,0,0,0.04)',
+    gridSoft:     'rgba(0,0,0,0.06)',
+    axis:         '#64748b',
+    textStrong:   '#1e293b',
+    textMuted:    '#334155',
+    textOverlay:  '#172033',
+    pointOutline: '#ffffff',
+    tooltipBg:    'rgba(255,255,255,0.92)',
+    tooltipBd:    'rgba(15,23,42,0.12)',
+    legendBg:     'rgba(255,255,255,0.92)',
+    legendBd:     'rgba(15,23,42,0.12)',
+    refLine:      'rgba(99,102,241,0.4)',
+    barEmptyFill: 'rgba(0,0,0,0.02)',
+  };
+}
+
 // ── Draw Curve ──
 function drawCurve() {
+  const cc = chartColors();
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=cc.canvasBg; ctx.fillRect(0,0,W,H);
 
   // Grid
   for(let i=0;i<=MAX_X;i+=5) {
     const sx = PAD.l+(i/MAX_X)*PW;
-    ctx.strokeStyle = i%10===0 ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.04)';
+    ctx.strokeStyle = i%10===0 ? cc.gridMajor : cc.gridMinor;
     ctx.lineWidth = i%10===0 ? 1 : 0.5;
     ctx.beginPath(); ctx.moveTo(sx,PAD.t); ctx.lineTo(sx,PAD.t+PH); ctx.stroke();
   }
   for(let i=0;i<=MAX_Y;i+=10) {
     const sy = PAD.t+PH-(i/MAX_Y)*PH;
-    ctx.strokeStyle=i%50===0?'rgba(0,0,0,0.10)':'rgba(0,0,0,0.04)';
+    ctx.strokeStyle=i%50===0?cc.gridMajor:cc.gridMinor;
     ctx.lineWidth=i%50===0?1:0.5;
     ctx.beginPath(); ctx.moveTo(PAD.l,sy); ctx.lineTo(PAD.l+PW,sy); ctx.stroke();
   }
 
   // Axes
-  ctx.strokeStyle='#64748b'; ctx.lineWidth=2;
+  ctx.strokeStyle=cc.axis; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t); ctx.lineTo(PAD.l,PAD.t+PH); ctx.lineTo(PAD.l+PW,PAD.t+PH); ctx.stroke();
 
   // X labels
   ctx.textAlign='center';
   for(let i=0;i<=MAX_X;i+=50) {
     const sx = PAD.l+(i/MAX_X)*PW;
-    ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui';
+    ctx.fillStyle=cc.textMuted; ctx.font='bold 12px system-ui';
     ctx.fillText(i+'%',sx,PAD.t+PH+22);
-    ctx.strokeStyle='#64748b'; ctx.lineWidth=1.5;
+    ctx.strokeStyle=cc.axis; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(sx,PAD.t+PH); ctx.lineTo(sx,PAD.t+PH+8); ctx.stroke();
   }
   ctx.save(); ctx.translate(10,PAD.t+PH/2); ctx.rotate(-Math.PI/2);
-  ctx.fillStyle='#334155'; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+  ctx.fillStyle=cc.textMuted; ctx.font='bold 12px system-ui'; ctx.textAlign='center';
   ctx.fillText('Payout %',0,0); ctx.restore();
   ctx.textAlign='right';
   for(let i=0;i<=MAX_Y;i+=50) {
     const sy = PAD.t+PH-(i/MAX_Y)*PH;
-    ctx.fillStyle='#334155'; ctx.font='bold 11px system-ui';
+    ctx.fillStyle=cc.textMuted; ctx.font='bold 11px system-ui';
     ctx.fillText(i+'%',PAD.l-8,sy+5);
   }
 
   // 100% reference
-  ctx.strokeStyle='rgba(99,102,241,0.4)'; ctx.setLineDash([6,6]); ctx.lineWidth=2;
+  ctx.strokeStyle=cc.refLine; ctx.setLineDash([6,6]); ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(PAD.l+(100/MAX_X)*PW,PAD.t); ctx.lineTo(PAD.l+(100/MAX_X)*PW,PAD.t+PH); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+PH-(100/MAX_Y)*PH); ctx.lineTo(PAD.l+PW,PAD.t+PH-(100/MAX_Y)*PH); ctx.stroke();
   ctx.setLineDash([]);
@@ -509,30 +1153,74 @@ function drawCurve() {
   const showTRx = componentMode === 'trx' || componentMode === 'combined';
   const showNRx = componentMode === 'nrx' || componentMode === 'combined';
 
-  if (showTRx) drawCurveLine(points, '#6366f1', componentMode==='combined'?0.85:1);
-  if (showNRx) drawCurveLine(nrxPoints, '#059669', componentMode==='combined'?0.85:1);
-
-  // Slopes
-  if (showTRx) drawSlopes(points, '#6366f1');
-  if (showNRx) drawSlopes(nrxPoints, '#059669');
-
-  // Dots (always interactive now)
-  if (showTRx) drawDots(points, '#6366f1', 'TRx');
-  if (showNRx) drawDots(nrxPoints, '#059669', 'NRx');
+  if (compareMode) {
+    // Overlay every plan's curve(s); no interactive dots.
+    plans.forEach(plan => {
+      const isBaseline = plan.id === baselinePlanId;
+      const lineW = isBaseline ? 3.8 : 2.6;
+      const dashed = !isBaseline; // make non-baseline plans dashed in combined view to disambiguate
+      if (showTRx) drawCurveLine(plan.trxPoints, plan.color, 0.9, lineW, false);
+      if (showNRx) drawCurveLine(plan.nrxPoints, plan.color, 0.55, lineW, dashed && componentMode === 'combined');
+      // Tiny non-interactive markers
+      const drawMini = (pts) => pts.forEach(p => {
+        const s = toScreen(p);
+        ctx.fillStyle = plan.color;
+        ctx.beginPath(); ctx.arc(s.x, s.y, isBaseline ? 4.5 : 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = chartColors().pointOutline; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+      if (showTRx) drawMini(plan.trxPoints);
+      if (showNRx) drawMini(plan.nrxPoints);
+    });
+    drawCompareLegend();
+  } else {
+    const ap = getActivePlan();
+    if (showTRx) drawCurveLine(ap.trxPoints, '#6366f1', componentMode==='combined'?0.85:1);
+    if (showNRx) drawCurveLine(ap.nrxPoints, '#059669', componentMode==='combined'?0.85:1);
+    if (showTRx) drawSlopes(ap.trxPoints, '#6366f1');
+    if (showNRx) drawSlopes(ap.nrxPoints, '#059669');
+    if (showTRx) drawDots(ap.trxPoints, '#6366f1', 'TRx');
+    if (showNRx) drawDots(ap.nrxPoints, '#059669', 'NRx');
+  }
 }
 
-function drawCurveLine(pts, color, alpha) {
+function drawCompareLegend() {
+  const cc = chartColors();
+  const padX = 12, padY = 10, lineH = 16;
+  const items = plans.map(p => ({label: p.name + (p.id === baselinePlanId ? ' ★' : ''), color: p.color}));
+  ctx.font = 'bold 11px system-ui';
+  const widths = items.map(it => ctx.measureText(it.label).width);
+  const boxW = Math.max(...widths) + 30;
+  const boxH = padY * 2 + items.length * lineH;
+  const x = PAD.l + 8, y = PAD.t + 8;
+  ctx.fillStyle = cc.legendBg;
+  ctx.strokeStyle = cc.legendBd; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.rect(x, y, boxW, boxH); ctx.fill(); ctx.stroke();
+  items.forEach((it, i) => {
+    const ly = y + padY + i * lineH + 8;
+    ctx.fillStyle = it.color;
+    ctx.beginPath(); ctx.arc(x + padX, ly - 3, 4.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = cc.textOverlay; ctx.textAlign = 'left';
+    ctx.fillText(it.label, x + padX + 11, ly);
+  });
+}
+
+function drawCurveLine(pts, color, alpha, lineWidth, dashed) {
   ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color; ctx.lineWidth = 3.5; ctx.beginPath();
+  ctx.strokeStyle = color; ctx.lineWidth = lineWidth || 3.5;
+  if (dashed) ctx.setLineDash([8, 5]);
+  ctx.beginPath();
   for(let i=0;i<=MAX_X;i+=0.5) {
     const p = interpolatePts(pts, i);
     const s = toScreen({x:i, y:Math.min(MAX_Y,p)});
     if(i===0) ctx.moveTo(s.x,s.y); else ctx.lineTo(s.x,s.y);
   }
   ctx.stroke();
-  ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.lineTo(PAD.l, PAD.t+PH); ctx.closePath();
-  const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
-  ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+  if (dashed) ctx.setLineDash([]);
+  if (!compareMode) {
+    ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.lineTo(PAD.l, PAD.t+PH); ctx.closePath();
+    const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
+    ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -550,6 +1238,7 @@ function drawSlopes(pts, color) {
 }
 
 function drawDots(pts, color, label) {
+  const cc = chartColors();
   pts.forEach((p,i) => {
     const s = toScreen(p);
     const isDrag = draggingSet === (color==='#6366f1'?'trx':'nrx') && i === dragging;
@@ -561,24 +1250,25 @@ function drawDots(pts, color, label) {
     ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill();
     ctx.fillStyle=isDrag?'#d97706':color;
     ctx.beginPath(); ctx.arc(s.x,s.y,9,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle='#1e293b'; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
+    ctx.strokeStyle=cc.pointOutline; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle=cc.textOverlay; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
     ctx.fillText(label+': '+p.x+'%, '+Math.round(p.y)+'%',s.x,s.y-18);
   });
 }
 
 // ── Mouse / Touch ──
 function findDot(sx, sy) {
-  // Check TRx dots
+  if (compareMode) return null;
+  const ap = getActivePlan();
   if (componentMode === 'trx' || componentMode === 'combined') {
-    for(let i=0;i<points.length;i++) {
-      const s=toScreen(points[i]);
+    for(let i=0;i<ap.trxPoints.length;i++) {
+      const s=toScreen(ap.trxPoints[i]);
       if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'trx', idx:i};
     }
   }
   if (componentMode === 'nrx' || componentMode === 'combined') {
-    for(let i=0;i<nrxPoints.length;i++) {
-      const s=toScreen(nrxPoints[i]);
+    for(let i=0;i<ap.nrxPoints.length;i++) {
+      const s=toScreen(ap.nrxPoints[i]);
       if(Math.hypot(sx-s.x,sy-s.y)<12) return {set:'nrx', idx:i};
     }
   }
@@ -586,6 +1276,7 @@ function findDot(sx, sy) {
 }
 
 canvas.addEventListener('mousedown', e=>{
+  if (compareMode) return;
   const rect=canvas.getBoundingClientRect();
   const sx=(e.clientX-rect.left)*(W/rect.width), sy=(e.clientY-rect.top)*(H/rect.height);
   const hit = findDot(sx, sy);
@@ -600,32 +1291,54 @@ canvas.addEventListener('mousemove', e=>{
     hoverInfo.style.display = 'block';
     hoverInfo.style.left = (e.clientX - rect.left + 18) + 'px';
     hoverInfo.style.top = (e.clientY - rect.top - 40) + 'px';
-    const trx = trxPct(w.x), nrx = nrxPct(w.x);
-    const trxW = getComponentWeight('trxWeight');
-    const nrxW = getComponentWeight('nrxWeight');
-    if (componentMode === 'combined') {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
-    } else if (componentMode === 'nrx') {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${nrx.toFixed(1)}%</b>`;
+    if (compareMode) {
+      // Show every plan's payout at this attainment.
+      const lines = plans.map(p => {
+        const tp = planTrxPct(p, w.x), np = planNrxPct(p, w.x);
+        const tw = (p.trxWeight||0)/100, nw = (p.nrxWeight||0)/100;
+        let v;
+        if (componentMode === 'nrx') v = np.toFixed(1) + '%';
+        else if (componentMode === 'combined') v = (tp*tw + np*nw).toFixed(1) + '%';
+        else v = tp.toFixed(1) + '%';
+        return `<span style="color:${p.color}">●</span> ${escapeHtml(p.name)}: <b>${v}</b>`;
+      }).join('<br>');
+      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b><br>${lines}`;
     } else {
-      hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${trx.toFixed(1)}%</b>`;
+      const trx = trxPct(w.x), nrx = nrxPct(w.x);
+      const trxW = getComponentWeight('trxWeight');
+      const nrxW = getComponentWeight('nrxWeight');
+      if (componentMode === 'combined') {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp; TRx: <b style="color:#6366f1">${trx.toFixed(1)}%</b> NRx: <b style="color:#059669">${nrx.toFixed(1)}%</b> &nbsp; Comb: <b>${(trx*trxW+nrx*nrxW).toFixed(1)}%</b>`;
+      } else if (componentMode === 'nrx') {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${nrx.toFixed(1)}%</b>`;
+      } else {
+        hoverInfo.innerHTML = `Attain: <b>${Math.round(w.x)}%</b> &nbsp;→&nbsp; Payout: <b>${trx.toFixed(1)}%</b>`;
+      }
     }
   } else {
     hoverInfo.style.display = 'none';
   }
 
-  if (dragging < 0 || !draggingSet) return;
-  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  if (compareMode || dragging < 0 || !draggingSet) return;
+  const ap = getActivePlan();
+  const pts = draggingSet === 'nrx' ? ap.nrxPoints : ap.trxPoints;
   if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
   if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
   w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
   pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
   drawCurve(); renderAll();
 });
-canvas.addEventListener('mouseup',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
-canvas.addEventListener('mouseleave',()=>{dragging=-1;draggingSet=null;hoverInfo.style.display='none';drawCurve();});
+canvas.addEventListener('mouseup',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;drawCurve();buildInputs();
+});
+canvas.addEventListener('mouseleave',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;hoverInfo.style.display='none';drawCurve();
+});
 
 canvas.addEventListener('touchstart', e=>{
+  if (compareMode) return;
   e.preventDefault();
   const rect=canvas.getBoundingClientRect();
   const t=e.touches[0];
@@ -634,175 +1347,529 @@ canvas.addEventListener('touchstart', e=>{
   if (hit) { dragging = hit.idx; draggingSet = hit.set; drawCurve(); renderAll(); }
 });
 canvas.addEventListener('touchmove', e=>{
+  if (compareMode) return;
   e.preventDefault();
   if(dragging<0||!draggingSet)return;
   const rect=canvas.getBoundingClientRect();
   const t=e.touches[0];
   const sx=(t.clientX-rect.left)*(W/rect.width), sy=(t.clientY-rect.top)*(H/rect.height);
   const w=toWorld({x:sx,y:sy});
-  const pts = draggingSet === 'nrx' ? nrxPoints : points;
+  const ap = getActivePlan();
+  const pts = draggingSet === 'nrx' ? ap.nrxPoints : ap.trxPoints;
   if(dragging>0) w.x=Math.max(w.x,pts[dragging-1].x+1);
   if(dragging<pts.length-1) w.x=Math.min(w.x,pts[dragging+1].x-1);
   w.x=Math.max(0,Math.min(MAX_X,w.x)); w.y=Math.max(0,Math.min(MAX_Y,w.y));
   pts[dragging].x=Math.round(w.x); pts[dragging].y=Math.round(w.y);
   drawCurve(); renderAll();
 });
-canvas.addEventListener('touchend',()=>{dragging=-1;draggingSet=null;drawCurve();buildInputs();});
+canvas.addEventListener('touchend',()=>{
+  if (dragging >= 0) savePlans();
+  dragging=-1;draggingSet=null;drawCurve();buildInputs();
+});
 
 // ── Histogram ──
-const histoCanvas = document.getElementById('histoCanvas');
-const hctx = histoCanvas.getContext('2d');
 const histoTip = document.getElementById('histoTip');
-const HW=700, HH=260;
-const hdpr = Math.min(window.devicePixelRatio||1,2);
-histoCanvas.width=HW*hdpr; histoCanvas.height=HH*hdpr; hctx.scale(hdpr,hdpr);
-const HPAD={l:60,r:15,t:14,b:52};
-const HPW2=HW-HPAD.l-HPAD.r, HPH2=HH-HPAD.t-HPAD.b;
-let histoBars = [];
+const HPAD = {l:60, r:15, t:14, b:52};
+const HPAD_MULTI = {l:42, r:10, t:10, b:46}; // tighter padding for small multiples
+let histoBars = []; // accumulated bars from all canvases for tooltips
+
+function buildEntriesForPlan(plan, qData) {
+  return qData.map(d => {
+    const f = payoutFractionForPlan(plan, d, componentMode);
+    return { name: d.territory, pct: f.pct };
+  });
+}
+
+function computeHistoRange(entriesPerPlan, bucketSize, hMinVal, hMaxVal) {
+  let allPcts = [];
+  entriesPerPlan.forEach(es => es.forEach(e => allPcts.push(e.pct)));
+  if (!allPcts.length) allPcts = [0, 100];
+  const dataMin = Math.floor(Math.min(...allPcts) / bucketSize) * bucketSize;
+  const dataMax = Math.ceil(Math.max(...allPcts) / bucketSize) * bucketSize;
+  const userSetMin = !isNaN(hMinVal);
+  const userSetMax = !isNaN(hMaxVal);
+  const rangeMin = userSetMin ? hMinVal : dataMin;
+  const rangeMax = userSetMax ? hMaxVal : dataMax;
+  const numBuckets = Math.max(1, Math.round((rangeMax - rangeMin) / bucketSize));
+  const actualBW = (rangeMax - rangeMin) / numBuckets;
+  return { rangeMin, rangeMax, numBuckets, actualBW, userSetMin, userSetMax };
+}
+
+function bucketize(entries, range) {
+  const buckets = [];
+  // Underflow bucket: territories below the user-set minimum.
+  // Only shown when the user explicitly set Min (otherwise dataMin is the actual minimum
+  // and there's nothing to spill underneath by construction).
+  if (range.userSetMin) {
+    const under = entries.filter(e => e.pct < range.rangeMin);
+    if (under.length > 0) {
+      buckets.push({
+        lo: -Infinity, hi: range.rangeMin,
+        label: '<' + Math.round(range.rangeMin) + '%',
+        isUnderflow: true,
+        count: under.length, territories: under.map(e => e.name)
+      });
+    }
+  }
+  for (let i = 0; i < range.numBuckets; i++) {
+    const lo = range.rangeMin + i * range.actualBW;
+    const hi = range.rangeMin + (i + 1) * range.actualBW;
+    const inB = entries.filter(e => e.pct >= lo && e.pct < hi);
+    buckets.push({lo, hi, count: inB.length, territories: inB.map(e => e.name)});
+  }
+  // Overflow bucket: territories at or above the user-set maximum.
+  if (range.userSetMax) {
+    const over = entries.filter(e => e.pct >= range.rangeMax);
+    if (over.length > 0) {
+      buckets.push({
+        lo: range.rangeMax, hi: Infinity,
+        label: '\u2265' + Math.round(range.rangeMax) + '%',
+        isOverflow: true,
+        count: over.length, territories: over.map(e => e.name)
+      });
+    }
+  }
+  return buckets;
+}
+
+// Renders one histogram into the given canvas with given dimensions.
+// Returns the bars (with screen coordinates) for tooltip lookup.
+function drawHistogramCanvas(canvasEl, width, height, buckets, range, opts) {
+  const ctx2 = canvasEl.getContext('2d');
+  // Render at full device pixel ratio (capped at 3) so labels stay crisp on
+  // high-DPI displays. The previous cap of 2 caused soft text on 2.5x/3x screens.
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvasEl.width = width * dpr; canvasEl.height = height * dpr;
+  canvasEl.style.height = height + 'px';
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx2.imageSmoothingEnabled = true;
+  ctx2.textBaseline = 'alphabetic';
+  ctx2.clearRect(0,0,width,height);
+  const cc = chartColors();
+  ctx2.fillStyle = cc.canvasBg; ctx2.fillRect(0,0,width,height);
+
+  const PAD = opts.compact ? HPAD_MULTI : HPAD;
+  const PW2 = width - PAD.l - PAD.r;
+  const PH2 = height - PAD.t - PAD.b;
+
+  // Drawing uses the actual bucket count (which may include underflow / overflow
+  // buckets added by bucketize when the user has set explicit Min / Max bounds).
+  const numBars = buckets.length;
+  const maxCount = Math.max(1, ...buckets.map(b => b.count));
+  const yTicks = Math.max(1, Math.ceil(maxCount / 5));
+
+  // Grid
+  ctx2.strokeStyle = cc.gridSoft; ctx2.lineWidth = 0.5;
+  for (let i = 0; i <= maxCount; i += yTicks) {
+    const sy = Math.round(PAD.t + PH2 - (i / maxCount) * PH2) + 0.5;
+    ctx2.beginPath(); ctx2.moveTo(PAD.l, sy); ctx2.lineTo(PAD.l + PW2, sy); ctx2.stroke();
+  }
+  // Axes
+  ctx2.strokeStyle = cc.axis; ctx2.lineWidth = 1.5;
+  ctx2.beginPath(); ctx2.moveTo(PAD.l, PAD.t); ctx2.lineTo(PAD.l, PAD.t + PH2); ctx2.lineTo(PAD.l + PW2, PAD.t + PH2); ctx2.stroke();
+  // Y labels (sharper at 11px bold)
+  ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 11px system-ui'; ctx2.textAlign = 'right';
+  for (let i = 0; i <= maxCount; i += yTicks) {
+    const sy = PAD.t + PH2 - (i / maxCount) * PH2;
+    ctx2.fillText(i, PAD.l - 8, sy + 4);
+  }
+  // X labels: bigger, bolder, and only rotate when the bars are tight.
+  const labelAngle = numBars > 8 ? -Math.PI/3 : (numBars > 5 ? -0.4 : 0);
+  const labelFont = numBars > 14 ? 'bold 9px system-ui' : 'bold 10px system-ui';
+  const bars = [];
+  // Stash colors so the helper closure below stays cheap to call.
+  const _opts = opts || {};
+  for (let i = 0; i < numBars; i++) {
+    const b = buckets[i], barW = PW2 / numBars, sx = PAD.l + i * barW;
+    const barH = (b.count / maxCount) * PH2, sy = PAD.t + PH2 - barH;
+    // Color: regular buckets get the gradient hue; underflow/overflow get a flat
+    // amber tone so they read as "out-of-band" at a glance.
+    const isOOB = b.isUnderflow || b.isOverflow;
+    let fillColor, strokeColor;
+    if (isOOB) {
+      fillColor = b.count > 0 ? 'rgba(245,158,11,0.7)' : cc.barEmptyFill;
+      strokeColor = 'rgba(217,119,6,0.9)';
+    } else if (_opts.color) {
+      fillColor = b.count > 0 ? hexToRgba(_opts.color, 0.75) : cc.barEmptyFill;
+      strokeColor = hexToRgba(_opts.color, 0.95);
+    } else {
+      const hue = 240 - (i / Math.max(1, numBars - 1)) * 120;
+      fillColor = b.count > 0 ? `hsla(${hue},70%,55%,0.78)` : cc.barEmptyFill;
+      strokeColor = `hsla(${hue},70%,45%,0.85)`;
+    }
+    ctx2.fillStyle = fillColor;
+    ctx2.fillRect(sx + 1, sy, barW - 2, barH);
+    if (b.count > 0) {
+      ctx2.strokeStyle = strokeColor; ctx2.lineWidth = 1;
+      ctx2.strokeRect(sx + 1, sy, barW - 2, barH);
+    }
+    bars.push({...b, screenX: sx, screenW: barW, canvas: canvasEl});
+
+    ctx2.save();
+    ctx2.translate(sx + barW/2, PAD.t + PH2 + (opts.compact ? 16 : 22));
+    ctx2.rotate(labelAngle);
+    ctx2.fillStyle = isOOB ? '#d97706' : cc.textMuted;
+    ctx2.font = labelFont;
+    ctx2.textAlign = labelAngle === 0 ? 'center' : 'right';
+    let xLabel;
+    if (b.label) {
+      xLabel = b.label;
+    } else if (numBars <= 10) {
+      xLabel = Math.round(b.lo) + '-' + Math.round(b.hi) + '%';
+    } else {
+      xLabel = b.lo.toFixed(1) + '-' + b.hi.toFixed(1) + '%';
+    }
+    ctx2.fillText(xLabel, 0, 0);
+    ctx2.restore();
+  }
+  // Axis titles (skip in compact mode to save space)
+  if (!opts.compact) {
+    ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 11px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillText('% Payout', PAD.l + PW2/2, PAD.t + PH2 + 44);
+    ctx2.save();
+    ctx2.translate(10, PAD.t + PH2/2);
+    ctx2.rotate(-Math.PI/2);
+    ctx2.fillStyle = cc.textMuted; ctx2.font = 'bold 11px system-ui'; ctx2.textAlign = 'center';
+    ctx2.fillText('# Territories', 0, 0);
+    ctx2.restore();
+  }
+  // Count labels (bold above each bar)
+  ctx2.fillStyle = cc.textStrong; ctx2.font = 'bold 11px system-ui'; ctx2.textAlign = 'center';
+  for (let i = 0; i < numBars; i++) {
+    const b = buckets[i];
+    if (b.count > 0) {
+      const barW = PW2/numBars, sx = PAD.l + i * barW, barH = (b.count/maxCount) * PH2, sy = PAD.t + PH2 - barH;
+      ctx2.fillText(b.count, sx + barW/2, sy - 5);
+    }
+  }
+  return bars;
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
 
 function drawHistogram() {
-  hctx.clearRect(0,0,HW,HH); hctx.fillStyle='#fff'; hctx.fillRect(0,0,HW,HH);
+  const container = document.getElementById('histoContainer');
+  if (!container) return;
   const bucketSize = parseInt(document.getElementById('bucketSize').value) || 10;
   const quarter = document.getElementById('quarterSelect').value;
   const qData = quarterlyData.filter(d => d.quarter === quarter);
-  if (!qData.length) return;
+  if (!qData.length) { container.innerHTML = ''; return; }
 
-  let entries = [];
-  qData.forEach(d => {
-    const trxAttain = d.trxGoal ? (d.trxActual/d.trxGoal*100) : 0;
-    const nrxAttain = d.nrxGoal ? (d.nrxActual/d.nrxGoal*100) : 0;
-    const pay = getCombinedPayout(componentMode==='nrx'?nrxAttain:trxAttain);
-    entries.push({name:d.territory, pct:componentMode==='combined'?pay.combined:(componentMode==='nrx'?pay.nrx:pay.trx)});
-  });
-
-  // Auto min/max from data, overridden by user inputs
-  const allPcts = entries.map(e=>e.pct);
-  const dataMin = Math.floor(Math.min(...allPcts) / bucketSize) * bucketSize;
-  const dataMax = Math.ceil(Math.max(...allPcts) / bucketSize) * bucketSize;
   const hMinVal = parseInt(document.getElementById('hMin').value);
   const hMaxVal = parseInt(document.getElementById('hMax').value);
-  const rangeMin = isNaN(hMinVal) ? dataMin : hMinVal;
-  const rangeMax = isNaN(hMaxVal) ? dataMax : hMaxVal;
-  const numBuckets = Math.max(1, Math.round((rangeMax - rangeMin) / bucketSize));
-  const actualBW = (rangeMax - rangeMin) / numBuckets;
 
-  const buckets = [];
-  for (let i = 0; i < numBuckets; i++) {
-    const lo = rangeMin + i * actualBW, hi = rangeMin + (i + 1) * actualBW;
-    const inB = entries.filter(e => e.pct >= lo && e.pct < hi);
-    buckets.push({lo,hi,count:inB.length,territories:inB.map(e=>e.name)});
-  }
-
-  const maxCount = Math.max(1,...buckets.map(b=>b.count));
+  const target = compareMode ? plans : [getActivePlan()];
+  const entriesPerPlan = target.map(p => buildEntriesForPlan(p, qData));
+  const range = computeHistoRange(entriesPerPlan, bucketSize, hMinVal, hMaxVal);
   histoBars = [];
 
-  // Grid
-  const yTicks = Math.max(1, Math.ceil(maxCount/5));
-  hctx.strokeStyle='rgba(0,0,0,0.06)'; hctx.lineWidth=0.5;
-  for(let i=0;i<=maxCount;i+=yTicks) {
-    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2;
-    hctx.beginPath(); hctx.moveTo(HPAD.l,sy); hctx.lineTo(HPAD.l+HPW2,sy); hctx.stroke();
-  }
-
-  // Axes
-  hctx.strokeStyle='#64748b'; hctx.lineWidth=1.5;
-  hctx.beginPath(); hctx.moveTo(HPAD.l,HPAD.t); hctx.lineTo(HPAD.l,HPAD.t+HPH2); hctx.lineTo(HPAD.l+HPW2,HPAD.t+HPH2); hctx.stroke();
-
-  // Y-axis labels
-  hctx.fillStyle='#334155'; hctx.font='bold 10px system-ui'; hctx.textAlign='right';
-  for(let i=0;i<=maxCount;i+=yTicks) {
-    const sy=HPAD.t+HPH2-(i/maxCount)*HPH2; hctx.fillText(i,HPAD.l-8,sy+5);
-  }
-
-  // X-axis labels — show every bucket, angled to fit
-  const labelAngle = numBuckets > 8 ? -Math.PI/3 : -0.5;
-  const labelFont = numBuckets > 12 ? '7px system-ui' : '8px system-ui';
-  hctx.fillStyle='#334155'; hctx.font=labelFont; hctx.textAlign='right';
-  for(let i=0;i<numBuckets;i++) {
-    const b=buckets[i], barW=HPW2/numBuckets, sx=HPAD.l+i*barW;
-    const barH=(b.count/maxCount)*HPH2, sy=HPAD.t+HPH2-barH;
-    const hue=240-((b.lo-rangeMin)/(rangeMax-rangeMin||1))*120;
-    hctx.fillStyle=b.count>0?`hsla(${hue},70%,55%,0.75)`:'rgba(0,0,0,0.02)';
-    hctx.fillRect(sx+1,sy,barW-2,barH);
-    if(b.count>0){hctx.strokeStyle=`hsla(${hue},70%,45%,0.8)`;hctx.lineWidth=1;hctx.strokeRect(sx+1,sy,barW-2,barH);}
-    histoBars.push({...b,screenX:sx,screenW:barW});
-    // Show every bucket label, angled
-    hctx.save();
-    hctx.translate(sx+barW/2, HPAD.t+HPH2+20);
-    hctx.rotate(labelAngle);
-    hctx.fillStyle='#334155'; hctx.textAlign='right';
-    const loLabel = numBuckets <= 10 ? Math.round(b.lo) : b.lo.toFixed(1);
-    const hiLabel = numBuckets <= 10 ? Math.round(b.hi) : b.hi.toFixed(1);
-    hctx.fillText(loLabel+'-'+hiLabel+'%', 0, 0);
-    hctx.restore();
-  }
-
-  // X-axis title
-  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  hctx.fillText('% Payout', HPAD.l+HPW2/2, HPAD.t+HPH2+36);
-
-  // Y-axis title
-  hctx.save();
-  hctx.translate(8, HPAD.t+HPH2/2);
-  hctx.rotate(-Math.PI/2);
-  hctx.fillStyle='#475569'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  hctx.fillText('# Territories', 0, 0);
-  hctx.restore();
-
-  // Count labels
-  hctx.fillStyle='#1e293b'; hctx.font='bold 10px system-ui'; hctx.textAlign='center';
-  for(let i=0;i<numBuckets;i++) {
-    const b=buckets[i];
-    if(b.count>0){const barW=HPW2/numBuckets,sx=HPAD.l+i*barW,barH=(b.count/maxCount)*HPH2,sy=HPAD.t+HPH2-barH;hctx.fillText(b.count,sx+barW/2,sy-4);}
+  if (!compareMode) {
+    // Center the canvas inside a wrapper and cap its width. Without this, the
+    // global `canvas { width:100% }` rule stretches the chart across the full
+    // panel on wide screens, distorting the bars.
+    container.innerHTML = '<div class="histo-single-wrap"><canvas id="histoCanvas"></canvas></div>';
+    const c = container.querySelector('canvas');
+    const wrap = container.firstElementChild;
+    const SINGLE_HISTO_MAX_W = 880;
+    const SINGLE_HISTO_MIN_W = 420;
+    const SINGLE_HISTO_H = 280;
+    const wrapW = wrap.getBoundingClientRect().width || 700;
+    const cssW = Math.min(SINGLE_HISTO_MAX_W, Math.max(SINGLE_HISTO_MIN_W, Math.round(wrapW)));
+    c.style.width = cssW + 'px';
+    c.style.height = SINGLE_HISTO_H + 'px';
+    const buckets = bucketize(entriesPerPlan[0], range);
+    const bars = drawHistogramCanvas(c, cssW, SINGLE_HISTO_H, buckets, range, { compact: false });
+    histoBars = bars;
+    attachHistoMouseHandler(c);
+  } else {
+    const cls = 'cols-' + Math.max(2, target.length);
+    container.innerHTML = `<div class="histo-multiples ${cls}">${target.map(p => `
+      <div class="histo-multiple">
+        <div class="histo-multiple-title"><span class="mini-dot" style="background:${p.color}"></span><span>${escapeHtml(p.name)}</span>${p.id===baselinePlanId?'<span class="baseline-mark" title="Baseline">★</span>':''}</div>
+        <canvas data-plan-id="${p.id}"></canvas>
+      </div>`).join('')}</div>`;
+    // Match each canvas's internal resolution to its on-screen size so fonts render at
+    // native size (no downscale-blurring of labels). getBoundingClientRect forces layout.
+    const cssH = 220;
+    container.querySelectorAll('canvas').forEach((c, idx) => {
+      const plan = target[idx];
+      const rect = c.getBoundingClientRect();
+      const cssW = Math.max(240, Math.round(rect.width || 300));
+      c.style.height = cssH + 'px';
+      const buckets = bucketize(entriesPerPlan[idx], range);
+      const bars = drawHistogramCanvas(c, cssW, cssH, buckets, range, { compact: true, color: plan.color });
+      histoBars.push(...bars.map(b => ({...b, planName: plan.name})));
+      attachHistoMouseHandler(c);
+    });
   }
 }
 
-histoCanvas.addEventListener('mousemove', e => {
-  const rect=histoCanvas.getBoundingClientRect();
-  const sx=(e.clientX-rect.left)*(HW/rect.width);
-  const hit=histoBars.find(b=>sx>=b.screenX&&sx<=b.screenX+b.screenW);
-  if(hit&&hit.count>0){
-    histoTip.style.display='block';
-    histoTip.style.left=(e.clientX-rect.left+12)+'px';
-    histoTip.style.top=(e.clientY-rect.top-10)+'px';
-    const names=hit.territories.length>12?hit.territories.slice(0,12).join(', ')+'...':hit.territories.join(', ');
-    histoTip.innerHTML=`<b>${hit.lo}-${hit.hi}%</b> (${hit.count})<br>${names}`;
-  } else { histoTip.style.display='none'; }
-});
-histoCanvas.addEventListener('mouseleave',()=>{histoTip.style.display='none';});
+function attachHistoMouseHandler(c) {
+  c.addEventListener('mousemove', e => {
+    const rect = c.getBoundingClientRect();
+    // Convert mouse X to canvas-internal X (factor in CSS scaling and dpr).
+    // Match the cap used in drawHistogramCanvas so hit-testing stays consistent
+    // on screens where window.devicePixelRatio > 3.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const internalW = c.width / dpr;
+    const sx = (e.clientX - rect.left) * (internalW / rect.width);
+    const area = document.querySelector('.histo-canvas-area');
+    const areaRect = area.getBoundingClientRect();
+    const hit = histoBars.find(b => b.canvas === c && sx >= b.screenX && sx <= b.screenX + b.screenW);
+    if (hit && hit.count > 0) {
+      histoTip.style.display = 'block';
+      histoTip.style.left = (e.clientX - areaRect.left + 12) + 'px';
+      histoTip.style.top  = (e.clientY - areaRect.top - 10) + 'px';
+      const names = hit.territories.length > 12 ? hit.territories.slice(0,12).join(', ') + '...' : hit.territories.join(', ');
+      const planLabel = hit.planName ? `<b style="color:#cbd5e1">${escapeHtml(hit.planName)}</b><br>` : '';
+      const rangeLabel = hit.label || `${Math.round(hit.lo)}-${Math.round(hit.hi)}%`;
+      histoTip.innerHTML = `${planLabel}<b>${rangeLabel}</b> (${hit.count})<br>${names}`;
+    } else {
+      histoTip.style.display = 'none';
+    }
+  });
+  c.addEventListener('mouseleave', () => { histoTip.style.display = 'none'; });
+}
 
 let npsAttainments = [{trx:80,nrx:80},{trx:90,nrx:90},{trx:95,nrx:95},{trx:100,nrx:100},{trx:105,nrx:105},{trx:110,nrx:110},{trx:120,nrx:120}];
-function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});renderNPS();}
-function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);renderNPS();}}
-function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;renderNPS();}
-function renderNPS(){
-  const q=document.getElementById('quarterSelect').value;document.getElementById('npsQuarter').textContent=q;
-  const qData=quarterlyData.filter(d=>d.quarter===q);
-  if(!qData.length){document.getElementById('npsSection').style.display='none';return;}
-  document.getElementById('npsSection').style.display='';
-  const trxW=parseInt(document.getElementById('trxWeight').value)/100||0.5;
-  const nrxW=parseInt(document.getElementById('nrxWeight').value)/100||0.5;
-  const B=getEffectiveBasePay(),N=qData.length,budget=B*N;
-  const isComb=componentMode==='combined';
-  const payout=(a)=>{if(componentMode==='nrx')return nrxPct(a.nrx);if(isComb)return trxPct(a.trx)*trxW+nrxPct(a.nrx)*nrxW;return trxPct(a.trx);};
-  const sc=npsAttainments.map(a=>{const p=payout(a),t=B*(p/100)*N;return{t,budgetUtil:t/budget*100,avg:B*(p/100),min:B*(p/100),max:B*(p/100),eng:p>0?N:0,mean:p>75?100:0};});
-  const ac=qData.map(d=>{const ta=d.trxGoal?d.trxActual/d.trxGoal*100:0,na=d.nrxGoal?d.nrxActual/d.nrxGoal*100:0,tp=trxPct(ta),np=nrxPct(na);let p,att;if(componentMode==='nrx'){p=np;att=na;}else if(isComb){p=tp*trxW+np*nrxW;att=(ta+na)/2;}else{p=tp;att=ta;}return{p,att,pay:B*(p/100),ta,na};});
-  const ct=ac.reduce((s,r)=>s+r.pay,0),cps=ac.map(r=>r.p);
-  const avgAttain=ac.reduce((s,r)=>s+r.att,0)/N;
-  const avgTrxAtt=ac.reduce((s,r)=>s+r.ta,0)/N;
-  const avgNrxAtt=ac.reduce((s,r)=>s+r.na,0)/N;
-  const cur={t:ct,bu:ct/budget*100,avg:ct/N,min:Math.min(...ac.map(r=>r.pay)),max:Math.max(...ac.map(r=>r.pay)),eng:cps.filter(p=>p>0).length,mean:(cps.filter(p=>p>75).length/N*100)};
-  const rs=[{l:'Total Payout',v:sc.map(s=>s.t),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Budget Util%',v:sc.map(s=>s.budgetUtil),f:v=>v.toFixed(1)+'%',c:v=>v>100?'warn':(v>95?'good':'')},{l:'Avg Payout',v:sc.map(s=>s.avg),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Min Payout',v:sc.map(s=>s.min),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Max Payout',v:sc.map(s=>s.max),f:v=>'$'+Math.round(v).toLocaleString()},{l:'Engaged (>0%)',v:sc.map(s=>s.eng),f:v=>v.toFixed(0)},{l:'Meaningful (>75%)',v:sc.map(s=>s.mean),f:v=>v.toFixed(1)+'%'}];
-  const cv=[cur.t,cur.bu,cur.avg,cur.min,cur.max,cur.eng,cur.mean];
-  let h='<thead><tr><th>Metric</th>';
-  sc.forEach((s,i)=>{const a=npsAttainments[i];
-    if(isComb)h+=`<th><input type=number class=nps-attainment-val value=${a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'trx',this.value)"> T / <input type=number class=nps-attainment-val value=${a.nrx} min=0 max=300 onchange="updateNpsAttainment(${i},'nrx',this.value)"> N%`;
-    else h+=`<th><input type=number class=nps-attainment-val value=${componentMode==='nrx'?a.nrx:a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'${componentMode==='nrx'?'nrx':'trx'}',this.value)">%`;
-    if(npsAttainments.length>1)h+=` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;h+='</th>';});
-  h+=isComb?`<th>Current (T:${Math.round(avgTrxAtt)}% N:${Math.round(avgNrxAtt)}%)</th>`:`<th>Current (${Math.round(avgAttain)}%)</th>`;
-  h+=`<th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
-  rs.forEach(r=>{h+='<tr><td>'+r.l+'</td>';r.v.forEach(v=>{const cl=r.c?r.c(v):'';h+='<td class='+cl+'>'+r.f(v)+'</td>';});const cv2=cv[rs.indexOf(r)],cl2=r.c?r.c(cv2):'';h+='<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';});
-  h+='</tbody>';document.getElementById('npsTable').innerHTML=h;
+// 'dollar'  -> Avg/Min/Max payout rows show $ amounts
+// 'percent' -> Avg/Min/Max payout rows show curve % values
+let npsValueMode = 'dollar';
+const NPS_VALUE_MODE_KEY = 'pharma.npsValueMode.v1';
+try { const v = localStorage.getItem(NPS_VALUE_MODE_KEY); if (v === 'dollar' || v === 'percent') npsValueMode = v; } catch (e) {}
+
+function addNpsColumn(){npsAttainments.push({trx:100,nrx:100});savePlans();renderNPS();}
+function removeNpsColumn(i){if(npsAttainments.length>1){npsAttainments.splice(i,1);savePlans();renderNPS();}}
+function updateNpsAttainment(i,field,v){const n=parseInt(v);if(!isNaN(n)&&n>=0&&n<=300)npsAttainments[i][field]=n;savePlans();renderNPS();}
+function toggleNpsValueMode(){
+  npsValueMode = npsValueMode === 'dollar' ? 'percent' : 'dollar';
+  try { localStorage.setItem(NPS_VALUE_MODE_KEY, npsValueMode); } catch (e) {}
+  syncNpsValueModeBtn();
+  renderNPS();
+}
+function syncNpsValueModeBtn(){
+  const btn = document.getElementById('npsValueModeBtn');
+  if (!btn) return;
+  btn.textContent = npsValueMode === 'dollar' ? '$ values' : '% values';
+  btn.setAttribute('aria-pressed', npsValueMode === 'percent' ? 'true' : 'false');
+}
+
+function buildNPSTableInnerHTML(plan, qData) {
+  const isComb = componentMode === 'combined';
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  // Use the weighted base pay so NPS values match the rest of the app in TRx-only / NRx-only modes.
+  // (In Combined mode displayBasePayForPlan returns the full base pay, so behavior is unchanged.)
+  const B = displayBasePayForPlan(plan, componentMode);
+  const N = qData.length;
+  const budget = B * N;
+  const inPct = npsValueMode === 'percent';
+
+  // Per-territory actual attainments. Scenario columns scale these to the
+  // entered national-average attainment (instead of pretending every territory
+  // hit the same number) so Min / Max / Avg surface real spread.
+  const real = qData.map(d => ({
+    ta: d.trxGoal ? d.trxActual / d.trxGoal * 100 : 0,
+    na: d.nrxGoal ? d.nrxActual / d.nrxGoal * 100 : 0
+  }));
+  const avgTrxActual = real.reduce((s,r)=>s+r.ta, 0) / Math.max(1, N);
+  const avgNrxActual = real.reduce((s,r)=>s+r.na, 0) / Math.max(1, N);
+
+  // Curve payout % for a (ta, na) pair, respecting current component mode.
+  const payPct = (ta, na) => {
+    if (componentMode === 'nrx') return planNrxPct(plan, na);
+    if (isComb) return planTrxPct(plan, ta) * trxW + planNrxPct(plan, na) * nrxW;
+    return planTrxPct(plan, ta);
+  };
+
+  // Build each scenario column by indexing the actual distribution to the
+  // entered national attainment. If the actual avg for a component is 0 there
+  // is no distribution to scale, so we fall back to "everyone hit X" for that
+  // component (matches the old uniform behavior).
+  const sc = npsAttainments.map(a => {
+    const sTrx = avgTrxActual > 0 ? (a.trx / avgTrxActual) : null;
+    const sNrx = avgNrxActual > 0 ? (a.nrx / avgNrxActual) : null;
+    const perTerr = real.map(r => {
+      const scTa = sTrx === null ? a.trx : r.ta * sTrx;
+      const scNa = sNrx === null ? a.nrx : r.na * sNrx;
+      const p = payPct(scTa, scNa);
+      return { p, pay: B * (p/100) };
+    });
+    const t   = perTerr.reduce((s,r)=>s+r.pay, 0);
+    const ps  = perTerr.map(r=>r.p);
+    const pys = perTerr.map(r=>r.pay);
+    return {
+      t,
+      budgetUtil: t/budget*100,
+      avg:    t/N,
+      min:    Math.min(...pys),
+      max:    Math.max(...pys),
+      avgPct: ps.reduce((s,p)=>s+p,0)/N,
+      minPct: Math.min(...ps),
+      maxPct: Math.max(...ps),
+      eng:    ps.filter(p=>p>0).length,
+      mean:   ps.filter(p=>p>75).length / N * 100
+    };
+  });
+
+  // "Current" column = each territory at its real, unscaled attainment.
+  const ac = real.map(r => {
+    const tp = planTrxPct(plan, r.ta), np = planNrxPct(plan, r.na);
+    let p, att;
+    if (componentMode === 'nrx') { p = np; att = r.na; }
+    else if (isComb) { p = tp*trxW + np*nrxW; att = (r.ta+r.na)/2; }
+    else { p = tp; att = r.ta; }
+    return { p, att, pay: B*(p/100), ta: r.ta, na: r.na };
+  });
+  const ct = ac.reduce((s,r)=>s+r.pay, 0);
+  const cps = ac.map(r=>r.p);
+  const cpys = ac.map(r=>r.pay);
+  const avgAttain = ac.reduce((s,r)=>s+r.att, 0) / N;
+  const cur = {
+    t: ct, bu: ct/budget*100,
+    avg:    ct/N,
+    min:    Math.min(...cpys),
+    max:    Math.max(...cpys),
+    avgPct: cps.reduce((s,p)=>s+p,0)/N,
+    minPct: Math.min(...cps),
+    maxPct: Math.max(...cps),
+    eng:    cps.filter(p=>p>0).length,
+    mean:   (cps.filter(p=>p>75).length/N*100)
+  };
+
+  // Formatters
+  const fmt$ = v => '$' + Math.round(v).toLocaleString();
+  const fmtPct = v => v.toFixed(1) + '%';
+  const payoutLabelSuffix = inPct ? ' %' : '';
+  const payoutFmt = inPct ? fmtPct : fmt$;
+  const pickAvg = inPct ? (s=>s.avgPct) : (s=>s.avg);
+  const pickMin = inPct ? (s=>s.minPct) : (s=>s.min);
+  const pickMax = inPct ? (s=>s.maxPct) : (s=>s.max);
+
+  const rs = [
+    {l:'Total Payout',                v:sc.map(s=>s.t),          f:fmt$},
+    {l:'Budget Util%',                v:sc.map(s=>s.budgetUtil), f:fmtPct, c:v=>v>100?'warn':(v>95?'good':'')},
+    {l:'Avg Payout' + payoutLabelSuffix, v:sc.map(pickAvg),      f:payoutFmt},
+    {l:'Min Payout' + payoutLabelSuffix, v:sc.map(pickMin),      f:payoutFmt},
+    {l:'Max Payout' + payoutLabelSuffix, v:sc.map(pickMax),      f:payoutFmt},
+    {l:'Engaged (>0%)',               v:sc.map(s=>s.eng),        f:v=>v.toFixed(0)},
+    {l:'Meaningful (>75%)',           v:sc.map(s=>s.mean),       f:fmtPct}
+  ];
+  const cv = [
+    cur.t,
+    cur.bu,
+    inPct ? cur.avgPct : cur.avg,
+    inPct ? cur.minPct : cur.min,
+    inPct ? cur.maxPct : cur.max,
+    cur.eng,
+    cur.mean
+  ];
+
+  let h = '<thead><tr><th>Metric</th>';
+  sc.forEach((s,i) => {
+    const a = npsAttainments[i];
+    if (isComb) h += `<th><input type=number class=nps-attainment-val value=${a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'trx',this.value)"> T / <input type=number class=nps-attainment-val value=${a.nrx} min=0 max=300 onchange="updateNpsAttainment(${i},'nrx',this.value)"> N%`;
+    else h += `<th><input type=number class=nps-attainment-val value=${componentMode==='nrx'?a.nrx:a.trx} min=0 max=300 onchange="updateNpsAttainment(${i},'${componentMode==='nrx'?'nrx':'trx'}',this.value)">%`;
+    if (npsAttainments.length > 1) h += ` <button class=nps-remove onclick="removeNpsColumn(${i})" title=Remove>×</button>`;
+    h += '</th>';
+  });
+  h += isComb
+    ? `<th>Current (T:${Math.round(avgTrxActual)}% N:${Math.round(avgNrxActual)}%)</th>`
+    : `<th>Current (${Math.round(avgAttain)}%)</th>`;
+  h += `<th><button class=nps-add onclick=addNpsColumn()>+ Add</button></th></tr></thead><tbody>`;
+  rs.forEach((r, idx) => {
+    h += '<tr><td>'+r.l+'</td>';
+    r.v.forEach(v => { const cl = r.c ? r.c(v) : ''; h += '<td class='+cl+'>'+r.f(v)+'</td>'; });
+    const cv2 = cv[idx], cl2 = r.c ? r.c(cv2) : '';
+    h += '<td class='+cl2+'>'+r.f(cv2)+'</td><td></td></tr>';
+  });
+  h += '</tbody>';
+  return h;
+}
+
+function renderNPS() {
+  syncNpsValueModeBtn();
+  const q = document.getElementById('quarterSelect').value;
+  document.getElementById('npsQuarter').textContent = q;
+  const qData = quarterlyData.filter(d => d.quarter === q);
+  const section = document.getElementById('npsSection');
+  if (!qData.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const singleTable = document.getElementById('npsTable');
+  const multiContainer = document.getElementById('npsMulti');
+
+  if (!compareMode) {
+    singleTable.style.display = '';
+    if (multiContainer) multiContainer.innerHTML = '';
+    singleTable.innerHTML = buildNPSTableInnerHTML(getActivePlan(), qData);
+  } else {
+    singleTable.style.display = 'none';
+    if (!multiContainer) return;
+    multiContainer.innerHTML = plans.map(p => `
+      <div class="nps-plan-block">
+        <div class="nps-plan-title"><span class="nps-plan-color" style="background:${p.color}"></span><span>${escapeHtml(p.name)}</span>${p.id===baselinePlanId?'<span class="nps-plan-baseline" title="Baseline">★</span>':''}</div>
+        <div style="overflow-x:auto"><table class="nps-table">${buildNPSTableInnerHTML(p, qData)}</table></div>
+      </div>
+    `).join('');
+  }
+}
+
+// ── Compute per-plan stats for a given quarter ──
+function computePlanStats(plan, qData, mode) {
+  const isCombined = mode === 'combined';
+  const trxW = (plan.trxWeight || 0) / 100;
+  const nrxW = (plan.nrxWeight || 0) / 100;
+  const activeWeight = mode === 'nrx' ? nrxW : trxW;
+  const displayBasePay = isCombined ? plan.basePay : plan.basePay * activeWeight;
+  const headcount = new Set(qData.map(d => d.territory)).size;
+  const rows = qData.map(d => {
+    const trxAttain = d.trxGoal ? parseFloat((d.trxActual/d.trxGoal*100).toFixed(1)) : 0;
+    const nrxAttain = d.nrxGoal ? parseFloat((d.nrxActual/d.nrxGoal*100).toFixed(1)) : 0;
+    const trxPayPct = planTrxPct(plan, trxAttain);
+    const nrxPayPct = planNrxPct(plan, nrxAttain);
+    const combinedPct = trxPayPct*trxW + nrxPayPct*nrxW;
+    let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
+    if (isCombined) {
+      trxPayoutAmount = plan.basePay * trxW * (trxPayPct/100);
+      nrxPayoutAmount = plan.basePay * nrxW * (nrxPayPct/100);
+      combinedPayout = trxPayoutAmount + nrxPayoutAmount;
+      displayPct = combinedPct;
+      displayPayout = combinedPayout;
+    } else if (mode === 'nrx') {
+      displayPct = nrxPayPct;
+      displayPayout = displayBasePay * (displayPct/100);
+      nrxPayoutAmount = displayPayout; trxPayoutAmount = 0; combinedPayout = displayPayout;
+    } else {
+      displayPct = trxPayPct;
+      displayPayout = displayBasePay * (displayPct/100);
+      trxPayoutAmount = displayPayout; nrxPayoutAmount = 0; combinedPayout = displayPayout;
+    }
+    const activeAttainment = mode === 'nrx' ? nrxAttain : trxAttain;
+    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
+    return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
+      trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
+      displayPct, displayPayout, attClass};
+  });
+  const totalPayout = rows.reduce((s,r)=>s+r.combinedPayout,0);
+  const totalBudget = displayBasePay * headcount;
+  const payouts = rows.map(r=>r.displayPayout);
+  const displayPcts = rows.map(r=>r.displayPct);
+  const attainmentValues = rows.map(r => mode === 'nrx' ? r.nrxAttain : mode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
+  return {
+    plan, mode, rows, headcount, trxW, nrxW, activeWeight, displayBasePay,
+    totalPayout, totalBudget, totalOver: totalPayout - totalBudget,
+    avgPay: totalPayout / headcount,
+    maxPay: Math.max(...payouts), minPay: Math.min(...payouts),
+    minAttain: Math.min(...attainmentValues), maxAttain: Math.max(...attainmentValues),
+    minPct: Math.min(...displayPcts), maxPct: Math.max(...displayPcts),
+    engaged: displayPcts.filter(p=>p>0).length,
+    meaningfulPct: (displayPcts.filter(p=>p>75).length / headcount) * 100,
+    utilization: totalBudget > 0 ? (totalPayout / totalBudget) * 100 : 0
+  };
 }
 
 // ── Render Table ──
@@ -812,69 +1879,28 @@ function renderAll() {
   const qData = quarterlyData.filter(d => d.quarter === quarter);
   if (!qData.length) return;
 
-  const trxW = getComponentWeight('trxWeight');
-  const nrxW = getComponentWeight('nrxWeight');
-  const BASE_Q = getEffectiveBasePay();
+  if (compareMode) {
+    renderCompareMode(qData, quarter);
+  } else {
+    renderSingleMode(qData, quarter);
+  }
+  drawHistogram();
+}
+
+function renderSingleMode(qData, quarter) {
+  const plan = getActivePlan();
+  // Reset multi-plan classes if switching back from compare mode
+  const summaryEl = document.getElementById('summary');
+  summaryEl.classList.remove('summary-multi', 'cols-2', 'cols-3', 'cols-4', 'cols-5', 'compare-summary');
+  // Keep DOM inputs in sync with active plan in case plan was loaded from storage
+  if (Number(document.getElementById('basePay').value) !== plan.basePay) {
+    document.getElementById('basePay').value = plan.basePay;
+  }
+  const stats = computePlanStats(plan, qData, componentMode);
   const isCombined = componentMode === 'combined';
-  const activeWeight = componentMode === 'nrx' ? nrxW : trxW;
-  const displayBasePay = isCombined ? BASE_Q : BASE_Q * activeWeight;
+  const { rows, headcount, trxW, nrxW, displayBasePay, totalBudget, totalPayout, totalOver,
+          avgPay, maxPay, minPay, minAttain, maxAttain, minPct, maxPct, engaged, meaningfulPct } = stats;
 
-  // Build rows
-  const rows = qData.map(d => {
-    const trxAttain = d.trxGoal ? parseFloat((d.trxActual/d.trxGoal*100).toFixed(1)) : 0;
-    const nrxAttain = d.nrxGoal ? parseFloat((d.nrxActual/d.nrxGoal*100).toFixed(1)) : 0;
-    const trxPayPct = trxPct(trxAttain);
-    const nrxPayPct = nrxPct(nrxAttain);
-    const combinedPct = trxPayPct*trxW + nrxPayPct*nrxW;
-
-    let trxPayoutAmount, nrxPayoutAmount, combinedPayout, displayPct, displayPayout;
-    if (isCombined) {
-      // Combined: split BASE_Q by weight
-      trxPayoutAmount = BASE_Q * trxW * (trxPayPct/100);
-      nrxPayoutAmount = BASE_Q * nrxW * (nrxPayPct/100);
-      combinedPayout = trxPayoutAmount + nrxPayoutAmount;
-      displayPct = combinedPct;
-      displayPayout = combinedPayout;
-    } else if (componentMode === 'nrx') {
-      // Component views use their weighted share of the quarterly base pay.
-      displayPct = nrxPayPct;
-      displayPayout = displayBasePay * (displayPct/100);
-      nrxPayoutAmount = displayPayout;
-      trxPayoutAmount = 0;
-      combinedPayout = displayPayout;
-    } else {
-      // Component views use their weighted share of the quarterly base pay.
-      displayPct = trxPayPct;
-      displayPayout = displayBasePay * (displayPct/100);
-      trxPayoutAmount = displayPayout;
-      nrxPayoutAmount = 0;
-      combinedPayout = displayPayout;
-    }
-
-    const activeAttainment = componentMode === 'nrx' ? nrxAttain : trxAttain;
-    const attClass = activeAttainment>=100?'att-good':activeAttainment>=85?'att-ok':'att-bad';
-    return {...d, trxAttain, nrxAttain, trxPayPct, nrxPayPct, combinedPct,
-      trxPayout:trxPayoutAmount, nrxPayout:nrxPayoutAmount, combinedPayout,
-      displayPct, displayPayout, attClass};
-  });
-
-  // Summary stats
-  const headcount = new Set(qData.map(d=>d.territory)).size;
-  const totalCombined = rows.reduce((s,r)=>s+r.combinedPayout,0);
-  const totalBudget = displayBasePay * headcount;
-  const totalOver = totalCombined - totalBudget;
-  const payouts = rows.map(r=>r.displayPayout);
-  const maxPay = Math.max(...payouts), minPay = Math.min(...payouts);
-  const avgPay = totalCombined/headcount;
-  const displayPcts = rows.map(r=>r.displayPct);
-  const attainmentValues = rows.map(r => componentMode === 'nrx' ? r.nrxAttain : componentMode === 'combined' ? (r.trxAttain * trxW + r.nrxAttain * nrxW) : r.trxAttain);
-  const minAttain = Math.min(...attainmentValues);
-  const maxAttain = Math.max(...attainmentValues);
-  const minPct = Math.min(...displayPcts), maxPct = Math.max(...displayPcts);
-  const engaged = displayPcts.filter(p=>p>0).length;
-  const meaningful = ((displayPcts.filter(p=>p>75).length/headcount)*100).toFixed(1);
-
-  // Table header
   let theadHTML;
   if (isCombined) {
     theadHTML = `<tr><th>Territory</th><th>TRx Goal</th><th>TRx Act</th><th>NRx Goal</th><th>NRx Act</th><th>TRx%</th><th>NRx%</th><th>%Payout</th><th>Payout</th></tr>`;
@@ -883,10 +1909,12 @@ function renderAll() {
   }
   document.getElementById('thead').innerHTML = theadHTML;
 
-  if (payoutSortState==='asc') rows.sort((a,b)=>a.displayPct-b.displayPct);
-  else if (payoutSortState==='desc') rows.sort((a,b)=>b.displayPct-a.displayPct);
+  const sorted = rows.slice();
+  if (payoutSortState==='asc') sorted.sort((a,b)=>a.displayPct-b.displayPct);
+  else if (payoutSortState==='desc') sorted.sort((a,b)=>b.displayPct-a.displayPct);
 
-  document.getElementById('tbody').innerHTML = rows.map(r => {
+  const BASE_Q = plan.basePay;
+  document.getElementById('tbody').innerHTML = sorted.map(r => {
     if (isCombined) {
       return `<tr>
         <td>${r.territory}</td>
@@ -910,10 +1938,9 @@ function renderAll() {
     </tr>`;
   }).join('');
 
-  // Summary
   document.getElementById('summary').innerHTML = `
     <h3>${isCombined?'Combined':componentMode==='nrx'?'NRx':'TRx'} ${quarter} Summary</h3>
-    <div class="stat-row"><span>${isCombined ? 'Total quarterly base / person' : `${componentMode === 'nrx' ? 'NRx' : 'TRx'} base / person (${(activeWeight*100).toFixed(0)}%)`}</span><span class="val">$${displayBasePay.toLocaleString()}</span></div>
+    <div class="stat-row"><span>${isCombined ? 'Total quarterly base / person' : `${componentMode === 'nrx' ? 'NRx' : 'TRx'} base / person (${(stats.activeWeight*100).toFixed(0)}%)`}</span><span class="val">$${displayBasePay.toLocaleString()}</span></div>
     <div class="stat-row"><span>Headcount</span><span class="val">${headcount}</span></div>
     <div class="stat-row"><span>Base budget</span><span class="val">$${totalBudget.toLocaleString()}</span></div>
     ${isCombined ? `
@@ -922,19 +1949,127 @@ function renderAll() {
     <div class="stat-row"><span>TRx payout</span><span class="val" style="color:#6366f1">$${rows.reduce((s,r)=>s+r.trxPayout,0).toLocaleString()}</span></div>
     <div class="stat-row"><span>NRx payout</span><span class="val" style="color:#059669">$${rows.reduce((s,r)=>s+r.nrxPayout,0).toLocaleString()}</span></div>
     ` : ''}
-    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalCombined.toLocaleString()}</span></div>
+    <div class="stat-row"><span>Total payout</span><span class="val ${totalOver>0?'warn':''}">$${totalPayout.toLocaleString()}</span></div>
     <div class="stat-row"><span>Over/Under</span><span class="val ${totalOver>0?'bad':'good'}">${totalOver>=0?'+':''}$${totalOver.toLocaleString()}</span></div>
-    <div class="stat-row"><span>Utilization</span><span class="val">${((totalCombined/totalBudget)*100).toFixed(1)}%</span></div>
+    <div class="stat-row"><span>Utilization</span><span class="val">${stats.utilization.toFixed(1)}%</span></div>
     <div class="stat-row"><span>Avg payout</span><span class="val">$${avgPay.toFixed(0)}</span></div>
     <div class="stat-row"><span>Max / Min</span><span class="val">$${maxPay.toFixed(0)} / $${minPay.toFixed(0)}</span></div>
     <div class="stat-row"><span>Attain range</span><span class="val">${minAttain}% – ${maxAttain}%</span></div>
     <div class="stat-row"><span>Payout% range</span><span class="val">${minPct.toFixed(1)}% – ${maxPct.toFixed(1)}%</span></div>
     <div class="stat-row"><span>Engagement (>0%)</span><span class="val">${engaged}/${headcount} (${((engaged/headcount)*100).toFixed(1)}%)</span></div>
-    <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningful}%</span></div>
+    <div class="stat-row"><span>Meaningful (>75%)</span><span class="val">${meaningfulPct.toFixed(1)}%</span></div>
   `;
 
   renderNPS();
-  drawHistogram();
+}
+
+function renderCompareMode(qData, quarter) {
+  const isCombined = componentMode === 'combined';
+  const planStats = plans.map(p => computePlanStats(p, qData, componentMode));
+  const baseline = getBaselinePlan();
+  const baselineStats = planStats.find(s => s.plan.id === baseline.id) || planStats[0];
+
+  // ── Multi-plan summary: single comparison table (labels once on left, one column per plan) ──
+  const summaryEl = document.getElementById('summary');
+  summaryEl.classList.add('compare-summary');
+  const orderedForSummary = [baselineStats, ...planStats.filter(s => s.plan.id !== baseline.id)];
+
+  const fmtMoney = (n) => '$' + Math.round(n).toLocaleString();
+  const fmtMoneySigned = (n) => (n>=0?'+':'') + '$' + Math.round(n).toLocaleString();
+  const deltaClass = (v, eps) => v > eps ? 'up' : v < -eps ? 'down' : 'zero';
+
+  const headerCells = orderedForSummary.map(s => {
+    const isBl = s.plan.id === baseline.id;
+    return `<th class="${isBl?'baseline-col':''}">
+      <span class="plan-col-header">
+        <span class="card-color-dot" style="background:${s.plan.color}"></span>
+        ${escapeHtml(s.plan.name)}${isBl?' <span class="baseline-mark" title="Baseline">★</span>':''}
+      </span>
+    </th>`;
+  }).join('');
+
+  const valRow = (label, valueFn) => `<tr><th>${label}</th>${
+    orderedForSummary.map(s => `<td class="${s.plan.id===baseline.id?'baseline-col':''}">${valueFn(s)}</td>`).join('')
+  }</tr>`;
+
+  const deltaRow = (label, statKey, fmt, eps) => `<tr class="delta-row"><th>${label}</th>${
+    orderedForSummary.map(s => {
+      const isBl = s.plan.id === baseline.id;
+      const d = s[statKey] - baselineStats[statKey];
+      const cls = isBl ? '' : deltaClass(d, eps);
+      const blCls = isBl ? 'baseline-col' : '';
+      return `<td class="${blCls} ${cls}">${isBl?'—':fmt(d)}</td>`;
+    }).join('')
+  }</tr>`;
+
+  summaryEl.innerHTML = `
+    <div class="compare-summary-table-wrap">
+      <table class="compare-summary-table">
+        <thead>
+          <tr><th class="metric-col">Metric</th>${headerCells}</tr>
+        </thead>
+        <tbody>
+          ${valRow('Base / person', s => '$' + s.displayBasePay.toLocaleString())}
+          ${valRow('Headcount', s => s.headcount)}
+          ${valRow('Total payout', s => `<span class="${s.totalOver>0?'val-warn':''}">${fmtMoney(s.totalPayout)}</span>`)}
+          ${deltaRow('vs baseline', 'totalPayout', d => fmtMoneySigned(d), 0.5)}
+          ${valRow('Over / Under', s => `<span class="${s.totalOver>0?'val-bad':'val-good'}">${s.totalOver>=0?'+':''}${fmtMoney(s.totalOver)}</span>`)}
+          ${valRow('Utilization', s => s.utilization.toFixed(1) + '%')}
+          ${deltaRow('vs baseline', 'utilization', d => (d>=0?'+':'') + d.toFixed(1) + 'pp', 0.05)}
+          ${valRow('Avg / Max / Min', s => `$${s.avgPay.toFixed(0)} / $${s.maxPay.toFixed(0)} / $${s.minPay.toFixed(0)}`)}
+          ${valRow('Engagement (&gt;0%)', s => `${s.engaged}/${s.headcount}`)}
+          ${valRow('Meaningful (&gt;75%)', s => s.meaningfulPct.toFixed(1) + '%')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // ── Multi-plan territory table ──
+  // Columns: Territory | Att% | (per-plan) %Payout, Pay | Δ vs baseline (per non-baseline plan)
+  const orderedPlanStats = [baselineStats, ...planStats.filter(s => s.plan.id !== baseline.id)];
+  const territories = qData.map(d => d.territory);
+  const rowMap = new Map();
+  orderedPlanStats.forEach(ps => {
+    ps.rows.forEach(r => {
+      if (!rowMap.has(r.territory)) rowMap.set(r.territory, { territory: r.territory, trxAttain: r.trxAttain, nrxAttain: r.nrxAttain, plansData: {} });
+      rowMap.get(r.territory).plansData[ps.plan.id] = r;
+    });
+  });
+  const compareRows = territories.map(t => rowMap.get(t)).filter(Boolean);
+
+  // Sort by baseline's payout if requested
+  if (payoutSortState === 'asc') compareRows.sort((a,b)=>a.plansData[baseline.id].displayPct - b.plansData[baseline.id].displayPct);
+  else if (payoutSortState === 'desc') compareRows.sort((a,b)=>b.plansData[baseline.id].displayPct - a.plansData[baseline.id].displayPct);
+
+  let theadHTML = `<tr><th>Territory</th><th>${isCombined ? 'Att (T/N)%' : (componentMode==='nrx'?'NRx Att%':'TRx Att%')}</th>`;
+  orderedPlanStats.forEach(ps => {
+    const isBl = ps.plan.id === baseline.id;
+    const star = isBl ? ' ★' : '';
+    theadHTML += `<th style="color:${ps.plan.color}">${escapeHtml(ps.plan.name)}${star}<br><span style="font-size:.6rem;font-weight:600;color:var(--muted)">%Pay / Pay</span></th>`;
+    if (!isBl) theadHTML += `<th style="color:var(--muted)">Δ vs ${escapeHtml(baseline.name)}</th>`;
+  });
+  theadHTML += `</tr>`;
+  document.getElementById('thead').innerHTML = theadHTML;
+
+  document.getElementById('tbody').innerHTML = compareRows.map(cr => {
+    const attCell = isCombined ? `${cr.trxAttain}/${cr.nrxAttain}%` : (componentMode==='nrx' ? `${cr.nrxAttain}%` : `${cr.trxAttain}%`);
+    let html = `<tr><td>${cr.territory}</td><td>${attCell}</td>`;
+    orderedPlanStats.forEach(ps => {
+      const r = cr.plansData[ps.plan.id];
+      const blR = cr.plansData[baseline.id];
+      const isBl = ps.plan.id === baseline.id;
+      html += `<td><div style="font-weight:700;color:${r.displayPct>=100?'#059669':r.displayPct>=70?'#d97706':'#dc2626'}">${r.displayPct.toFixed(1)}%</div><div style="font-size:.66rem;color:var(--muted)">$${r.displayPayout.toFixed(0)}</div></td>`;
+      if (!isBl) {
+        const dPay = r.displayPayout - blR.displayPayout;
+        const cls = dPay > 0.5 ? 'up' : dPay < -0.5 ? 'down' : 'zero';
+        html += `<td class="delta-cell ${cls}">${dPay>=0?'+':''}$${dPay.toFixed(0)}</td>`;
+      }
+    });
+    html += '</tr>';
+    return html;
+  }).join('');
+
+  renderNPS();
 }
 
 // ── Import/Export ──
@@ -943,6 +2078,19 @@ function downloadSample() {
   const blob = new Blob([sample], {type:'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'sample_territories.txt'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function downloadData() {
+  if (!quarterlyData.length) { alert('No territory data is currently loaded.'); return; }
+  const header = 'Territory\tQuarter\tTRx Goal\tTRx Actual\tNRx Goal\tNRx Actual';
+  const rows = quarterlyData.map(d => [d.territory, d.quarter, d.trxGoal, d.trxActual, d.nrxGoal, d.nrxActual].join('\t'));
+  const text = header + '\n' + rows.join('\n') + '\n';
+  const blob = new Blob([text], { type: 'text/tab-separated-values' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'territories-' + new Date().toISOString().slice(0,10) + '.tsv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function parseCSV(text) {
@@ -969,28 +2117,278 @@ function parseCSV(text) {
   return result;
 }
 
-function uploadData(event) {
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    try{
-      if(text.trim().startsWith('{')){
-        const d=JSON.parse(text);
-        if(d.quarterlyData&&Array.isArray(d.quarterlyData)){quarterlyData=d.quarterlyData;}
-        else throw new Error('JSON needs quarterlyData array');
-        if(d.points&&Array.isArray(d.points)) points=d.points;
-        if(d.nrxPoints&&Array.isArray(d.nrxPoints)) nrxPoints=d.nrxPoints;
-      } else {
-        quarterlyData = parseCSV(text);
-      }
-      updateUI();
-    }catch(err){alert('Upload failed: '+err.message);}
-  };
-  reader.readAsText(file); event.target.value='';
+// Merge new rows into the existing quarterlyData. Rows with the same
+// (territory, quarter) key are replaced; new combinations are added.
+function mergeQuarterlyData(newRows) {
+  const key = r => r.territory + '|' + r.quarter;
+  const map = new Map();
+  quarterlyData.forEach(r => map.set(key(r), r));
+  let added = 0, updated = 0;
+  newRows.forEach(r => {
+    const k = key(r);
+    if (map.has(k)) updated++;
+    else added++;
+    map.set(k, r);
+  });
+  quarterlyData = Array.from(map.values());
+  return { added, updated };
 }
 
-drawCurve(); buildInputs();
+function uploadData(event, append) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    try {
+      let parsed;
+      let extraPoints = null;
+      if (text.trim().startsWith('{')) {
+        const d = JSON.parse(text);
+        if (!d.quarterlyData || !Array.isArray(d.quarterlyData)) throw new Error('JSON needs a quarterlyData array');
+        parsed = d.quarterlyData;
+        if (d.points || d.nrxPoints) extraPoints = { points: d.points, nrxPoints: d.nrxPoints };
+      } else {
+        parsed = parseCSV(text);
+      }
+      if (!parsed.length) throw new Error('No valid rows found');
+      if (append) {
+        const { added, updated } = mergeQuarterlyData(parsed);
+        // Only restore curves on a non-append load; appending data shouldn't change curves.
+        alert('Appended ' + added + ' new row(s); ' + updated + ' existing row(s) were updated.');
+      } else {
+        // Replace mode — confirm first if the user has existing data.
+        if (quarterlyData.length && !confirm('Replace ALL ' + quarterlyData.length + ' existing rows with ' + parsed.length + ' new row(s)? This cannot be undone.')) {
+          event.target.value = '';
+          return;
+        }
+        quarterlyData = parsed;
+        if (extraPoints) {
+          if (extraPoints.points && Array.isArray(extraPoints.points)) getActivePlan().trxPoints = clonePoints(extraPoints.points);
+          if (extraPoints.nrxPoints && Array.isArray(extraPoints.nrxPoints)) getActivePlan().nrxPoints = clonePoints(extraPoints.nrxPoints);
+          savePlans();
+        }
+      }
+      updateUI();
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Export / import all plans ──
+function exportAllPlans() {
+  const payload = {
+    schema: 'pharma-payout-plans',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    activePlanId, baselinePlanId, componentMode, compareMode,
+    plans
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'payout-plans-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importAllPlans(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d || !Array.isArray(d.plans) || !d.plans.length) throw new Error('No plans found in file');
+      if (!confirm('Replace current plans with ' + d.plans.length + ' plan(s) from file?')) {
+        event.target.value = '';
+        return;
+      }
+      plans = d.plans.slice(0, MAX_PLANS).map((p, i) => ({
+        id: p.id || uid(),
+        name: typeof p.name === 'string' ? p.name : 'Plan ' + String.fromCharCode(65 + i),
+        color: p.color || PLAN_COLORS[i % PLAN_COLORS.length],
+        trxPoints: Array.isArray(p.trxPoints) && p.trxPoints.length >= 2 ? clonePoints(p.trxPoints) : defaultTrxPoints(),
+        nrxPoints: Array.isArray(p.nrxPoints) && p.nrxPoints.length >= 2 ? clonePoints(p.nrxPoints) : defaultNrxPoints(),
+        trxWeight: Number.isFinite(p.trxWeight) ? p.trxWeight : 50,
+        nrxWeight: Number.isFinite(p.nrxWeight) ? p.nrxWeight : 50,
+        basePay:   Number.isFinite(p.basePay)   ? p.basePay   : 3375
+      }));
+      activePlanId = getPlanById(d.activePlanId) ? d.activePlanId : plans[0].id;
+      baselinePlanId = getPlanById(d.baselinePlanId) ? d.baselinePlanId : plans[0].id;
+      if (typeof d.componentMode === 'string' && ['trx','nrx','combined'].includes(d.componentMode)) componentMode = d.componentMode;
+      syncInputsFromActivePlan();
+      applyComponentTabState();
+      renderPlanTabs();
+      updateUI();
+      savePlans();
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Theme (light / dark) ──
+const THEME_KEY = 'payout.theme';
+
+function applyTheme(theme, redraw) {
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', dark);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) {
+    btn.textContent = dark ? 'Light' : 'Dark';
+    btn.setAttribute('title', (dark ? 'Switch to light mode' : 'Switch to dark mode') + ' (Shortcut: D)');
+    btn.setAttribute('aria-pressed', String(dark));
+  }
+  // Re-render anything drawn on canvas so axis/text colors pick up the new theme.
+  // Skip on first paint (initTheme) because bootApp() will draw right after with the right class.
+  if (redraw) {
+    if (typeof drawCurve === 'function')     { try { drawCurve(); }     catch (e) {} }
+    if (typeof drawHistogram === 'function') { try { drawHistogram(); } catch (e) {} }
+  }
+}
+
+function toggleTheme() {
+  const next = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  applyTheme(next, true);
+}
+
+function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+  const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(theme, false);
+}
+
+// ── Print / PDF view ──
+function printView() {
+  // Tiny delay so any in-flight UI re-render finishes before the print preview opens.
+  setTimeout(() => { try { window.print(); } catch (e) { alert('Could not open the print dialog: ' + e.message); } }, 30);
+}
+
+// Force canvases to redraw in light colors during print, then restore on return.
+// (Print CSS resets variables, but canvas pixels were drawn with the previous theme.)
+window.addEventListener('beforeprint', () => {
+  if (document.body.classList.contains('dark-theme')) {
+    document.body.classList.add('print-was-dark');
+    document.body.classList.remove('dark-theme');
+  }
+  try { drawCurve(); } catch (e) {}
+  try { drawHistogram(); } catch (e) {}
+});
+window.addEventListener('afterprint', () => {
+  if (document.body.classList.contains('print-was-dark')) {
+    document.body.classList.remove('print-was-dark');
+    document.body.classList.add('dark-theme');
+    try { drawCurve(); } catch (e) {}
+    try { drawHistogram(); } catch (e) {}
+  }
+});
+
+// Re-fit the histogram when the window is resized so single-plan mode keeps
+// the canvas at the right CSS width (and compare-mode multiples re-flow).
+let _histoResizeT = null;
+window.addEventListener('resize', () => {
+  if (_histoResizeT) clearTimeout(_histoResizeT);
+  _histoResizeT = setTimeout(() => { try { drawHistogram(); } catch (e) {} }, 120);
+});
+
+// ── Keyboard shortcuts ──
+function showShortcutsHelp() {
+  const o = document.getElementById('shortcutsOverlay');
+  if (o) { o.hidden = false; const c = o.querySelector('.shortcuts-close'); if (c) c.focus(); }
+}
+function hideShortcutsHelp() {
+  const o = document.getElementById('shortcutsOverlay');
+  if (o) o.hidden = true;
+}
+
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return !!el.isContentEditable;
+}
+
+function handleShortcut(e) {
+  // Esc always closes the help overlay even from inputs
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('shortcutsOverlay');
+    if (overlay && !overlay.hidden) { hideShortcutsHelp(); e.preventDefault(); return; }
+  }
+  if (isTypingTarget(e.target)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return; // don't shadow browser shortcuts
+  const k = e.key;
+  const lower = k.length === 1 ? k.toLowerCase() : k;
+  // Plan switching: 1..9 (capped at how many plans exist)
+  if (/^[1-9]$/.test(k)) {
+    const idx = parseInt(k, 10) - 1;
+    if (Array.isArray(plans) && idx < plans.length) {
+      activePlanId = plans[idx].id;
+      try { savePlans(); } catch (err) {}
+      try { updateUI(); } catch (err) {}
+      e.preventDefault();
+    }
+    return;
+  }
+  switch (lower) {
+    case 't': try { setComponent('trx'); } catch (err) {} e.preventDefault(); break;
+    case 'n': try { setComponent('nrx'); } catch (err) {} e.preventDefault(); break;
+    case 'c': try { setComponent('combined'); } catch (err) {} e.preventDefault(); break;
+    case 'e': try { toggleCompare(); } catch (err) {} e.preventDefault(); break;
+    case 'd': toggleTheme(); e.preventDefault(); break;
+    case 'p': printView(); e.preventDefault(); break;
+    case '?': showShortcutsHelp(); e.preventDefault(); break;
+  }
+}
+document.addEventListener('keydown', handleShortcut);
+// Close help when the overlay backdrop is clicked.
+document.addEventListener('click', (e) => {
+  const overlay = document.getElementById('shortcutsOverlay');
+  if (overlay && !overlay.hidden && e.target === overlay) hideShortcutsHelp();
+});
+
+// ── Initial sync setup (runs before fetch resolves) ──
+initTheme();
+bootApp();
 </script>
+
+<!-- Keyboard shortcuts overlay (hidden by default) -->
+<div id="shortcutsOverlay" class="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle" hidden>
+  <div class="shortcuts-modal" role="document">
+    <div class="shortcuts-modal-head">
+      <h3 id="shortcutsTitle">Keyboard shortcuts</h3>
+      <button class="shortcuts-close" onclick="hideShortcutsHelp()" aria-label="Close">&times;</button>
+    </div>
+    <div class="shortcuts-grid">
+      <div class="kbd-group">
+        <h4>Plans</h4>
+        <div class="kbd-row"><span><kbd>1</kbd>&nbsp;<kbd>2</kbd>&nbsp;<kbd>3</kbd>&nbsp;<kbd>4</kbd>&nbsp;<kbd>5</kbd></span><span>Switch to plan A&ndash;E</span></div>
+        <div class="kbd-row"><span><kbd>E</kbd></span><span>Toggle compare mode</span></div>
+      </div>
+      <div class="kbd-group">
+        <h4>View</h4>
+        <div class="kbd-row"><span><kbd>T</kbd></span><span>TRx component</span></div>
+        <div class="kbd-row"><span><kbd>N</kbd></span><span>NRx component</span></div>
+        <div class="kbd-row"><span><kbd>C</kbd></span><span>Combined component</span></div>
+        <div class="kbd-row"><span><kbd>D</kbd></span><span>Toggle dark mode</span></div>
+        <div class="kbd-row"><span><kbd>P</kbd></span><span>Print / PDF view</span></div>
+      </div>
+      <div class="kbd-group">
+        <h4>Help</h4>
+        <div class="kbd-row"><span><kbd>?</kbd></span><span>Show this help</span></div>
+        <div class="kbd-row"><span><kbd>Esc</kbd></span><span>Close help</span></div>
+      </div>
+    </div>
+    <p class="shortcuts-hint">Shortcuts are ignored while typing in any input field.</p>
+  </div>
+</div>
 </body>
 </html>
